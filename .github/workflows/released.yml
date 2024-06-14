@@ -2,7 +2,7 @@ name: 'Tweet when released'
 
 on:
   release:
-    types: [released]
+    types: [push]
 
 jobs:
   tweet:
