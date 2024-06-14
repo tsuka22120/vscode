@@ -1,7 +1,7 @@
 name: 'Tweet when released'
 
 on:
-  release:
+  push:
     types: [push]
 
 jobs:
