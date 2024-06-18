@@ -45,6 +45,23 @@ void printStack(Stack* stack) {
   printf("]\n");
 }
 
+bool pushTest(Stack stack) {
+  if (stack.volume == HEIGHT) {
+    return false;
+  }
+  else {
+    return true;
+  }
+}
+
+bool popTest(Stack stack) {
+  if (stack.volume == 0) {
+    return false;
+  }
+  else {
+    return true;
+  }
+}
 
 int top(Stack tower) {
   return tower.data[tower.volume - 1]; /* スタックの最上位の値を返す */
@@ -72,6 +89,53 @@ int checkFinish(Stack tower, int blocks) {
   return 1;
   //ブロックが初期状態と同じ状態かチェックする
 }
+
+// #define main2
+// //m9(^Д^)ﾌﾟｷﾞｬｰ
+// #ifdef main1
+// int main(void) {
+//   Stack stack;
+//   int i, check;
+//   init(&stack);
+//   printf("スタックの最大値:%d\n", HEIGHT);
+//   for (i = 10; i < 40; i += 10) {
+//     if (pushTest(stack) == true) {
+//       printf("pushed %d\n", i);
+//       push(&stack, i);
+//     }
+//     else {
+//       printf("error\n");
+//     }
+//   }
+
+//   printf("データ順にスタックされているか\n");
+//   printStack(&stack);
+
+//   printf("データ順に取り出せているか\n");
+//   for (i = 0; i < 3; i++) {
+//     if (popTest(stack) == true) {
+//       printf("popped %d\n", stack.data[stack.volume - 1]);
+//       pop(&stack);
+//     }
+//     else {
+//       printf("空の時にデータを取り出そうとしたときにどのような動作をするか\n");
+//       printf("error\n");
+//     }
+//   }
+
+//   for (i = 10; i < 70; i += 10) {
+//     if (pushTest(stack) == true) {
+//       printf("pushed %d\n", i);
+//       push(&stack, i);
+//     }
+//     else {
+//       printf("満杯の時にデータを追加しようとしたときにどのような動作をするか\n");
+//       printf("error\n");
+//     }
+//   }
+//   return 0;
+// }
+// #endif
 
 int main(void) {
   int i;
