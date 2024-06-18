@@ -44,7 +44,7 @@ void printStack(Stack* stack) {
   printf("]\n");
 }
 
-bool puthTest(Stack stack) {
+bool pushTest(Stack stack) {
   if (stack.volume == HEIGHT) {
     return false;
   }
@@ -68,7 +68,7 @@ int main(void) {
   init(&stack);
   printf("スタックの最大値:%d\n", HEIGHT);
   for (i = 10; i < 40; i += 10) {
-    if (puthTest(stack) == true) {
+    if (pushTest(stack) == true) {
       printf("pushed %d\n", i);
       push(&stack, i);
     }
@@ -83,7 +83,7 @@ int main(void) {
   printf("データ順に取り出せているか\n");
   for (i = 0; i < 3; i++) {
     if (popTest(stack) == true) {
-      printf("poped %d\n", stack.data[stack.volume - 1]);
+      printf("popped %d\n", stack.data[stack.volume - 1]);
       pop(&stack);
     }
     else {
@@ -93,7 +93,7 @@ int main(void) {
   }
 
   for (i = 10; i < 70; i += 10) {
-    if (puthTest(stack) == true) {
+    if (pushTest(stack) == true) {
       printf("pushed %d\n", i);
       push(&stack, i);
     }
