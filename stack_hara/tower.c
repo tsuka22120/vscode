@@ -82,7 +82,7 @@ int main(void) {
     printf("段数を選んでください(3, 4, 5):");
     while (scanf("%d", &blocks) != 1 || blocks < 3 || blocks > 5) {
         while (getchar() != '\n');
-        printf("えらー\n");
+        printf("error please rewrite\n");
         printf("段数を選んでください(3, 4, 5):");
     }
     /*3 塔を初期化する*/
@@ -107,9 +107,9 @@ int main(void) {
         while (1) {
             printf("移動元塔と移動先塔を入力してください。[? ?]:");
             while (scanf("%d%d", &fromNumber, &toNumber) != 2 || toNumber > 3 ||
-                   toNumber < 1 || fromNumber > 3 || fromNumber < 1) {
+                toNumber < 1 || fromNumber > 3 || fromNumber < 1) {
                 while (getchar() != '\n');
-                printf("えらー\n");
+                printf("error please rewrite\n");
                 printf("移動元塔と移動先塔を入力してください。[? ?]:");
             }
             // 移動元の塔から移動先の塔にデータを移動させる
