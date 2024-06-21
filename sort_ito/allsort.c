@@ -7,8 +7,8 @@
 #include <string.h>
 #include <time.h>
 
-#define index_num 50
-#define print_on
+#define index_num 1000
+#define print
 #define SWAP(a, b) ((a != b) && (a += b, b = a - b, a -= b))
 
 bool CheckSort(int64_t ary[]);
@@ -25,7 +25,8 @@ void quicksort(int64_t ary[]);
 
 void MakeRandomAry(int64_t ary[]);
 
-int choicePivot(int64_t ary[], int64_t left, int64_t right, int* comparableNum);
+int choicePivot(int64_t ary[], int64_t left, int64_t right,
+                int64_t* comparableNum);
 
 /// @brief leftとrightの真ん中を返す関数
 /// @param left 配列の左端の添え字
@@ -52,9 +53,9 @@ int main(void) {
     srand((unsigned int)time(NULL));
     MakeRandomAry(num);
     // bogosort(num);
-    // selectionsort(num);
-    // heapsort(num);
-    // bubblesort(num);
+    selectionsort(num);
+    heapsort(num);
+    bubblesort(num);
     quicksort(num);
     return 0;
 }
@@ -266,15 +267,15 @@ void partitioning(int64_t ary[], int64_t left, int64_t right,
     rightIndex = right;
     pivot = choicePivot(ary, left, right, comparableNum);
     while (1) {
-        *comparableNum++;
+        (*comparableNum)++;
         while (ary[left] < pivot) {
             left++;
-            *comparableNum++;
+            (*comparableNum)++;
         }
-        *comparableNum++;
+        (*comparableNum)++;
         while (ary[right] > pivot) {
             right--;
-            *comparableNum++;
+            (*comparableNum)++;
         }
         if (left >= right) {
             break;
@@ -283,42 +284,41 @@ void partitioning(int64_t ary[], int64_t left, int64_t right,
         left++;
         right--;
     }
-    printf("%ld\n", *comparableNum);
     partitioning(ary, leftIndex, left - 1, comparableNum);
     partitioning(ary, right + 1, rightIndex, comparableNum);
 }
 
 int choicePivot(int64_t ary[], int64_t left, int64_t right,
-                int* comparableNum) {
+                int64_t* comparableNum) {
     int64_t center;
     center = (right - left) / 2 + left;
-    *comparableNum++;
+    (*comparableNum)++;
     if (ary[right] > ary[center]) {
-        *comparableNum++;
+        (*comparableNum)++;
         if (ary[center] > ary[left]) {
             return ary[center];
         } else {
             return ary[left];
         }
     }
-    *comparableNum++;
+    (*comparableNum)++;
     if (ary[center] > ary[left]) {
-        *comparableNum++;
+        (*comparableNum)++;
         if (ary[left] > ary[right]) {
             return ary[left];
         }
-        *comparableNum++;
+        (*comparableNum)++;
         if (ary[left] < ary[right]) {
             return ary[right];
         }
     }
-    *comparableNum++;
+    (*comparableNum)++;
     if (ary[left] > ary[right]) {
-        *comparableNum++;
+        (*comparableNum)++;
         if (ary[right] > ary[center]) {
             return ary[right];
         }
-        *comparableNum++;
+        (*comparableNum)++;
         if (ary[right] < ary[center]) {
             return ary[center];
         }
