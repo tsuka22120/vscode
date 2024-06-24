@@ -7,6 +7,8 @@ typedef struct {
     int volume;
 } Stack;
 
+/// @brief 構造体を初期化する
+/// @param stack 初期化する構造体
 void init(Stack *stack) {
     int i;
     for (i = 0; i < HEIGHT; i++) {
@@ -15,6 +17,10 @@ void init(Stack *stack) {
     stack->volume = 0;  // スタックに格納されているデータ数を0にする
 }
 
+/// @brief 構造体にデータをpushする
+/// @param stack pushする構造体
+/// @param number pushするデータ
+/// @return 成功したら0, 失敗したら-1
 int push(Stack *stack, int number) {
     if (stack->volume == HEIGHT) {  // これ以上スタックできないなら-1を返す
         return -1;
@@ -24,6 +30,9 @@ int push(Stack *stack, int number) {
     return 0;
 }
 
+/// @brief 構造体からデータをpopする
+/// @param stack popする構造体
+/// @return 成功したらpopしたデータ, 失敗したら-1
 int pop(Stack *stack) {
     int num;
     if (stack->volume == 0) {
@@ -35,15 +44,20 @@ int pop(Stack *stack) {
     return num;
 }
 
+/// @brief 構造体に格納されているデータを表示する
+/// @param stack 表示する構造体
 void printStack(Stack *stack) {
     int i;
     printf("[ ");
-    for (i = 0; i < HEIGHT; i++) {  // スタックに格納されている値を
+    for (i = 0; i < stack->volume; i++) {  // スタックに格納されている値を
         printf("%d ", stack->data[i]);  // スタックされている順番に1行に表示
     }
     printf("]\n");
 }
 
+/// @brief pushできるかどうかを判定する
+/// @param stack 判定する構造体
+/// @return pushできるならtrue, できないならfalse
 bool pushTest(Stack stack) {
     if (stack.volume == HEIGHT) {
         return false;
@@ -52,6 +66,9 @@ bool pushTest(Stack stack) {
     }
 }
 
+/// @brief popできるかどうかを判定する
+/// @param stack 判定する構造体
+/// @return popできるならtrue, できないならfalse
 bool popTest(Stack stack) {
     if (stack.volume == 0) {
         return false;
@@ -64,7 +81,7 @@ int main(void) {
     Stack stack;
     int i, check;
     init(&stack);
-    printf("スタックの最大値:%d\n", HEIGHT);
+    printf("MAX STACK NUM:%d\n", HEIGHT);
     for (i = 10; i < 40; i += 10) {
         if (pushTest(stack) == true) {
             printf("pushed %d\n", i);
@@ -74,17 +91,16 @@ int main(void) {
         }
     }
 
-    printf("データ順にスタックされているか\n");
+    printf("The data is stacked in order?\n");
     printStack(&stack);
 
-    printf("データ順に取り出せているか\n");
-    for (i = 0; i < 3; i++) {
+    printf("The data is retrieved in order?\n");
+    for (i = 0; i < 4; i++) {
         if (popTest(stack) == true) {
-            printf("popped %d\n", stack.data[stack.volume - 1]);
-            pop(&stack);
+            printf("popped %d\n", pop(&stack));
         } else {
             printf(
-                "空の時にデータを取り出そうとしたときにどのような動作をするか"
+                "What happens when you try to retrieve data when it is empty"
                 "\n");
             printf("error\n");
         }
@@ -96,7 +112,7 @@ int main(void) {
             push(&stack, i);
         } else {
             printf(
-                "満杯の時にデータを追加しようとしたときにどのような動作をするか"
+                "What happens when you try to add data when it is full"
                 "\n");
             printf("error\n");
         }

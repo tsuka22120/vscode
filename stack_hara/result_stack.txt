@@ -1,0 +1,19 @@
+MAX STACK NUM:5
+pushed 10
+pushed 20
+pushed 30
+The data is stacked in order?
+[ 10 20 30 ]
+The data is retrieved in order?
+popped 30
+popped 20
+popped 10
+What happens when you try to retrieve data when it is empty
+error
+pushed 10
+pushed 20
+pushed 30
+pushed 40
+pushed 50
+What happens when you try to add data when it is full
+error

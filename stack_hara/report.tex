@@ -1,0 +1,1094 @@
+\documentclass[a4j]{jarticle}
+
+
+% 数式
+\usepackage{amsmath,amsfonts}
+\usepackage{bm}
+% 画像
+\usepackage[dvipdfmx]{graphicx}
+\usepackage{listings,jvlisting}
+\usepackage{jlisting}
+
+
+\lstset{
+  basicstyle={\ttfamily},
+  identifierstyle={\small},
+  commentstyle={\smallitshape},
+  keywordstyle={\small\bfseries},
+  ndkeywordstyle={\small},
+  stringstyle={\small\ttfamily},
+  frame={tb},
+  breaklines=true,
+  columns=[l]{fullflexible},
+  numbers=left,
+  xrightmargin=0zw,
+  xleftmargin=3zw,
+  numberstyle={\scriptsize},
+  stepnumber=1,
+  numbersep=1zw,
+  lineskip=-0.5ex
+}
+\renewcommand{\lstlistingname}{リスト}
+
+\begin{document}
+
+\title{stack}
+\author{学籍番号:22120 \\
+  組番号:222\\
+  名前:塚田 勇人\\}
+\date{\today}
+\maketitle
+
+\newpage
+\tableofcontents
+\newpage
+
+\section{目的}
+スタックのプッシュ、ポップの動作を、与えられた課題をこなすことによって理解することを
+このレポートの目的とします。
+
+\section{原理}
+この章では、スタックとハノイの塔の原理について説明します。
+\subsection{スタック}
+スタックは、データを一時的に保存するためのデータ構造です。
+スタックは、後入れ先出し（LIFOと呼ばれる。Last-In-First-Outの略）
+の原則に基づいて動作します。
+要素の追加は「プッシュ」、要素の取り出しは「ポップ」と呼ばれます。
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.7\textwidth]{C:/Users/htsuk/OneDrive/画像/report/push.jpg}
+  \caption{スタックのイメージ}
+  \label{fig:stack}
+\end{figure}
+
+図\ref{fig:stack}は、スタックのイメージを示しています。
+スタックに要素を追加すると、新しい要素がスタックの一番上に追加されます。
+スタックから要素を取り出すと、一番上の要素が取り出されます。
+スタックは、データの一時的な保存や逆順の処理が必要な場合に便利です。
+\\~~
+スタックと対になるデータ構造として、キューがあります。
+キューは、先入れ先出し（FIFOと呼ばれる。First-In-First-Outの略）
+の原則に基づいて動作します。要素の追加は「エンキュー」、
+要素の取り出しは「デキュー」と呼ばれます。
+\newpage
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.7\textwidth]{C:/Users/htsuk/OneDrive/画像/report/queue.jpg}
+  \caption{キューのイメージ}
+  \label{fig:queue}
+\end{figure}
+図\ref{fig:queue}は、キューのイメージを示しています。
+キューに要素を追加すると、新しい要素がキューの一番上に追加されます。
+キューから要素を削除すると、一番下の要素が取り出されます。
+\\~~
+スタックとキューの違いとして、
+スタックは後入れ先出しの原則に基づいて、要素を取り出すときに一番上の
+要素が取り出されるのに対して、キューは先入れ先出しの原則に基づいて、
+要素を取り出すときに一番下の要素が取り出されることが挙げられます。
+
+\subsection{ハノイの塔}
+ハノイの塔は、フランスの数学者エドゥアール・リュカによって考案されたパズルです。
+ハノイの塔は、3本の杭と、いくつかの円盤からなります。
+円盤は、大きいものから小さいものまで順番に積まれています。
+目的は、最初の杭に積まれた円盤を、できるだけすくない手数で他の杭に移動することです。
+ただし、次のルールに従う必要があります。
+\begin{itemize}
+  \item 1回に1枚の円盤のみを移動できる。
+  \item 小さい円盤の上に大きい円盤を積んではいけない。
+\end{itemize}
+今回はスタックを用いて、ハノイの塔のパズルを実装するプログラムを作成します。
+
+\section{実験環境}
+stackの課題のプログラムを実装した環境を表\ref{tb:environment}に示します。
+\begin{table}[h]
+  \centering
+  \caption{実験環境}
+  \label{tb:environment}
+  \begin{tabular}{|c|c|}
+    \hline
+    OS    & Windows 10         \\
+    \hline
+    CPU   & AMD Ryzen 7 5800H  \\
+    \hline
+    メモリ   & 16GB               \\
+    \hline
+    コンパイラ & gcc version 11.4.0 \\
+    \hline
+    エディタ  & Visual Studio Code \\
+    \hline
+  \end{tabular}
+\end{table}
+
+\section{プログラムの設計と説明}
+このプログラムでは統一してリスト\ref{define}のリストのように、
+塔の高さと数の値と構造体を定義しています。
+\begin{lstlisting}[caption=値と構造体の定義,label=define]
+#define HEIGHT 5
+#define TOWERS 3
+
+typedef struct {
+    int data[HEIGHT];
+    int volume;
+} Stack;
+  \end{lstlisting}
+
+プログラムで使われている関数について説明します。
+
+\subsection{スタックプログラムの関数}
+\label{sec:stack}
+スタックプログラムでは表\ref{tb:stackfunction}の関数を使用しています。
+\begin{table}[h]
+  \centering
+  \caption{スタックプログラムで使用されている関数}
+  \label{tb:stackfunction}
+  \begin{tabular}{|c|c|}
+    \hline
+    関数名        & 処理内容             \\
+    \hline
+    init       & 構造体を初期化する        \\
+    \hline
+    push       & 構造体にデータをpushする   \\
+    \hline
+    pop        & 構造体からデータをpopする   \\
+    \hline
+    printStack & 構造体の中身を表示する      \\
+    \hline
+    pushTest   & pushできるかどうかを判定する \\
+    \hline
+    popTest    & popできるかどうかを判定する  \\
+    \hline
+  \end{tabular}
+\end{table}
+
+それぞれの関数について説明します。
+
+\subsubsection{init関数}
+init関数は表\ref{tb:init}のように定義され、
+リスト\ref{initcode}のように実装されています。
+
+\begin{table}[h]
+  \centering
+  \caption{init関数}
+  \label{tb:init}
+  \begin{tabular}{|c|c|}
+    \hline
+    関数名 & init                \\
+    \hline
+    型   & void                \\
+    \hline
+    引数1 & *stack:表示する構造体のポインタ \\
+    \hline
+    戻り値 & なし                  \\
+    \hline
+  \end{tabular}
+\end{table}
+
+\begin{lstlisting}[caption=init関数,label=initcode]
+    void init(Stack *stack) {
+      int i;
+      for (i = 0; i < HEIGHT; i++) {
+          stack->data[i] = 0;  // スタックのすべての要素を0にする
+      }
+      stack->volume = 0;  // スタックに格納されているデータ数を0にする
+  }
+  \end{lstlisting}
+
+init関数は次の手順の処理が実装されています。
+\begin{enumerate}
+  \item スタックのすべての要素を0にする。
+  \item スタックに格納されているデータ数を0にする。
+\end{enumerate}
+
+\subsubsection{push関数}
+push関数は表\ref{tb:push}のように定義され、
+リスト\ref{pushcode}のように実装されています。
+
+\begin{table}[h]
+  \centering
+  \caption{push関数}
+  \label{tb:push}
+  \begin{tabular}{|c|c|}
+    \hline
+    関数名 & push                  \\
+    \hline
+    型   & int                   \\
+    \hline
+    引数1 & *stack:pushする構造体のポインタ \\
+    \hline
+    引数2 & number:pushするデータ      \\
+    \hline
+    戻り値 & 成功したら0, 失敗したら-1       \\
+    \hline
+  \end{tabular}
+\end{table}
+
+\begin{lstlisting}[caption=push関数,label=pushcode]
+  int push(Stack *stack, int number) {
+    if (stack->volume == HEIGHT) {  // これ以上スタックできないなら-1を返す
+        return -1;
+    }
+    stack->data[stack->volume] = number;  // データを最上位に積み込む
+    stack->volume++;                      // データの個数を増やす
+    return 0;
+  }
+  \end{lstlisting}
+
+push関数は次の手順の処理が実装されています。
+\begin{enumerate}
+  \item スタックが満杯かどうかを判定し、満杯なら-1を返しプログラムを終了する。
+  \item スタックにデータを積み込む。
+  \item データの個数を増やす。
+  \item 0を返し、関数を終了する。
+\end{enumerate}
+
+\subsubsection{pop関数}
+pop関数は表\ref{tb:pop}のように定義され、
+リスト\ref{popcode}のように実装されています。
+
+\begin{table}[h]
+  \centering
+  \caption{pop関数}
+  \label{tb:pop}
+  \begin{tabular}{|c|c|}
+    \hline
+    関数名 & pop                    \\
+    \hline
+    型   & int                    \\
+    \hline
+    引数1 & *stack:popする構造体のポインタ   \\
+    \hline
+    戻り値 & 成功したらpopしたデータ, 失敗したら-1 \\
+    \hline
+  \end{tabular}
+\end{table}
+
+\begin{lstlisting}[caption=pop関数,label=popcode]
+  int pop(Stack *stack) {
+    int num;
+    if (stack->volume == 0) {
+        return -1;
+    }
+    stack->volume--;  // 格納されているデータ個数のカウントを減らす
+    num = stack->data[stack->volume];  // 取り出すデータを取り出す
+    stack->data[stack->volume] = 0;  // 取り出した場所を初期化する
+    return num;
+}
+  \end{lstlisting}
+
+pop関数は次の手順の処理が実装されています。
+\begin{enumerate}
+  \item スタックが空かどうかを判定し、空なら-1を返しプログラムを
+        終了する。
+  \item 格納されているデータ個数のカウントを減らす。
+  \item スタックからデータを取り出す。
+  \item データを取り出した場所を初期化する。
+  \item 取り出したデータを返し、関数を終了する。
+\end{enumerate}
+
+\subsubsection{printStack関数}
+printstack関数は表\ref{tb:printstack}のように定義され、
+リスト\ref{printstackcode}のように実装されています。
+
+\begin{table}[h]
+  \centering
+  \caption{printStack関数}
+  \label{tb:printstack}
+  \begin{tabular}{|c|c|}
+    \hline
+    関数名 & printStack          \\
+    \hline
+    型   & void                \\
+    \hline
+    引数1 & *stack:表示する構造体のポインタ \\
+    \hline
+    戻り値 & なし                  \\
+    \hline
+  \end{tabular}
+\end{table}
+
+\begin{lstlisting}[caption=printstack関数,label=printstackcode]
+  void printStack(Stack *stack) {
+    int i;
+    printf("[ ");
+    for (i = 0; i < stack->volume; i++) {  // スタックに格納されている値を
+        printf("%d ", stack->data[i]);  // スタックされている順番に1行に表示
+    }
+    printf("]\n");
+}
+  \end{lstlisting}
+
+printstack関数は次の手順の処理が実装されています。
+\begin{enumerate}
+  \item スタックに格納されている値を表示する。
+\end{enumerate}
+
+\subsubsection{pushTest関数}
+pushTest関数は表\ref{tb:pushtest}のように定義され、
+リスト\ref{pushtestcode}のように実装されています。
+
+\begin{table}[h]
+  \centering
+  \caption{pushTest関数}
+  \label{tb:pushtest}
+  \begin{tabular}{|c|c|}
+    \hline
+    関数名 & pushTest                   \\
+    \hline
+    型   & bool                       \\
+    \hline
+    引数1 & *stack:判定する構造体             \\
+    \hline
+    戻り値 & pushできるならtrue, できないならfalse \\
+    \hline
+  \end{tabular}
+\end{table}
+
+\begin{lstlisting}[caption=pushTest関数,label=pushtestcode]
+  bool pushTest(Stack stack) {
+    if (stack.volume == HEIGHT) {
+        return false;
+    } else {
+        return true;
+    }
+}
+\end{lstlisting}
+
+pushTest関数は次の手順の処理が実装されています。
+\begin{enumerate}
+  \item スタックが満杯かどうかを判定する。
+  \item 満杯ならfalseを返し、そうでなければtrueを返し、関数を終了する。
+\end{enumerate}
+
+\subsubsection{popTest関数}
+poptest関数は表\ref{tb:poptest}のように定義され、
+リスト\ref{poptestcode}のように実装されています。
+
+\begin{table}[h]
+  \centering
+  \caption{popTest関数}
+  \label{tb:poptest}
+  \begin{tabular}{|c|c|}
+    \hline
+    関数名 & popTest                \\
+    \hline
+    型   & int                    \\
+    \hline
+    引数1 & *stack:popする構造体のポインタ   \\
+    \hline
+    戻り値 & 成功したらpopしたデータ, 失敗したら-1 \\
+    \hline
+  \end{tabular}
+\end{table}
+
+\begin{lstlisting}[caption=popTest関数,label=poptestcode]
+  bool popTest(Stack stack) {
+    if (stack.volume == 0) {
+        return false;
+    } else {
+        return true;
+    }
+}
+\end{lstlisting}
+
+poptest関数は次の手順の処理が実装されています。
+\begin{enumerate}
+  \item スタックが空かどうかを判定する。
+  \item 空ならfalseを返し、そうでなければtrueを返し、関数を終了する。
+\end{enumerate}
+
+\subsection{ハノイの塔プログラムの関数}
+ハノイの塔プログラムでは章\ref{sec:stack}の関数に加えて表\ref{tb:hanoifunction}の関数を使用している。
+\begin{table}[h]
+  \centering
+  \caption{ハノイの塔プログラムで使用されている関数}
+  \label{tb:hanoifunction}
+  \begin{tabular}{|c|c|}
+    \hline
+    関数名         & 処理内容               \\
+    \hline
+    top         & 塔の最上位の値を返す関数       \\
+    \hline
+    enableStack & 値を移動できるかどうかを判定する関数 \\
+    \hline
+    checkFinish & クリアしているかどうかを判定する関数 \\
+    \hline
+  \end{tabular}
+\end{table}
+
+それぞれの関数について説明する。
+
+\subsubsection{top関数}
+top関数は表\ref{tb:top}のように定義され、
+リスト\ref{topcode}のように実装されています。
+
+\begin{table}[h]
+  \centering
+  \caption{top関数}
+  \label{tb:top}
+  \begin{tabular}{|c|c|}
+    \hline
+    関数名 & top         \\
+    \hline
+    型   & int         \\
+    \hline
+    引数1 & tower:塔の構造体 \\
+    \hline
+    戻り値 & 塔の最上位の値     \\
+    \hline
+  \end{tabular}
+\end{table}
+
+
+\begin{lstlisting}[caption=top関数,label=topcode]
+int top(Stack tower) {
+  return tower.data[tower.volume - 1];
+}
+\end{lstlisting}
+
+top関数は次の手順の処理が実装されています。
+\begin{enumerate}
+  \item 塔の最上位の値を返し、関数を終了する。
+\end{enumerate}
+
+\subsubsection{enableStack関数}
+\label{sec:enableStack}
+enableStack関数は表\ref{tb:enableStack}のように定義され、
+リスト\ref{enableStackcode}のように実装されています。
+
+\begin{table}[h]
+  \centering
+  \caption{enableStack関数}
+  \label{tb:enableStack}
+  \begin{tabular}{|c|c|}
+    \hline
+    関数名 & enableStack         \\
+    \hline
+    型   & int                 \\
+    \hline
+    引数1 & fromTower:移動元の塔の構造体 \\
+    \hline
+    引数2 & toTower:移動先の塔の構造体   \\
+    \hline
+    戻り値 & 可能なら1, 不可能なら0       \\
+    \hline
+  \end{tabular}
+\end{table}
+
+\begin{lstlisting}[caption=enableStack関数,label=enableStackcode]
+  int enableStack(Stack fromTower, Stack toTower) {
+    if (fromTower.volume != 0 && toTower.volume != HEIGHT &&
+        top(fromTower) < top(toTower)) {
+        return 1; /* 移動可能である条件に応じて返り値を返す */
+    } else {
+        return 0;
+    }
+}
+\end{lstlisting}
+
+enableStack関数は次の手順の処理が実装されています。
+\begin{enumerate}
+  \item 移動可能かどうか判定する。移動可能かどうかの条件は次の通りである。
+        \begin{itemize}
+          \item 移動元の塔が空でない。
+          \item 移動先の塔が満杯でない。
+          \item 移動元の塔の最上位の値が移動先の塔の最上位の値より小さい。
+        \end{itemize}
+  \item 移動可能なら1を返し、そうでなければ0を返し、関数を終了する。
+\end{enumerate}
+
+\subsubsection{checkFinish関数}
+checkFinish関数は表\ref{tb:checkFinish}のように定義され、
+リスト\ref{checkFinishcode}のように実装されています。
+
+\begin{table}[h]
+  \centering
+  \caption{checkFinish関数}
+  \label{tb:checkFinish}
+  \begin{tabular}{|c|c|}
+    \hline
+    関数名 & checkFinish          \\
+    \hline
+    型   & int                  \\
+    \hline
+    引数1 & tower:塔の構造体          \\
+    \hline
+    引数2 & blocks:ブロックの数        \\
+    \hline
+    戻り値 & クリアしているなら1, していないなら0 \\
+    \hline
+  \end{tabular}
+\end{table}
+
+\begin{lstlisting}[caption=checkFinish関数,label=checkFinishcode]
+  int checkFinish(Stack tower, int blocks) {
+    int i;
+    int check = blocks;
+    for (i = 0; i < blocks; i++) {
+        if (tower.data[i] == check--) {
+        } else {
+            return 0;
+        }
+    }
+    return 1;
+    // ブロックが初期状態と同じ状態かチェックする
+}
+\end{lstlisting}
+
+checkFinish関数は次の手順の処理が実装されています。
+\begin{enumerate}
+  \item ブロックが初期状態と同じ状態かチェックする。
+  \item ブロックが初期状態と同じ状態なら1を返し、
+        そうでなければ0を返し、関数を終了する。
+\end{enumerate}
+
+\section{プログラム}
+この章では、それぞれのプログラムのメイン関数を示します。
+また、それぞれのプログラムの全文はここに記すと長くなるのでレポートの
+最後に付録として示します。
+\subsection{スタックプログラム}
+リスト\ref{stackmaincode}は、スタックプログラムのメイン関数を示しています。
+\begin{lstlisting}[caption=スタックのメイン関数,label=stackmaincode]
+  int main(void) {
+    Stack stack;
+    int i, check;
+    init(&stack);
+    printf("MAX STACK NUM:%d\n", HEIGHT);
+    for (i = 10; i < 40; i += 10) {
+        if (pushTest(stack) == true) {
+            printf("pushed %d\n", i);
+            push(&stack, i);
+        } else {
+            printf("error\n");
+        }
+    }
+
+    printf("The data is stacked in order?\n");
+    printStack(&stack);
+
+    printf("The data is retrieved in order?\n");
+    for (i = 0; i < 4; i++) {
+        if (popTest(stack) == true) {
+            printf("popped %d\n", pop(&stack));
+        } else {
+            printf(
+                "What happens when you try to retrieve data when it is empty"
+                "\n");
+            printf("error\n");
+        }
+    }
+
+    for (i = 10; i < 70; i += 10) {
+        if (pushTest(stack) == true) {
+            printf("pushed %d\n", i);
+            push(&stack, i);
+        } else {
+            printf(
+                "What happens when you try to add data when it is full"
+                "\n");
+            printf("error\n");
+        }
+    }
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{ハノイの塔プログラム}
+リスト\ref{hanoimaincode}は、ハノイの塔プログラムのメイン関数を示しています。
+\begin{lstlisting}[caption=ハノイの塔のメイン関数,label=hanoimaincode]
+  int main(void) {
+    int i;
+    int count = 1;
+    int fromNumber, toNumber;
+    int tempNumber;
+    int blocks;
+    Stack tower[TOWERS];
+
+    printf("Select the number of steps(3, 4, 5):");
+    while (scanf("%d", &blocks) != 1 || blocks < 3 || blocks > 5) {
+        while (getchar() != '\n');
+        printf("error please rewrite\n");
+        printf("Select the number of steps(3, 4, 5):");
+    }
+    /*3 塔を初期化する*/
+    for (i = 0; i < TOWERS; i++) {
+        init(&tower[i]);
+    }
+    /*第１塔に決められた個数をスタックする*/
+    i = blocks;
+    while (i != 0) {
+        push(&tower[0], i--);
+    }
+
+    /*塔の初期状態を表示する*/
+    for (i = 0; i < TOWERS; i++) {
+        printf("%d:", i + 1);
+        printStack(&tower[i]);
+    }
+    while (1) {
+        // 今，何回目の移動であるかを数える．
+        printf("%dth\n", count++);
+        // 移動元と移動先を受け取る
+        while (1) {
+            printf("enter the source and destination towers.[? ?]:");
+            while (scanf("%d%d", &fromNumber, &toNumber) != 2 || toNumber > 3 ||
+                toNumber < 1 || fromNumber > 3 || fromNumber < 1) {
+                while (getchar() != '\n');
+                printf("error please rewrite\n");
+                printf("enter the source and destination towers.[? ?]:");
+            }
+            // 移動元の塔から移動先の塔にデータを移動させる
+            if (enableStack(tower[fromNumber - 1], tower[toNumber - 1]) == 1) {
+                tower[toNumber - 1].data[tower[toNumber - 1].volume] =
+                    pop(&tower[fromNumber - 1]);
+                tower[toNumber - 1].volume++;
+                break;
+            } else {
+                printf("Cannot move\n");
+            }
+        }
+        // 現在の塔の状態を表示する
+        for (i = 0; i < TOWERS; i++) {
+            printf("%d:", i + 1);
+            printStack(&tower[i]);
+        }
+        // クリア判定をする
+        for (i = 1; i < TOWERS; i++) {
+            if (checkFinish(tower[i], blocks) == 1) {
+                printf("clear!\n");
+                return 0;
+            }
+        }
+    }
+}
+\end{lstlisting}
+\section{実行結果}
+この章では、それぞれのプログラムの実行結果を示す。
+\subsection{スタックプログラム}
+\label{sec:stackresult}
+スタックのプログラムを
+以下の事項を確認できるように実行した結果をリスト\ref{resultstack}に示す。
+\begin{itemize}
+  \item データ順にスタックされているか。
+  \item データ順に取り出せているか。
+  \item スタックが空の時にデータを取り出そうとしたときにどのような動作をするか。
+  \item 満杯の時にデータを追加しようとしたときにどのような動作をするか。
+\end{itemize}
+
+\begin{lstinputlisting}[caption=スタックプログラムの実行結果,label=resultstack]{./result_stack.txt}
+\end{lstinputlisting}
+
+上記の事項について説明をします。
+\\~~
+まず、データ順にスタックされているかについてです。
+リスト\ref{resultstack}の2行目から6行目までの出力を見ると、
+10,~20,~30がプッシュされた後、スタック内でその順番で表示されているので
+データ順にスタックされていることがわかります。
+\\~~
+次に、データ順に取り出せているかについてです。
+リスト\ref{resultstack}の7行目から10行目までの出力を見ると、
+30,~20,~10が順にポップされているので、
+データ順に取り出せていることがわかります。
+\\~~
+次に、スタックが空の時にデータを取り出そうとしたときにどのような動作
+をするかについてです。
+リスト\ref{resultstack}の11行目から12行目までの出力を見ると、
+スタックが空の時にデータを取り出そうとするとエラーが表示されるので、
+エラーになることがわかります。しかし、この動作はプログラムでスタックが
+空の時にポップしないようにしているため起こる動作です。もし、そのように
+プログラムしていなかった場合、配列の範囲外のポインタにアクセスするため
+プログラムがクラッシュしたり、まったく別のデータをポップしてしまう
+可能性があるため、エラーを表示するようにプログラムしないと
+大変危険です。
+\\~~
+最後に、満杯の時にデータを追加しようとしたときにどのような動作をするか
+についてです。
+リスト\ref{resultstack}の13行目から19行目までの出力を見ると、
+10から50までの5つの値をプッシュした後、もう一つの値をプッシュ
+しようとしたときにエラーが表示されるので、
+エラーになることがわかります。
+しかし、この動作もプログラムでスタックが満杯の時にプッシュしないように
+しているため起こる動作です。もし、そのようにプログラムしていなかった
+場合、配列の範囲外のポインタにアクセスするため、プログラムが
+クラッシュしたり、まったく別のプログラムにプッシュして他のデータを
+書き換えてしまう可能性があるため、エラーを表示するようにプログラム
+しないと大変危険です。
+\\~~
+また、工夫点として実行結果を英語で表示することで、だれが見ても
+わかりやすくグローバル化している社会に対応するようにした。
+\subsection{ハノイの塔プログラム}
+ハノイの塔のプログラムを以下の事項を確認できるように実行した結果を
+リスト\ref{resulthanoi1},~\ref{resulthanoi2}に示す。
+\begin{itemize}
+  \item 段数を正しく受け取れているか。
+  \item 回数を正しく数えられているか。
+  \item 移動元と移動先を受け取り、データを移動させることができるか。
+  \item 塔の状態を正しく表示できているか。
+  \item クリアしているかどうかを判定できているか。
+  \item ユーザーから入力を受け取る際に、適当ではない入力を拒否できているか。
+\end{itemize}
+
+\begin{lstinputlisting}[caption=ハノイプログラムの実行結果.1,label=resulthanoi1]{./result_tower.1.txt}
+\end{lstinputlisting}
+
+\begin{lstinputlisting}[caption=ハノイプログラムの実行結果.2,label=resulthanoi2]{./result_tower.2.txt}
+\end{lstinputlisting}
+
+上記の事項について説明をします。
+\\~~
+まず、段数を正しく受け取れているかについてです。
+リスト\ref{resulthanoi1}の5行目から8行目までの出力を見ると、
+段数で3段を選んだ時に、初期状態として、3,~2,~1がスタックされた塔が
+表示されています。また、リスト\ref{resulthanoi2}の1行目から4行目まで
+の出力をみると、段数で4段を選んだ時に、初期状態として、4,~3,~2,~1が
+スタックされた塔が表示されています。したがって、
+段数を正しく受け取れていることがわかります。
+\\~~
+次に、回数を正しく数えられているかについてです。
+リスト\ref{resulthanoi1}の9行目、20行目や25行目などの出力を見ると、
+1回目から順に数えられているので、回数を正しく数えられていることが
+わかります。
+\\~~
+次に、移動元と移動先を受け取り、データを移動させることができるかに
+ついてです。
+リスト\ref{resulthanoi1}の16行目から19行目までの出力を見ると、
+1~~3と入力を受け取ると、1から3にデータが移動されているので、
+移動元と移動先を受け取り、データを移動させることができているのが
+わかります。
+\\~~
+次に、塔の状態を正しく表示できているかについてです。
+リスト\ref{resulthanoi1}の17行目から19行目までの出力を見ると、
+初期状態と比べて、1つのデータを1から3に移動させた後の塔の状態が
+表示されているため、塔の状態を正しく表示できていることがわかります。
+\\~~
+次に、クリアしているかどうかを判定できているかについてです。
+リスト\ref{resulthanoi1}の46行目から50行目までの出力を見ると、
+1以外の塔で3,~2,~1の順でスタックされたときにクリアと表示され
+プログラムが終了しているので、クリアしているかどうかを判定できている
+ことがわかります。
+\\~~
+最後に、ユーザーから入力を受け取る際に、適当ではない入力を拒否できて
+いるかについてです。
+リスト\ref{resulthanoi1}の1行目から5行目までの出力を見ると、
+与えられている選択肢の3,~4,~5以外の数字を入力すると、もう一度入力を
+促すようになっています。また、
+リスト\ref{resulthanoi1}の10行目から16行目までの出力を見ると、
+\ref{sec:enableStack}~enableStack関数節で説明した条件を満たさない移動元と移動先を
+選んでいない場合や、数字以外のものを入力したときに、移動できないという
+旨のメッセージが表示されてるようになっています。したがって、
+ユーザーから入力を受け取る際に、適当ではない入力を拒否できていることが
+わかります。
+\\~~
+また、工夫点として\ref{sec:stackresult}~スタックプログラム節と
+同じように、実行結果を英語で表示することで、だれが見ても
+わかりやすくグローバル化している社会に対応するようにしました。
+
+\section{考察}
+この章では、スタックの利点と欠点に関する考察を述べます。
+\subsection{スタックの利点}
+スタックの先入れ後出しの性質を利用することで、ハノイの
+塔における、下にあるデータは上のデータを移動させないと、
+取り出すことができない、というゲーム性を実装することが
+できます。このように、スタックは、データの順番を保持する
+必要がある際に、非常に有用です。
+\subsection{スタックの欠点}
+スタックは空の状態でポップする、満杯の状態でプッシュする、
+という動作をした場合にプログラムがクラッシュしたり、他の
+データを書き換えてしまうという欠点があります。これは、
+動作をする前に、スタックが空かどうか、満杯かどうかを判定
+することで解決することができます。
+
+\subsection{まとめ}
+上記より、課題をこなすことでスタックに関する理解を深める
+ことができた。
+またプログラムを作成する時に、ユーザーからの
+入力を受け取る際に適当ではない入力を拒否することや、
+オーバーフローを防ぐようにすることで、プログラムの堅牢性を
+守ることが重要だと学ぶことができました。
+
+\section{付録:プログラム全文}
+この章では、レポート本文で示したプログラムの全文を
+示します。
+\subsection{スタックプログラム}
+スタックプログラムのソースコードを
+リスト\ref{stackcode}に示す。
+\begin{lstlisting}[caption=スタックプログラム,label=stackcode]
+#include <stdbool.h>
+#include <stdio.h>
+#define HEIGHT 5
+
+typedef struct {
+    int data[HEIGHT];
+    int volume;
+} Stack;
+
+/// @brief 構造体を初期化する
+/// @param stack 初期化する構造体
+void init(Stack *stack) {
+    int i;
+    for (i = 0; i < HEIGHT; i++) {
+        stack->data[i] = 0;  // スタックのすべての要素を0にする
+    }
+    stack->volume = 0;  // スタックに格納されているデータ数を0にする
+}
+
+/// @brief 構造体にデータをpushする
+/// @param stack pushする構造体
+/// @param number pushするデータ
+/// @return 成功したら0, 失敗したら-1
+int push(Stack *stack, int number) {
+    if (stack->volume == HEIGHT) {  // これ以上スタックできないなら-1を返す
+        return -1;
+    }
+    stack->data[stack->volume] = number;  // データを最上位に積み込む
+    stack->volume++;                      // データの個数を増やす
+    return 0;
+}
+
+/// @brief 構造体からデータをpopする
+/// @param stack popする構造体
+/// @return 成功したらpopしたデータ, 失敗したら-1
+int pop(Stack *stack) {
+    int num;
+    if (stack->volume == 0) {
+        return -1;
+    }
+    stack->volume--;  // 格納されているデータ個数のカウントを減らす
+    num = stack->data[stack->volume];  // 取り出すデータを取り出す
+    stack->data[stack->volume] = 0;  // 取り出した場所を初期化する
+    return num;
+}
+
+/// @brief 構造体に格納されているデータを表示する
+/// @param stack 表示する構造体
+void printStack(Stack *stack) {
+    int i;
+    printf("[ ");
+    for (i = 0; i < stack->volume; i++) {  // スタックに格納されている値を
+        printf("%d ", stack->data[i]);  // スタックされている順番に1行に表示
+    }
+    printf("]\n");
+}
+
+/// @brief pushできるかどうかを判定する
+/// @param stack 判定する構造体
+/// @return pushできるならtrue, できないならfalse
+bool pushTest(Stack stack) {
+    if (stack.volume == HEIGHT) {
+        return false;
+    } else {
+        return true;
+    }
+}
+
+/// @brief popできるかどうかを判定する
+/// @param stack 判定する構造体
+/// @return popできるならtrue, できないならfalse
+bool popTest(Stack stack) {
+    if (stack.volume == 0) {
+        return false;
+    } else {
+        return true;
+    }
+}
+
+int main(void) {
+    Stack stack;
+    int i, check;
+    init(&stack);
+    printf("MAX STACK NUM:%d\n", HEIGHT);
+    for (i = 10; i < 40; i += 10) {
+        if (pushTest(stack) == true) {
+            printf("pushed %d\n", i);
+            push(&stack, i);
+        } else {
+            printf("error\n");
+        }
+    }
+
+    printf("The data is stacked in order?\n");
+    printStack(&stack);
+
+    printf("The data is retrieved in order?\n");
+    for (i = 0; i < 4; i++) {
+        if (popTest(stack) == true) {
+            printf("popped %d\n", pop(&stack));
+        } else {
+            printf(
+                "What happens when you try to retrieve data when it is empty"
+                "\n");
+            printf("error\n");
+        }
+    }
+
+    for (i = 10; i < 70; i += 10) {
+        if (pushTest(stack) == true) {
+            printf("pushed %d\n", i);
+            push(&stack, i);
+        } else {
+            printf(
+                "What happens when you try to add data when it is full"
+                "\n");
+            printf("error\n");
+        }
+    }
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{ハノイの塔プログラム}
+ハノイの塔プログラムのソースコードを
+\ref{towercode}に示す。
+\begin{lstlisting}[caption=ハノイの塔プログラム,label=towercode]
+#include <stdbool.h>
+#include <stdio.h>
+#define HEIGHT 5
+#define TOWERS 3
+
+typedef struct {
+    int data[HEIGHT];
+    int volume;
+} Stack;
+
+void init(Stack *stack) {
+    int i;
+    for (i = 0; i < HEIGHT; i++) {
+        stack->data[i] = 0;  // スタックのすべての要素を0にする
+    }
+    stack->volume = 0;  // スタックに格納されているデータ数を0にする
+}
+
+int push(Stack *stack, int number) {
+    if (stack->volume == HEIGHT) {  // これ以上スタックできないなら-1を返す
+        return -1;
+    }
+    stack->data[stack->volume] = number;  // データを最上位に積み込む
+    stack->volume++;                      // データの個数を増やす
+    return 0;
+}
+
+int pop(Stack *stack) {
+    int num;
+    if (stack->volume == 0) {
+        return -1;
+    }
+    stack->volume--;  // 格納されているデータ個数のカウントを減らす
+    num = stack->data[stack->volume];  // 取り出すデータを取り出す
+    stack->data[stack->volume] = 0;  // 取り出した場所を初期化する
+    return num;
+}
+
+void printStack(Stack *stack) {
+    int i;
+    printf("[ ");
+    for (i = 0; i < HEIGHT; i++) {  // スタックに格納されている値を
+        printf("%d ", stack->data[i]);  // スタックされている順番に1行に表示
+    }
+    printf("]\n");
+}
+
+/// @brief 塔の最上位の値を返す関数
+/// @param tower 塔の構造体
+/// @return 塔の最上位の値
+int top(Stack tower) {
+    return tower.data[tower.volume - 1]; /* スタックの最上位の値を返す */
+}
+
+/// @brief 値を移動できるかどうかを判定する関数
+/// @param fromTower 移動元の塔
+/// @param toTower 移動先の塔
+/// @return 可能なら1, 不可能なら0
+int enableStack(Stack fromTower, Stack toTower) {
+    if (fromTower.volume != 0 && toTower.volume != HEIGHT &&
+        top(fromTower) < top(toTower)) {
+        return 1; /* 移動可能である条件に応じて返り値を返す */
+    } else {
+        return 0;
+    }
+}
+
+/// @brief クリアしているかどうかを判定する関数
+/// @param tower 塔の構造体
+/// @param blocks ブロックの数
+/// @return クリアしているなら1, していないなら0
+int checkFinish(Stack tower, int blocks) {
+    int i;
+    int check = blocks;
+    for (i = 0; i < blocks; i++) {
+        if (tower.data[i] == check--) {
+        } else {
+            return 0;
+        }
+    }
+    return 1;
+    // ブロックが初期状態と同じ状態かチェックする
+}
+
+int main(void) {
+    int i;
+    int count = 1;
+    int fromNumber, toNumber;
+    int tempNumber;
+    int blocks;
+    Stack tower[TOWERS];
+
+    printf("Select the number of steps(3, 4, 5):");
+    while (scanf("%d", &blocks) != 1 || blocks < 3 || blocks > 5) {
+        while (getchar() != '\n');
+        printf("error please rewrite\n");
+        printf("Select the number of steps(3, 4, 5):");
+    }
+    /*3 塔を初期化する*/
+    for (i = 0; i < TOWERS; i++) {
+        init(&tower[i]);
+    }
+    /*第１塔に決められた個数をスタックする*/
+    i = blocks;
+    while (i != 0) {
+        push(&tower[0], i--);
+    }
+
+    /*塔の初期状態を表示する*/
+    for (i = 0; i < TOWERS; i++) {
+        printf("%d:", i + 1);
+        printStack(&tower[i]);
+    }
+    while (1) {
+        // 今，何回目の移動であるかを数える．
+        printf("%dth\n", count++);
+        // 移動元と移動先を受け取る
+        while (1) {
+            printf("enter the source and destination towers.[? ?]:");
+            while (scanf("%d%d", &fromNumber, &toNumber) != 2 || toNumber > 3 ||
+                toNumber < 1 || fromNumber > 3 || fromNumber < 1) {
+                while (getchar() != '\n');
+                printf("error please rewrite\n");
+                printf("enter the source and destination towers.[? ?]:");
+            }
+            // 移動元の塔から移動先の塔にデータを移動させる
+            if (enableStack(tower[fromNumber - 1], tower[toNumber - 1]) == 1) {
+                tower[toNumber - 1].data[tower[toNumber - 1].volume] =
+                    pop(&tower[fromNumber - 1]);
+                tower[toNumber - 1].volume++;
+                break;
+            } else {
+                printf("Cannot move\n");
+            }
+        }
+        // 現在の塔の状態を表示する
+        for (i = 0; i < TOWERS; i++) {
+            printf("%d:", i + 1);
+            printStack(&tower[i]);
+        }
+        // クリア判定をする
+        for (i = 1; i < TOWERS; i++) {
+            if (checkFinish(tower[i], blocks) == 1) {
+                printf("clear!\n");
+                return 0;
+            }
+        }
+    }
+}
+\end{lstlisting}
+
+
+\end{document}

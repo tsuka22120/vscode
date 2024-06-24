@@ -45,10 +45,17 @@ void printStack(Stack *stack) {
     printf("]\n");
 }
 
+/// @brief 塔の最上位の値を返す関数
+/// @param tower 塔の構造体
+/// @return 塔の最上位の値
 int top(Stack tower) {
     return tower.data[tower.volume - 1]; /* スタックの最上位の値を返す */
 }
 
+/// @brief 値を移動できるかどうかを判定する関数
+/// @param fromTower 移動元の塔
+/// @param toTower 移動先の塔
+/// @return 可能なら1, 不可能なら0
 int enableStack(Stack fromTower, Stack toTower) {
     if (fromTower.volume != 0 && toTower.volume != HEIGHT &&
         top(fromTower) < top(toTower)) {
@@ -58,6 +65,10 @@ int enableStack(Stack fromTower, Stack toTower) {
     }
 }
 
+/// @brief クリアしているかどうかを判定する関数
+/// @param tower 塔の構造体
+/// @param blocks ブロックの数
+/// @return クリアしているなら1, していないなら0
 int checkFinish(Stack tower, int blocks) {
     int i;
     int check = blocks;
@@ -79,11 +90,11 @@ int main(void) {
     int blocks;
     Stack tower[TOWERS];
 
-    printf("段数を選んでください(3, 4, 5):");
+    printf("Select the number of steps(3, 4, 5):");
     while (scanf("%d", &blocks) != 1 || blocks < 3 || blocks > 5) {
         while (getchar() != '\n');
         printf("error please rewrite\n");
-        printf("段数を選んでください(3, 4, 5):");
+        printf("Select the number of steps(3, 4, 5):");
     }
     /*3 塔を初期化する*/
     for (i = 0; i < TOWERS; i++) {
@@ -102,15 +113,15 @@ int main(void) {
     }
     while (1) {
         // 今，何回目の移動であるかを数える．
-        printf("%d回目\n", count++);
+        printf("%dth\n", count++);
         // 移動元と移動先を受け取る
         while (1) {
-            printf("移動元塔と移動先塔を入力してください。[? ?]:");
+            printf("enter the source and destination towers.[? ?]:");
             while (scanf("%d%d", &fromNumber, &toNumber) != 2 || toNumber > 3 ||
                 toNumber < 1 || fromNumber > 3 || fromNumber < 1) {
                 while (getchar() != '\n');
                 printf("error please rewrite\n");
-                printf("移動元塔と移動先塔を入力してください。[? ?]:");
+                printf("enter the source and destination towers.[? ?]:");
             }
             // 移動元の塔から移動先の塔にデータを移動させる
             if (enableStack(tower[fromNumber - 1], tower[toNumber - 1]) == 1) {
@@ -119,7 +130,7 @@ int main(void) {
                 tower[toNumber - 1].volume++;
                 break;
             } else {
-                printf("移動できません\n");
+                printf("Cannot move\n");
             }
         }
         // 現在の塔の状態を表示する
@@ -130,7 +141,7 @@ int main(void) {
         // クリア判定をする
         for (i = 1; i < TOWERS; i++) {
             if (checkFinish(tower[i], blocks) == 1) {
-                printf("クリア!\n");
+                printf("clear!\n");
                 return 0;
             }
         }
