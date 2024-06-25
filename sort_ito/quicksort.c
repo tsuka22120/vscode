@@ -7,7 +7,7 @@
 // ピボットをできるだけ中央値に近い値をとれるようにする工夫、
 //
 
-#define index_num 100000
+#define index_num 50
 #define print_on
 #define SWAP(a, b) ((a != b) && (a += b, b = a - b, a -= b))
 
@@ -72,7 +72,7 @@ void quicksort(int ary[]) {
     int comparableNum = 0, changeNum = 0;
     clock_t start, end;
 #ifdef print_on
-    printf("ソート前:");
+    printf("バブルソート前:");
     showAry(ary, 0, index_num - 1);
     printf("\n");
 #endif
@@ -86,7 +86,7 @@ void quicksort(int ary[]) {
         printf("\n");
     } else {
 #ifdef print_on
-        printf("ソート後:");
+        printf("バブルソート後:");
         showAry(ary, 0, index_num - 1);
 #endif
         printf("比較回数:%d\n", comparableNum);
