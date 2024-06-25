@@ -97,7 +97,7 @@ void quicksort(int ary[]) {
 
 void partitioning(int ary[], int left, int right, int* comparableNum,
                   int* changeNum) {
-    if (right - left < 10) {
+    if (right - left < 5) {
         bubblesort(ary, left, right, comparableNum, changeNum);
         return;
     }
