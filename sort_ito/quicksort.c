@@ -7,7 +7,7 @@
 // ピボットをできるだけ中央値に近い値をとれるようにする工夫、
 //
 
-#define index_num 50
+#define index_num 100000
 #define print_on
 #define SWAP(a, b) ((a != b) && (a += b, b = a - b, a -= b))
 
@@ -97,7 +97,7 @@ void quicksort(int ary[]) {
 
 void partitioning(int ary[], int left, int right, int* comparableNum,
                   int* changeNum) {
-    if (right - left < 5) {
+    if (right - left < 10) {
         bubblesort(ary, left, right, comparableNum, changeNum);
         return;
     }
@@ -147,7 +147,7 @@ void bubblesort(int ary[], int left, int right, int* comparableNum,
     showAry(ary, left, right);
     for (i = left; i < right + 1; i++) {
         (*comparableNum)++;
-        for (j = left; j < right - i; j++) {
+        for (j = left; j < right - i + left; j++) {
             (*comparableNum)++;
             if (ary[j] > ary[j + 1]) {
                 (*changeNum)++;
