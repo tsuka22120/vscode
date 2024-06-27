@@ -9,27 +9,45 @@
 // バブルソートを行うようにした。また、ピボットの選択において
 // 3つの要素を比較して中央値を選択するようにした。
 
-#define index_num 50
-#define print_on
-#define SWAP(a, b) ((a != b) && (a += b, b = a - b, a -= b))
+#define index_num 50     // 要素数
+#define count_num 1000   // 試行回数
+#define sortTypen_num 4  // ソートの種類の数
+#define switchMAX_num 10  // クイックソートから切り替える要素数の最大値
+#define switchMIN_num 5  // クイックソートから切り替える要素数の最小値
+#define SWAP(a, b) (a += b, b = a - b, a -= b)
 
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
+typedef struct {
+    int bogosortComparableNum;
+    int bogosortChangeNum;
+    int selectionsortComparableNum;
+    int selectionsortChangeNum;
+    int heapsortComparableNum;
+    int heapsortChangeNum;
+    int bubblesortComparableNum;
+    int bubblesortChangeNum;
+} Sort;
+
 /// @brief クイックソートを行う関数
 /// @param ary ソートする配列
-void quicksort(int ary[]);
+/// @param sortType ソートの種類
+/// @param switchNum クイックソートから切り替える要素数
+/// @param CN 比較回数と交換回数を格納する構造体
+void quicksort(int ary[], int sortType, int switchNum, Sort* CN);
 
 /// @brief パーティション分割を行う関数
 /// @param ary 分割する配列
 /// @param left 分割する配列の範囲の左端のインデックス
 /// @param right 分割する配列の範囲の右端のインデックス
-/// @param comparableNum 比較回数のポインタ
-/// @param changeNum 交換回数のポインタ
-void partitioning(int ary[], int left, int right, int* comparableNum,
-                  int* changeNum);
+/// @param sortType ソートの種類
+/// @param switchNum クイックソートから切り替える要素数
+/// @param CN 比較回数と交換回数を格納する構造体
+void partitioning(int ary[], int left, int right, int sortType, int switchNum,
+                  Sort* CN);
 
 /// @brief ピボットを選択する関数
 /// @param ary ピボットを選択する配列
@@ -57,63 +75,54 @@ bool checkSort(int ary[]);
 /// @param ary 生成する配列
 void makeRandomAry(int ary[]);
 
-/// @brief 配列を表示する関数
-/// @param ary 表示する配列
-/// @param left 表示する配列の範囲の左端のインデックス
-/// @param right 表示する配列の範囲の右端のインデックス
-void showAry(int ary[], int left, int right);
-
 int main(void) {
     // 乱数の種を設定
+    int count, switchNum, sortType;
+    Sort CN[count_num][switchMAX_num - switchMIN_num + 1][sortTypen_num];
     srand((unsigned int)time(NULL));
     int ary[index_num];
     makeRandomAry(ary);
-    quicksort(ary);
+    for (sortType = 0; sortType < sortTypen_num; sortType++) {
+        for (switchNum = 0; switchNum < switchMAX_num - switchMIN_num;
+             switchNum++) {
+            for (count = 0; count < count_num; count++) {
+                quicksort(ary, sortType, switchNum + switchMIN_num,
+                          &CN[count][switchNum][0]);
+            }
+        }
+    }
     return 0;
 }
 
-void quicksort(int ary[]) {
-    printf("~~クイックソート開始~~\n\n");
+void quicksort(int ary[], int sortType, int switchNum, Sort* CN) {
     int left, right;  // ソートする配列の左端:left と右端:right
-    int comparableNum = 0, changeNum = 0;  // comparableNum:比較回数 changeNum:交換回数
-#ifdef print_on
-    printf("ソート前:");
-    showAry(ary, 0, index_num - 1);
-    printf("\n");
-#endif
     left = 0;
     right = index_num - 1;
-    partitioning(ary, left, right, &comparableNum, &changeNum);
+    partitioning(ary, left, right, sortType, switchNum, CN);
     if (checkSort(ary) == false) {
         printf("error\n");
         printf("\n");
     } else {
-#ifdef print_on
-        printf("ソート後:");
-        showAry(ary, 0, index_num - 1);
-#endif
         printf("比較回数:%d\n", comparableNum);
         printf("交換回数:%d\n", changeNum);
-        printf("クイックソート終了\n");
     }
 }
 
-void partitioning(int ary[], int left, int right, int* comparableNum,
-                  int* changeNum) {
-    // 要素数が5以下の場合はバブルソートを行う
-    if (right - left < 5) {
-        bubblesort(ary, left, right, comparableNum, changeNum);
-        return;
+void partitioning(int ary[], int left, int right, int sortType, int switchNum,
+                  Sort* CN) {
+    // 要素数がswitchNum以下の場合はsortTypeで選ばれているソートを行う
+    if (right - left < switchNum) {
+        switch (sortType) {
+            case 0:
+                bubblesort(ary, left, right, CN);
+                return;
+        }
     }
     int pivot;
     int leftIndex, rightIndex;
     leftIndex = left;
     rightIndex = right;
     // 左右の端のインデックスを保存しておき、再帰呼び出しの際に使う
-#ifdef print_on
-    printf("パーティション分割前:");
-    showAry(ary, left, right);
-#endif
     pivot = choicePivot(ary, left, right, comparableNum);
     while (1) {
         (*comparableNum)++;
@@ -136,12 +145,6 @@ void partitioning(int ary[], int left, int right, int* comparableNum,
     }
     // 上のwhile文が終わった時に必ずleftとrightは隣り合い、
     // left>rightとなる
-#ifdef print_on
-    printf("小:");
-    showAry(ary, leftIndex, right);
-    printf("大:");
-    showAry(ary, left, rightIndex);
-#endif
     partitioning(ary, leftIndex, right, comparableNum, changeNum);
     partitioning(ary, left, rightIndex, comparableNum, changeNum);
 }
@@ -149,24 +152,14 @@ void partitioning(int ary[], int left, int right, int* comparableNum,
 int choicePivot(int ary[], int left, int right, int* comparableNum) {
     int center;
     center = (right - left) / 2 + left;
-#ifdef print_on
-    printf("ary[left]:%d, ary[center]:%d, ary[right]:%dのため", ary[left],
-           ary[center], ary[right]);
-#endif
     (*comparableNum)++;
     // 3つの要素を比較して中央値を選択
     // あまりスマートではないが、これ以外の方法がわからなかった。なにかいい方法があれば教えてください。
     if (ary[right] > ary[center]) {
         (*comparableNum)++;
         if (ary[center] > ary[left]) {
-#ifdef print_on
-            printf("ary[center]:%dをピボットとする。\n", ary[center]);
-#endif
             return ary[center];
         } else {
-#ifdef print_on
-            printf("ary[left]:%dをピボットとする。\n", ary[left]);
-#endif
             return ary[left];
         }
     }
@@ -174,16 +167,10 @@ int choicePivot(int ary[], int left, int right, int* comparableNum) {
     if (ary[center] > ary[left]) {
         (*comparableNum)++;
         if (ary[left] > ary[right]) {
-#ifdef print_on
-            printf("ary[left]:%dをピボットとする。\n", ary[left]);
-#endif
             return ary[left];
         }
         (*comparableNum)++;
         if (ary[left] < ary[right]) {
-#ifdef print_on
-            printf("ary[right]:%dをピボットとする。\n", ary[right]);
-#endif
             return ary[right];
         }
     }
@@ -191,40 +178,24 @@ int choicePivot(int ary[], int left, int right, int* comparableNum) {
     if (ary[left] > ary[right]) {
         (*comparableNum)++;
         if (ary[right] > ary[center]) {
-#ifdef print_on
-            printf("ary[right]:%dをピボットとする。\n", ary[right]);
-#endif
             return ary[right];
         }
         (*comparableNum)++;
         if (ary[right] < ary[center]) {
-#ifdef print_on
-            printf("ary[center]:%dをピボットとする。\n", ary[center]);
-#endif
             return ary[center];
         }
     }
-#ifdef print_on
-// 三つの要素のどれかが同じだとこの処理に入る。今回は要素数が50なのでこの処理には入ることはあまりない。
-    printf("ary[left]:%dをピボットとする。\n", ary[left]);
-#endif
     return ary[left];
 }
 
-void bubblesort(int ary[], int left, int right, int* comparableNum,
-                int* changeNum) {
-#ifdef print_on
-    printf("バブルソート開始\n");
-    printf("ソート前:");
-    showAry(ary, left, right);
-#endif
+void bubblesort(int ary[], int left, int right, Sort* CN) {
     int i, j;
     for (i = left; i < right + 1; i++) {
         (*comparableNum)++;
         for (j = left; j < right - i + left; j++) {
-            //j < right - i + left で+leftをしている理由は、
-            //このバブルソートではjは0ではなく
-            //leftから始まっているからである。
+            // j < right - i + left で+leftをしている理由は、
+            // このバブルソートではjは0ではなく
+            // leftから始まっているからである。
             (*comparableNum)++;
             if (ary[j] > ary[j + 1]) {
                 (*changeNum)++;
@@ -232,11 +203,6 @@ void bubblesort(int ary[], int left, int right, int* comparableNum,
             }
         }
     }
-#ifdef print_on
-    printf("ソート後:");
-    showAry(ary, left, right);
-    printf("バブルソート終了\n");
-#endif
 }
 
 bool checkSort(int ary[]) {
@@ -254,13 +220,4 @@ void makeRandomAry(int ary[]) {
     for (i = 0; i < index_num; i++) {
         ary[i] = rand() % 500;
     }
-}
-
-void showAry(int ary[], int left, int right) {
-    int i;
-    printf("[ ");
-    for (i = left; i < right + 1; i++) {
-        printf("%d ", ary[i]);
-    }
-    printf("]\n");
 }
