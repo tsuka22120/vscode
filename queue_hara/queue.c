@@ -39,12 +39,13 @@ int dequeue(void) {
     }
     // キューからデータをとりだす．
     int data = queue[0];
-    // 取り出されたデータ部分を埋めるように再構築する
-    for (int i = 0; i < quantity - 1; i++) {
-        queue[i] = queue[i + 1];
-    }
     // データの個数カウントを減らす
     quantity--;
+    // 取り出されたデータ部分を埋めるように再構築する
+    for (int i = 0; i < quantity; i++) {
+        queue[i] = queue[i + 1];
+    }
+    queue[quantity] = 0;
     // データを返す
     return data;
 }
@@ -68,8 +69,8 @@ int showQueue() {
         printf("%d", queue[i]);
         // データとデータの間に区切り文字「|」を表示する．
         printf("|");
-        return 0;
     }
+    return 0;
 }
 
 void showResult(int result) {
@@ -94,22 +95,28 @@ void showResult(int result) {
 }
 
 int main() {
+    int i;
     // キューの初期化
     initQueue();
     // キューにデータを積み上げる
     showQueue();
-    for (int i = 1; i <= 5; i++) {
+    for (i = 1; i <= 5; i++) {
         printf("<%d:", i);
         showResult(enqueue(i));
         showQueue();
     }
     // キューのデータを表示する
     // キューからデータを取り出す
-    for (int i = 0; i < 5; i++) {
+    for (i = 0; i < 5; i++) {
         printf(">%d:", queue[0]);
         showResult(dequeue());
         showQueue();
     }
     // キューのデータを表示する
+    for(i = 2; i >= 0;i--){
+        printf("<%d:", i);
+        showResult(enqueue(i));
+        showQueue();
+    }
     return 0;
 }
