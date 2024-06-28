@@ -9,11 +9,16 @@
 // バブルソートを行うようにした。また、ピボットの選択において
 // 3つの要素を比較して中央値を選択するようにした。
 
-#define index_num 50     // 要素数
-#define count_num 1000   // 試行回数
-#define sortTypen_num 4  // ソートの種類の数
+#define index_num 50    // 要素数
+#define count_num 1000  // 試行回数
+#define sortType_num 4  // ソートの種類の数
 #define switchMAX_num 10  // クイックソートから切り替える要素数の最大値
 #define switchMIN_num 5  // クイックソートから切り替える要素数の最小値
+#define bogoType 0       // ボゴソート
+#define selectionType 1  // 選択ソート
+#define heapType 2       // ヒープソート
+#define bubbleType 3     // バブルソート
+
 #define SWAP(a, b) (a += b, b = a - b, a -= b)
 
 #include <stdbool.h>
@@ -22,14 +27,8 @@
 #include <time.h>
 
 typedef struct {
-    int bogosortComparableNum;
-    int bogosortChangeNum;
-    int selectionsortComparableNum;
-    int selectionsortChangeNum;
-    int heapsortComparableNum;
-    int heapsortChangeNum;
-    int bubblesortComparableNum;
-    int bubblesortChangeNum;
+    int ComparableNum;
+    int ChangeNum;
 } Sort;
 
 /// @brief クイックソートを行う関数
@@ -76,18 +75,33 @@ bool checkSort(int ary[]);
 void makeRandomAry(int ary[]);
 
 int main(void) {
-    // 乱数の種を設定
     int count, switchNum, sortType;
-    Sort CN[count_num][switchMAX_num - switchMIN_num + 1][sortTypen_num];
+    Sort CN[count_num][switchMAX_num - switchMIN_num + 1][sortType_num];
     srand((unsigned int)time(NULL));
     int ary[index_num];
     makeRandomAry(ary);
-    for (sortType = 0; sortType < sortTypen_num; sortType++) {
+    for (sortType = bogoType; sortType < sortType_num; sortType++) {
+        swtich(sortType) {
+            case bogoType:
+                printf("ボゴソート\n");
+                break;
+            case selectionType:
+                printf("選択ソート\n");
+                break;
+            case heapType:
+                printf("ヒープソート\n");
+                break;
+            case bubbleType:
+                printf("バブルソート\n");
+                break;
+        }
         for (switchNum = 0; switchNum < switchMAX_num - switchMIN_num;
              switchNum++) {
+                printf("要素数が%d以下になった時に切り替える\n",
+                       switchNum + switchMIN_num);
             for (count = 0; count < count_num; count++) {
                 quicksort(ary, sortType, switchNum + switchMIN_num,
-                          &CN[count][switchNum][0]);
+                          &CN[count][switchNum][sortType]);
             }
         }
     }
@@ -103,11 +117,10 @@ void quicksort(int ary[], int sortType, int switchNum, Sort* CN) {
         printf("error\n");
         printf("\n");
     } else {
-        printf("比較回数:%d\n", comparableNum);
-        printf("交換回数:%d\n", changeNum);
+        printf("比較回数:%d\n", CN->ComparableNum);
+        printf("交換回数:%d\n", CN->ChangeNum);
     }
 }
-
 void partitioning(int ary[], int left, int right, int sortType, int switchNum,
                   Sort* CN) {
     // 要素数がswitchNum以下の場合はsortTypeで選ばれているソートを行う
