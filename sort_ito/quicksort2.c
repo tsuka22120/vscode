@@ -148,15 +148,16 @@ void partitioning(int ary[], int left, int right, int sortType, int switchNum,
     if (right - left < switchNum + switchMIN_num) {
         switch (sortType) {
             case bogoType:
+                bogoSort(ary, left, right, CN);
                 break;
             case selectionType:
-                printf("選択ソート\n");
+                selectionSort(ary, left, right, CN);
                 break;
             case heapType:
-                printf("ヒープソート\n");
+                heapSort(ary, left, right, CN);
                 break;
             case bubbleType:
-                printf("バブルソート\n");
+                bubblesort(ary, left, right, CN);
                 break;
         }
     }
@@ -195,7 +196,7 @@ int choicePivot(int ary[], int left, int right, Sort* CN) {
     int center;
     center = (right - left) / 2 + left;
     (*CN).ComparableNum++;
-    printf("left:%d center:%d right:%d\n", left, center, right);
+    //printf("left:%d center:%d right:%d\n", left, center, right);
     // 3つの要素を比較して中央値を選択
     // あまりスマートではないが、これ以外の方法がわからなかった。なにかいい方法があれば教えてください。
     if (ary[right] > ary[center]) {
