@@ -149,16 +149,16 @@ void partitioning(int ary[], int left, int right, int sortType, int switchNum,
         switch (sortType) {
             case bogoType:
                 bogoSort(ary, left, right, CN);
-                break;
+                return;
             case selectionType:
                 selectionSort(ary, left, right, CN);
-                break;
+                return;
             case heapType:
                 heapSort(ary, left, right, CN);
-                break;
+                return;
             case bubbleType:
                 bubblesort(ary, left, right, CN);
-                break;
+                return;
         }
     }
     int pivot;
@@ -306,7 +306,7 @@ void bubblesort(int ary[], int left, int right, Sort* CN) {
 
 bool checkSort(int ary[], int left, int right) {
     int i = 0;
-    for (i = left; i < right; i++) {
+    for (i = left; i < right - 1; i++) {
         if (ary[i] > ary[i + 1]) {
             return false;
         }
