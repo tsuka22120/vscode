@@ -233,6 +233,7 @@ int choicePivot(int ary[], int left, int right, Sort* CN) {
 }
 
 void bogoSort(int ary[], int left, int right, Sort* CN) {
+    printf("ボゴソート開始");
     while (checkSort(ary) == false) {
         int i, j;
         for (i = left; i < right + 1; i++) {
@@ -241,6 +242,7 @@ void bogoSort(int ary[], int left, int right, Sort* CN) {
             (*CN).ChangeNum++;
         }
     }
+    printf("ボゴソート終了");
 }
 
 void selectionSort(int ary[], int left, int right, Sort* CN) {
