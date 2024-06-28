@@ -89,7 +89,7 @@ void bubblesort(int ary[], int left, int right, Sort* CN);
 /// @brief ソートが正常に行われているか判定する関数
 /// @param ary 判定する配列
 /// @return 正常に行われていたらtrue, そうでなければfalse
-bool checkSort(int ary[]);
+bool checkSort(int ary[], int left, int right);
 
 /// @brief 配列を0以上500未満の乱数で生成する関数
 /// @param ary 生成する配列
@@ -134,7 +134,7 @@ void quicksort(int ary[], int sortType, int switchNum, Sort* CN) {
     left = 0;
     right = index_num - 1;
     partitioning(ary, left, right, sortType, switchNum, CN);
-    if (checkSort(ary) == false) {
+    if (checkSort(ary, left, right) == false) {
         printf("error\n");
         printf("\n");
     } else {
@@ -196,9 +196,9 @@ int choicePivot(int ary[], int left, int right, Sort* CN) {
     int center;
     center = (right - left) / 2 + left;
     (*CN).ComparableNum++;
-    //printf("left:%d center:%d right:%d\n", left, center, right);
-    // 3つの要素を比較して中央値を選択
-    // あまりスマートではないが、これ以外の方法がわからなかった。なにかいい方法があれば教えてください。
+    // printf("left:%d center:%d right:%d\n", left, center, right);
+    //  3つの要素を比較して中央値を選択
+    //  あまりスマートではないが、これ以外の方法がわからなかった。なにかいい方法があれば教えてください。
     if (ary[right] > ary[center]) {
         (*CN).ComparableNum++;
         if (ary[center] > ary[left]) {
@@ -234,7 +234,7 @@ int choicePivot(int ary[], int left, int right, Sort* CN) {
 
 void bogoSort(int ary[], int left, int right, Sort* CN) {
     printf("ボゴソート開始\n");
-    while (checkSort(ary) == false) {
+    while (checkSort(ary, left, right) == false) {
         int i, j;
         for (i = left; i < right + 1; i++) {
             j = rand() % (right - left + 1 - i) + left + i;
@@ -306,9 +306,9 @@ void bubblesort(int ary[], int left, int right, Sort* CN) {
     }
 }
 
-bool checkSort(int ary[]) {
+bool checkSort(int ary[], int left, int right) {
     int i = 0;
-    for (i = 0; i < index_num - 1; i++) {
+    for (i = left; i < right; i++) {
         if (ary[i] > ary[i + 1]) {
             return false;
         }
