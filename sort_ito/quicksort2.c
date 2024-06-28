@@ -145,7 +145,7 @@ void quicksort(int ary[], int sortType, int switchNum, Sort* CN) {
 void partitioning(int ary[], int left, int right, int sortType, int switchNum,
                   Sort* CN) {
     // 要素数がswitchNum以下の場合はsortTypeで選ばれているソートを行う
-    if (right - left < switchNum) {
+    if (right - left < switchNum + switchMIN_num) {
         switch (sortType) {
             case bogoType:
                 break;
