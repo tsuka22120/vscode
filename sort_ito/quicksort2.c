@@ -195,6 +195,7 @@ int choicePivot(int ary[], int left, int right, Sort* CN) {
     int center;
     center = (right - left) / 2 + left;
     (*CN).ComparableNum++;
+    printf("left:%d center:%d right:%d\n", left, center, right);
     // 3つの要素を比較して中央値を選択
     // あまりスマートではないが、これ以外の方法がわからなかった。なにかいい方法があれば教えてください。
     if (ary[right] > ary[center]) {
