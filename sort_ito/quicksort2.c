@@ -10,7 +10,7 @@
 // 3つの要素を比較して中央値を選択するようにした。
 
 #define index_num 10    // 要素数
-#define count_num 1000  // 試行回数
+#define count_num 5     // 試行回数
 #define sortType_num 4  // ソートの種類の数
 #define switchMAX_num 10  // クイックソートから切り替える要素数の最大値
 #define switchMIN_num 5  // クイックソートから切り替える要素数の最小値
@@ -147,8 +147,8 @@ int main(void) {
                 quicksort(ary, sortType, switchNum + switchMIN_num,
                           &CN[count][switchNum][sortType]);
                 averageComparableNum +=
-                    CN[count][sortType][switchNum].ComparableNum;
-                averageChangeNum += CN[count][sortType][switchNum].ChangeNum;
+                    CN[count][switchNum][sortType].ComparableNum;
+                averageChangeNum += CN[count][switchNum][sortType].ChangeNum;
             }
             averageComparableNum /= count_num;
             averageChangeNum /= count_num;
