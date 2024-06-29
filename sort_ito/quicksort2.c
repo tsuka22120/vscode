@@ -9,8 +9,8 @@
 // バブルソートを行うようにした。また、ピボットの選択において
 // 3つの要素を比較して中央値を選択するようにした。
 
-#define index_num 500   // 要素数
-#define count_num 1     // 試行回数
+#define index_num 50    // 要素数
+#define count_num 1000  // 試行回数
 #define sortType_num 4  // ソートの種類の数
 #define switchMAX_num 10  // クイックソートから切り替える要素数の最大値
 #define switchMIN_num 5  // クイックソートから切り替える要素数の最小値
@@ -31,12 +31,19 @@ typedef struct {
     int ChangeNum;
 } Sort;
 
-/// @brief クイックソートを行う関数
-/// @param ary ソートする配列
-/// @param sortType ソートの種類
-/// @param switchNum クイックソートから切り替える要素数
-/// @param CN 比較回数と交換回数を格納する構造体
-void quicksort(int ary[], int sortType, int switchNum, Sort* CN);
+typedef struct {
+    int num;
+    int sortType;
+    int switchNum;
+} Average;
+
+    /// @brief クイックソートを行う関数
+    /// @param ary ソートする配列
+    /// @param sortType ソートの種類
+    /// @param switchNum クイックソートから切り替える要素数
+    /// @param CN 比較回数と交換回数を格納する構造体
+    void
+    quicksort(int ary[], int sortType, int switchNum, Sort* CN);
 
 /// @brief パーティション分割を行う関数
 /// @param ary 分割する配列
@@ -95,20 +102,25 @@ bool checkSort(int ary[], int left, int right, Sort* CN);
 /// @param ary 生成する配列
 void makeRandomAry(int ary[]);
 
-void printAverage(Sort CN[]);
+void printAverage(Sort CN[], int* comparableNum, int* changeNum);
 
 void shuffle(int ary[], int left, int right, Sort* CN);
 
-void initStruct(Sort *CN);
+void initStruct(Sort* CN);
 
 int main(void) {
     int count, switchNum, sortType;
-    int i, j,k;
+    int i, j, k;
+    int averageComparableNum, averageChangeNum;
     Sort CN[count_num][switchMAX_num - switchMIN_num + 1][sortType_num];
-    for (i = 0; i < sortType_num; i++) {
-        for (j = 0; j < switchMAX_num - switchMIN_num + 1; j++) {
-            for(k=0;k<count_num;k++){
-            initStruct(&CN[k][j][i]);
+    Average minComparableNum;
+    Average minChangeNum;
+    minComparableNum.num = 1000000;
+    minChangeNum.num = 1000000;
+    for (k = 0; k < count_num; k++) {
+        for (i = 0; i < switchMAX_num - switchMIN_num + 1; i++) {
+            for (j = 0; j < sortType_num; j++) {
+                initStruct(&CN[k][i][j]);
             }
         }
     }
@@ -138,9 +150,54 @@ int main(void) {
                 quicksort(ary, sortType, switchNum + switchMIN_num,
                           &CN[count][switchNum][sortType]);
             }
-            printAverage(&CN[0][switchNum][sortType]);
+            printAverage(&CN[0][switchNum][sortType], &averageComparableNum,
+                         &averageChangeNum);
+            if (averageComparableNum < minComparableNum.num) {
+                minComparableNum.num = averageComparableNum;
+                minComparableNum.sortType = sortType;
+                minComparableNum.switchNum = switchNum + switchMIN_num;
+            }
+            if (averageChangeNum < minChangeNum.num) {
+                minChangeNum.num = averageChangeNum;
+                minChangeNum.sortType = sortType;
+                minChangeNum.switchNum = switchNum + switchMIN_num;
+            }
         }
     }
+    printf("最も比較回数が少ないパターン\n");
+    switch (minComparableNum.sortType) {
+        case bogoType:
+            printf("ボゴソート\n");
+            break;
+        case selectionType:
+            printf("選択ソート\n");
+            break;
+        case heapType:
+            printf("ヒープソート\n");
+            break;
+        case bubbleType:
+            printf("バブルソート\n");
+            break;
+    }
+    printf("要素数が%d以下になった時に切り替える\n", minComparableNum.switchNum);
+    printf("比較回数の平均:%d\n\n", minComparableNum.num);
+    printf("最も交換回数が少ないパターン\n");
+    switch (minChangeNum.sortType) {
+        case bogoType:
+            printf("ボゴソート\n");
+            break;
+        case selectionType:
+            printf("選択ソート\n");
+            break;
+        case heapType:
+            printf("ヒープソート\n");
+            break;
+        case bubbleType:
+            printf("バブルソート\n");
+            break;
+    }
+    printf("要素数が%d以下になった時に切り替える\n", minChangeNum.switchNum);
+    printf("交換回数の平均:%d\n", minChangeNum.num);
     return 0;
 }
 
@@ -328,7 +385,7 @@ void makeRandomAry(int ary[]) {
     }
 }
 
-void printAverage(Sort CN[]) {
+void printAverage(Sort CN[], int* comparableNum, int* changeNum) {
     int i;
     int ComparableSum, ChangeSum;
     ComparableSum = 0;
@@ -337,8 +394,10 @@ void printAverage(Sort CN[]) {
         ComparableSum += CN[i].ComparableNum;
         ChangeSum += CN[i].ChangeNum;
     }
-    printf("比較回数の平均:%d\n", ComparableSum / count_num);
-    printf("交換回数の平均:%d\n", ChangeSum / count_num);
+    *comparableNum = ComparableSum / count_num;
+    *changeNum = ChangeSum / count_num;
+    printf("比較回数の平均:%d\n", *comparableNum);
+    printf("交換回数の平均:%d\n", *changeNum);
 }
 
 void shuffle(int ary[], int left, int right, Sort* CN) {
