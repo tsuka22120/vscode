@@ -113,6 +113,7 @@ void partitioning(int ary[], int left, int right, int* comparableNum,
 #ifdef print_on
     printf("パーティション分割前:");
     showAry(ary, left, right);
+    printf("\n");
 #endif
     pivot = choicePivot(ary, left, right, comparableNum);
     while (1) {
@@ -141,6 +142,7 @@ void partitioning(int ary[], int left, int right, int* comparableNum,
     showAry(ary, leftIndex, right);
     printf("大:");
     showAry(ary, left, rightIndex);
+    printf("\n");
 #endif
     partitioning(ary, leftIndex, right, comparableNum, changeNum);
     partitioning(ary, left, rightIndex, comparableNum, changeNum);
@@ -235,7 +237,7 @@ void bubblesort(int ary[], int left, int right, int* comparableNum,
 #ifdef print_on
     printf("ソート後:");
     showAry(ary, left, right);
-    printf("バブルソート終了\n");
+    printf("バブルソート終了\n\n");
 #endif
 }
 

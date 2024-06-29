@@ -9,7 +9,7 @@
 // バブルソートを行うようにした。また、ピボットの選択において
 // 3つの要素を比較して中央値を選択するようにした。
 
-#define index_num 50    // 要素数
+#define index_num 10    // 要素数
 #define count_num 1000  // 試行回数
 #define sortType_num 4  // ソートの種類の数
 #define switchMAX_num 10  // クイックソートから切り替える要素数の最大値
@@ -102,8 +102,6 @@ bool checkSort(int ary[], int left, int right, Sort* CN);
 /// @param ary 生成する配列
 void makeRandomAry(int ary[]);
 
-void printAverage(Sort CN[], int* comparableNum, int* changeNum);
-
 void shuffle(int ary[], int left, int right, Sort* CN);
 
 void initStruct(Sort* CN);
@@ -111,7 +109,7 @@ void initStruct(Sort* CN);
 int main(void) {
     int count, switchNum, sortType;
     int i, j, k;
-    int averageComparableNum, averageChangeNum;
+    int averageComparableNum = 0, averageChangeNum = 0;
     Sort CN[count_num][switchMAX_num - switchMIN_num + 1][sortType_num];
     Average minComparableNum;
     Average minChangeNum;
@@ -150,8 +148,14 @@ int main(void) {
                 quicksort(ary, sortType, switchNum + switchMIN_num,
                           &CN[count][switchNum][sortType]);
             }
-            printAverage(&CN[0][switchNum][sortType], &averageComparableNum,
-                         &averageChangeNum);
+            for(count = 0; count < count_num; count++) {
+                averageComparableNum += CN[count][sortType][switchNum].ComparableNum;
+                averageChangeNum += CN[count][sortType][switchNum].ChangeNum;
+            }
+            averageComparableNum /= count_num;
+            averageChangeNum /= count_num;
+            printf("比較回数の平均:%d\n", averageComparableNum);
+            printf("交換回数の平均:%d\n", averageChangeNum);
             if (averageComparableNum < minComparableNum.num) {
                 minComparableNum.num = averageComparableNum;
                 minComparableNum.sortType = sortType;
@@ -164,6 +168,7 @@ int main(void) {
             }
         }
     }
+    printf("\n");
     printf("最も比較回数が少ないパターン\n");
     switch (minComparableNum.sortType) {
         case bogoType:
@@ -383,21 +388,6 @@ void makeRandomAry(int ary[]) {
     for (i = 0; i < index_num; i++) {
         ary[i] = rand() % 500;
     }
-}
-
-void printAverage(Sort CN[], int* comparableNum, int* changeNum) {
-    int i;
-    int ComparableSum, ChangeSum;
-    ComparableSum = 0;
-    ChangeSum = 0;
-    for (i = 0; i < count_num; i++) {
-        ComparableSum += CN[i].ComparableNum;
-        ChangeSum += CN[i].ChangeNum;
-    }
-    *comparableNum = ComparableSum / count_num;
-    *changeNum = ChangeSum / count_num;
-    printf("比較回数の平均:%d\n", *comparableNum);
-    printf("交換回数の平均:%d\n", *changeNum);
 }
 
 void shuffle(int ary[], int left, int right, Sort* CN) {
