@@ -9,8 +9,8 @@
 // バブルソートを行うようにした。また、ピボットの選択において
 // 3つの要素を比較して中央値を選択するようにした。
 
-#define index_num 50    // 要素数
-#define count_num 1000  // 試行回数
+#define index_num 500   // 要素数
+#define count_num 1     // 試行回数
 #define sortType_num 4  // ソートの種類の数
 #define switchMAX_num 10  // クイックソートから切り替える要素数の最大値
 #define switchMIN_num 5  // クイックソートから切り替える要素数の最小値
@@ -19,7 +19,7 @@
 #define heapType 2       // ヒープソート
 #define bubbleType 3     // バブルソート
 
-#define SWAP(a, b) (a += b, b = a - b, a -= b)
+#define SWAP(a, b) ((a != b) && (a += b, b = a - b, a -= b))
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -89,18 +89,31 @@ void bubblesort(int ary[], int left, int right, Sort* CN);
 /// @brief ソートが正常に行われているか判定する関数
 /// @param ary 判定する配列
 /// @return 正常に行われていたらtrue, そうでなければfalse
-bool checkSort(int ary[], int left, int right);
+bool checkSort(int ary[], int left, int right, Sort* CN);
 
 /// @brief 配列を0以上500未満の乱数で生成する関数
 /// @param ary 生成する配列
 void makeRandomAry(int ary[]);
 
+void printAverage(Sort CN[]);
+
+void shuffle(int ary[], int left, int right, Sort* CN);
+
+void initStruct(Sort *CN);
+
 int main(void) {
     int count, switchNum, sortType;
+    int i, j,k;
     Sort CN[count_num][switchMAX_num - switchMIN_num + 1][sortType_num];
+    for (i = 0; i < sortType_num; i++) {
+        for (j = 0; j < switchMAX_num - switchMIN_num + 1; j++) {
+            for(k=0;k<count_num;k++){
+            initStruct(&CN[k][j][i]);
+            }
+        }
+    }
     srand((unsigned int)time(NULL));
     int ary[index_num];
-    makeRandomAry(ary);
     for (sortType = bogoType; sortType < sortType_num; sortType++) {
         switch (sortType) {
             case bogoType:
@@ -121,9 +134,11 @@ int main(void) {
             printf("要素数が%d以下になった時に切り替える\n",
                    switchNum + switchMIN_num);
             for (count = 0; count < count_num; count++) {
+                makeRandomAry(ary);
                 quicksort(ary, sortType, switchNum + switchMIN_num,
                           &CN[count][switchNum][sortType]);
             }
+            printAverage(&CN[0][switchNum][sortType]);
         }
     }
     return 0;
@@ -134,18 +149,11 @@ void quicksort(int ary[], int sortType, int switchNum, Sort* CN) {
     left = 0;
     right = index_num - 1;
     partitioning(ary, left, right, sortType, switchNum, CN);
-    if (checkSort(ary, left, right) == false) {
-        printf("error\n");
-        printf("\n");
-    } else {
-        printf("比較回数:%d\n", CN->ComparableNum);
-        printf("交換回数:%d\n", CN->ChangeNum);
-    }
 }
 void partitioning(int ary[], int left, int right, int sortType, int switchNum,
                   Sort* CN) {
     // 要素数がswitchNum以下の場合はsortTypeで選ばれているソートを行う
-    if (right - left < switchNum + switchMIN_num) {
+    if (right - left < switchNum) {
         switch (sortType) {
             case bogoType:
                 bogoSort(ary, left, right, CN);
@@ -233,12 +241,10 @@ int choicePivot(int ary[], int left, int right, Sort* CN) {
 }
 
 void bogoSort(int ary[], int left, int right, Sort* CN) {
-    while (checkSort(ary, left, right) == false) {
-        int i, j;
-        for (i = left; i < right + 1; i++) {
-            j = rand() % (right - left + 1 - i) + left + i;
-            SWAP(ary[i], ary[j]);
-            (*CN).ChangeNum++;
+    while (true) {
+        shuffle(ary, left, right, CN);
+        if (checkSort(ary, left, right, CN) == true) {
+            break;
         }
     }
 }
@@ -304,9 +310,10 @@ void bubblesort(int ary[], int left, int right, Sort* CN) {
     }
 }
 
-bool checkSort(int ary[], int left, int right) {
+bool checkSort(int ary[], int left, int right, Sort* CN) {
     int i = 0;
-    for (i = left; i < right - 1; i++) {
+    for (i = left; i < right; i++) {
+        (*CN).ComparableNum++;
         if (ary[i] > ary[i + 1]) {
             return false;
         }
@@ -318,5 +325,36 @@ void makeRandomAry(int ary[]) {
     int i;
     for (i = 0; i < index_num; i++) {
         ary[i] = rand() % 500;
+    }
+}
+
+void printAverage(Sort CN[]) {
+    int i;
+    int ComparableSum, ChangeSum;
+    ComparableSum = 0;
+    ChangeSum = 0;
+    for (i = 0; i < count_num; i++) {
+        ComparableSum += CN[i].ComparableNum;
+        ChangeSum += CN[i].ChangeNum;
+    }
+    printf("比較回数の平均:%d\n", ComparableSum / count_num);
+    printf("交換回数の平均:%d\n", ChangeSum / count_num);
+}
+
+void shuffle(int ary[], int left, int right, Sort* CN) {
+    int i;
+    int j;
+    for (i = left; i < right + 1; i++) {
+        j = rand() % (right + 1 - left) + left;
+        SWAP(ary[i], ary[j]);
+        (*CN).ChangeNum++;
+    }
+}
+
+void initStruct(Sort* CN) {
+    int i;
+    for (i = 0; i < count_num; i++) {
+        CN->ComparableNum = 0;
+        CN->ChangeNum = 0;
     }
 }
