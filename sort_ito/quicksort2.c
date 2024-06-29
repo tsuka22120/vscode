@@ -9,8 +9,8 @@
 // バブルソートを行うようにした。また、ピボットの選択において
 // 3つの要素を比較して中央値を選択するようにした。
 
-#define index_num 10    // 要素数
-#define count_num 5     // 試行回数
+#define index_num 50    // 要素数
+#define count_num 1000     // 試行回数
 #define sortType_num 4  // ソートの種類の数
 #define switchMAX_num 10  // クイックソートから切り替える要素数の最大値
 #define switchMIN_num 5  // クイックソートから切り替える要素数の最小値
@@ -32,7 +32,7 @@ typedef struct {
 } Sort;
 
 typedef struct {
-    int num;
+    float num;
     int sortType;
     int switchNum;
 } Average;
@@ -108,7 +108,8 @@ void initStruct(Sort* CN);
 int main(void) {
     int count, switchNum, sortType;
     int i, j, k;
-    int averageComparableNum = 0, averageChangeNum = 0;
+    int ary[index_num];
+    float averageComparableNum = 0, averageChangeNum = 0;
     Sort CN[count_num][switchMAX_num - switchMIN_num + 1][sortType_num];
     Average minComparableNum;
     Average minChangeNum;
@@ -121,8 +122,12 @@ int main(void) {
             }
         }
     }
+    printf("比較回数と交換回数の平均を計算します\n");
+    printf("要素数:%d\n", index_num);
+    printf("試行回数:%d\n", count_num);
+    printf("%d以上%d以下の要素数になった時に切り替える\n", switchMIN_num,
+           switchMAX_num);
     srand((unsigned int)time(NULL));
-    int ary[index_num];
     for (sortType = bogoType; sortType < sortType_num; sortType++) {
         switch (sortType) {
             case bogoType:
@@ -147,13 +152,13 @@ int main(void) {
                 quicksort(ary, sortType, switchNum + switchMIN_num,
                           &CN[count][switchNum][sortType]);
                 averageComparableNum +=
-                    CN[count][switchNum][sortType].ComparableNum;
-                averageChangeNum += CN[count][switchNum][sortType].ChangeNum;
+                    (float)CN[count][switchNum][sortType].ComparableNum;
+                averageChangeNum += (float)CN[count][switchNum][sortType].ChangeNum;
             }
             averageComparableNum /= count_num;
             averageChangeNum /= count_num;
-            printf("比較回数の平均:%d\n", averageComparableNum);
-            printf("交換回数の平均:%d\n", averageChangeNum);
+            printf("比較回数の平均:%g\n", averageComparableNum);
+            printf("交換回数の平均:%g\n\n", averageChangeNum);
             if (averageComparableNum < minComparableNum.num) {
                 minComparableNum.num = averageComparableNum;
                 minComparableNum.sortType = sortType;
@@ -186,7 +191,7 @@ int main(void) {
     }
     printf("要素数が%d以下になった時に切り替える\n",
            minComparableNum.switchNum);
-    printf("比較回数の平均:%d\n\n", minComparableNum.num);
+    printf("比較回数の平均:%g\n\n", minComparableNum.num);
     printf("最も交換回数が少ないパターン\n");
     switch (minChangeNum.sortType) {
         case bogoType:
@@ -203,7 +208,7 @@ int main(void) {
             break;
     }
     printf("要素数が%d以下になった時に切り替える\n", minChangeNum.switchNum);
-    printf("交換回数の平均:%d\n", minChangeNum.num);
+    printf("交換回数の平均:%g\n", minChangeNum.num);
     return 0;
 }
 
