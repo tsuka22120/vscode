@@ -37,13 +37,12 @@ typedef struct {
     int switchNum;
 } Average;
 
-    /// @brief クイックソートを行う関数
-    /// @param ary ソートする配列
-    /// @param sortType ソートの種類
-    /// @param switchNum クイックソートから切り替える要素数
-    /// @param CN 比較回数と交換回数を格納する構造体
-    void
-    quicksort(int ary[], int sortType, int switchNum, Sort* CN);
+/// @brief クイックソートを行う関数
+/// @param ary ソートする配列
+/// @param sortType ソートの種類
+/// @param switchNum クイックソートから切り替える要素数
+/// @param CN 比較回数と交換回数を格納する構造体
+void quicksort(int ary[], int sortType, int switchNum, Sort* CN);
 
 /// @brief パーティション分割を行う関数
 /// @param ary 分割する配列
@@ -147,9 +146,8 @@ int main(void) {
                 makeRandomAry(ary);
                 quicksort(ary, sortType, switchNum + switchMIN_num,
                           &CN[count][switchNum][sortType]);
-            }
-            for(count = 0; count < count_num; count++) {
-                averageComparableNum += CN[count][sortType][switchNum].ComparableNum;
+                averageComparableNum +=
+                    CN[count][sortType][switchNum].ComparableNum;
                 averageChangeNum += CN[count][sortType][switchNum].ChangeNum;
             }
             averageComparableNum /= count_num;
@@ -166,6 +164,8 @@ int main(void) {
                 minChangeNum.sortType = sortType;
                 minChangeNum.switchNum = switchNum + switchMIN_num;
             }
+            averageChangeNum = 0;
+            averageComparableNum = 0;
         }
     }
     printf("\n");
@@ -184,7 +184,8 @@ int main(void) {
             printf("バブルソート\n");
             break;
     }
-    printf("要素数が%d以下になった時に切り替える\n", minComparableNum.switchNum);
+    printf("要素数が%d以下になった時に切り替える\n",
+           minComparableNum.switchNum);
     printf("比較回数の平均:%d\n\n", minComparableNum.num);
     printf("最も交換回数が少ないパターン\n");
     switch (minChangeNum.sortType) {
