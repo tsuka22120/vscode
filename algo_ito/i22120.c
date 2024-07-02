@@ -13,7 +13,7 @@
 // 最も交換回数が少ないパターンを表示する機能を持つプログラムを作成した。
 // そのプログラムは_ADDING_VERを定義することで実行できる。
 
-#define _NORMAL_VER
+#define _ADDING_VER
 
 #ifdef _NORMAL_VER
 #define index_num 50
@@ -251,7 +251,7 @@ void showAry(int ary[], int left, int right) {
 #define index_num 50  // 要素数
 #define count_num 10000  // 試行回数
 #define sortType_num 4   // ソートの種類の数
-#define switchMAX_num 13  // クイックソートから切り替える要素数の最大値
+#define switchMAX_num 7  // クイックソートから切り替える要素数の最大値
 #define switchMIN_num 5 // クイックソートから切り替える要素数の最小値
 #define bogoType 0       // ボゴソート
 #define selectionType 1  // 選択ソート
