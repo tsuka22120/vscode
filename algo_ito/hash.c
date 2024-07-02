@@ -18,13 +18,17 @@ int main() {
     from = fopen("dist.all.last.txt", "r");
     to = fopen("hash.txt", "w");
     char c;
+    int num, sum = 0;
     while (1) {
         c = fgetc(from);
+        printf("%c\n",c);
         if (c == EOF) break;
-        c = ascii(c);
-        if (c >= 65 && c <= 90) {
-            fprintf(to, "%d\n", hash(c));
-            printf("%d\n", hash(c));
+        if('\n' == c){
+            fprintf(to,"%d\n",hash(sum));
+        }
+        num = ascii(c);
+        if (num >= 65 && num <= 90) {
+            sum += num;
         }
     }
     return 0;
