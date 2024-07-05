@@ -44,19 +44,21 @@ int enqueue(int data) {
 int dequeue() {
     int r_value = -200;
     struct queue *new_bottom;
-    if (top_queue == bottom_queue && bottom_queue != NULL) {
+    if (top_queue == bottom_queue &&
+        bottom_queue != NULL) {  // キューにデータが一つしかない場合
         r_value = bottom_queue->value;
         free(bottom_queue);
         bottom_queue = NULL;
         top_queue = NULL;
-    } else if (bottom_queue != NULL && bottom_queue != NULL) {
+    } else if (bottom_queue != NULL &&
+               bottom_queue != NULL) {  // キューにデータが複数ある場合
         r_value = bottom_queue->value;
         new_bottom = bottom_queue->addr;
         free(bottom_queue);
         bottom_queue = new_bottom;
-    } else if (bottom_queue == NULL) {
+    } else if (bottom_queue == NULL) {  // キューにデータがない場合
         r_value = -201;
-    } else {
+    } else {  // その他のエラー
         r_value = -202;
     }
     return r_value;
@@ -80,28 +82,30 @@ int showQueue() {
 void showResult(int result) {
     switch (result) {
         case 0:
-            printf(":Print success\n");
+            printf("Print success\n");
             break;
         case -100:
-            printf(":Enqueue success\n");
+            printf("Enqueue success\n");
             break;
         case -101:
-            printf(":Enqueue error: no remaining area(ErrorCode-101)\n");
+            printf("Enqueue error: no remaining area(ErrorCode-101)\n");
             break;
         case -102:
-            printf(":Enqueue error:Enqueue error:Not natural number was entered:(ErrorCode-102)\n");
+            printf(
+                "Enqueue error:Enqueue error:Not natural number was "
+                "entered:(ErrorCode-102)\n");
             break;
         case -200:
-            printf(":Dequeue error:Other error(ErrorCode-200)\n");
+            printf("Dequeue error:Other error(ErrorCode-200)\n");
             break;
         case -201:
-            printf(":Dequeue error:Nothing data(ErrorCode-201)\n");
+            printf("Dequeue error:Nothing data(ErrorCode-201)\n");
             break;
         case -202:
-            printf(":Dequeue error:Dequeue error(ErrorCode-202)\n");
+            printf("Dequeue error:Dequeue error(ErrorCode-202)\n");
             break;
         default:
-            printf(":Dequeue success\n");
+            printf("Dequeue success\n");
             break;
     }
 }
@@ -109,29 +113,36 @@ void showResult(int result) {
 /// @brief キューのデータを解放する
 void freeQueue() {
     struct queue *this_Queue;
-    while(bottom_queue != NULL) {
+    while (bottom_queue != NULL) {
         this_Queue = bottom_queue->addr;
         free(bottom_queue);
         bottom_queue = this_Queue;
     }
 }
-int main(void){
+int main(void) {
     int i;
     int dequeueData, dequeueResult;
-    //データをキューに積み上げる
-    for(i = 1;i < 10;i++){
+    // データをキューに積み上げる
+    for (i = 1; i < 10; i++) {
         showQueue();
-        printf("<--%d",i);
+        printf("<--%d:", i);
         showResult(enqueue(i));
     }
-    //データをキューから取り出す
-    for(i = 0;i < 10;i++){
-        dequeueData = bottom_queue->value;
+    // データをキューから取り出す
+    for (i = 0; i < 10; i++) {
         dequeueResult = dequeue();
-        showQueue();
-        printf("-->%d",dequeueData);
-        showResult(dequeueResult);
+        if (dequeueResult > 0) {
+            showQueue();
+            printf("-->%d:", dequeueResult);
+            showResult(dequeueResult);
+        } else {
+            showResult(dequeueResult);
+        }
     }
-
+    for(i = 2;i >= 0;i--){
+        showQueue();
+        printf("<--%d:", i);
+        showResult(enqueue(i));
+    }
     return 0;
 }
