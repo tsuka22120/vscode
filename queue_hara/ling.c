@@ -8,7 +8,9 @@ typedef struct {
     int quantity;          // データの個数
 } Queue;
 
-
+/// @brief キューからデータを取り出す際のインデックスを返す
+/// @param obj データを取り出すキューの構造体
+/// @return キューからデータを取り出す際のインデックス
 int dequeueIndex(Queue obj) {
     if (obj.wp - obj.quantity < 0) {
         return QUEUE_SIZE + obj.wp - obj.quantity;
@@ -99,28 +101,30 @@ int showQueue(Queue *obj) {
     return -500;
 }
 
+/// @brief 動作に対しての結果を表示する
+/// @param result 結果の値
 void showResult(int result) {
     switch (result) {
         case -100:
-            printf("格納成功\n");
+            printf(":Enqueue success\n");
             break;
         case -101:
-            printf("残領域がない\n");
+            printf(":Enqueue error:No space left(ErrorCode-101)\n");
             break;
         case -102:
-            printf("0以下の値が入力された\n");
+            printf(":Enqueue error:Not natural number was entered:(ErrorCode-102)\n");
             break;
         case -201:
-            printf("取り出せるデータがない\n");
+            printf(":Dequeue error:Nothing data(ErrorCode-201)\n");
             break;
         case -400:
-            printf("初期化成功\n");
+            printf(":Init success\n");
             break;
         case -500:
-            printf("表示成功\n");
+            printf(":Print success\n");
             break;
         default:
-            printf("取出成功\n");
+            printf(":Dequeue success\n");
             break;
     }
     // result の値に応じて，対応するエラーメッセージを表示する．
@@ -128,33 +132,45 @@ void showResult(int result) {
 
 int main() {
     Queue queue;
+    int dequeueData, dequeueResult;
     int i;
     // キューの初期化
     initQueue(&queue);
-
-    showQueue(&queue);
     // データがいっぱいになった時の挙動を確認
     for (i = 1; i <= 6; i++) {
-        printf("<%d", i);
-        showResult(enqueue(&queue, i));
         showQueue(&queue);
+        printf("<--%d", i);
+        showResult(enqueue(&queue, i));
     }
 
+    // 空の時にデータを取り出す時の挙動を確認
     for (i = 0; i < 6; i++) {
-        printf(">%d", queue.data[dequeueIndex(queue)]);
-        showResult(dequeue(&queue));
+        dequeueData = queue.data[dequeueIndex(queue)];
+        dequeueResult = dequeue(&queue);
         showQueue(&queue);
+        printf("-->%d", dequeueData);
+        showResult(dequeueResult);
     }
-    printf("<%d", 0);
-    showResult(enqueue(&queue, 0));
+    // 自然数以外の値を入力した時の挙動を確認
     showQueue(&queue);
-    for(i = 0;i < 100;i++){
-        printf("<%d", i);
+    printf("<--%d", 0);
+    showResult(enqueue(&queue, 0));
+    // キューがリングバッファであることを確認
+    showQueue(&queue);
+    printf("<--%d", 1);
+    showResult(enqueue(&queue, 1));
+    showQueue(&queue);
+    printf("<--%d", 2);
+    showResult(enqueue(&queue, 2));
+    for(i = 3;i < 10;i++){
+        showQueue(&queue);
+        printf("<--%d", i);
         showResult(enqueue(&queue, i));
+        dequeueData = queue.data[dequeueIndex(queue)];
+        dequeueResult = dequeue(&queue);
         showQueue(&queue);
-        printf(">%d", queue.data[dequeueIndex(queue)]);
-        showResult(dequeue(&queue));
-        showQueue(&queue);
+        printf("-->%d", dequeueData);
+        showResult(dequeueResult);
     }
     return 0;
 }

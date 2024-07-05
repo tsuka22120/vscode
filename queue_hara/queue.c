@@ -77,46 +77,48 @@ void showResult(int result) {
     // result の値に応じて，対応するエラーメッセージを表示する．
     switch (result) {
         case -100:
-            printf("格納成功\n");
+            printf(":Enqueue success\n");
             break;
         case -101:
-            printf("エラー:キューがいっぱいです（%d）\n", result);
+            printf(":Enqueue error:No space left(ErrorCode-101)\n");
             break;
         case -102:
-            printf("エラー:0以下の値が入力されました（%d）\n", result);
+            printf(":Enqueue error:Not natural number was entered:(ErrorCode-102)\n");
             break;
         case -201:
-            printf("エラー:データがありません（%d）\n", result);
+            printf(":Dequeue error:Nothing data(ErrorCode-201)\n");
             break;
         default:
-            printf("取出成功\n");
+            printf(":Dequeue success\n");
             break;
     }
 }
 
 int main() {
     int i;
+    int dequeueData, dequeueResult;
     // キューの初期化
     initQueue();
     // キューにデータを積み上げる
-    showQueue();
     for (i = 1; i <= 5; i++) {
-        printf("<%d:", i);
-        showResult(enqueue(i));
         showQueue();
+        printf("<--%d", i);
+        showResult(enqueue(i));
     }
     // キューのデータを表示する
     // キューからデータを取り出す
     for (i = 0; i < 5; i++) {
-        printf(">%d:", queue[0]);
-        showResult(dequeue());
+        dequeueData = queue[0];
+        dequeueResult = dequeue();
         showQueue();
+        printf("-->%d", dequeueData);
+        showResult(dequeueResult);
     }
     // キューのデータを表示する
     for(i = 2; i >= 0;i--){
-        printf("<%d:", i);
-        showResult(enqueue(i));
         showQueue();
+        printf("<--%d", i);
+        showResult(enqueue(i));
     }
     return 0;
 }
