@@ -21,15 +21,17 @@ int main(void) {
     int str1_len, str2_len, i, j, count = 0;
     printf("被検索文字列を入力してください(%d字以内しか読み込まれません)\n",
            MAX);
-    fgets(str1, MAX + 1, stdin);
-    if (str1[MAX - 1] != '\000') {
+    fgets(str1, MAX, stdin);
+    str1[strcspn(str1, "\n")] = '\000';
+    if (str1[MAX - 2] != '\000') {
         printf("検索文字列を入力してください(%d字以内しか読み込まれません)\n",
                MAX);
-        scanf("%*s%100s", str2);
+        scanf("%*s");
+        fgets(str2, MAX, stdin);
     } else {
         printf("検索文字列を入力してください(%d字以内しか読み込まれません)\n",
                MAX);
-        scanf("%99s", str2);
+        fgets(str2, MAX, stdin);
     }
     printf("被検索文字列: [ %s ]\n", str1);
     printf("検索文字列: [ %s ]\n", str2);
