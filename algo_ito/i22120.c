@@ -249,10 +249,10 @@ void showAry(int ary[], int left, int right) {
 
 #ifdef _ADDING_VER
 #define index_num 50  // 要素数
-#define count_num 10000  // 試行回数
+#define count_num 1000  // 試行回数
 #define sortType_num 4   // ソートの種類の数
-#define switchMAX_num 7  // クイックソートから切り替える要素数の最大値
-#define switchMIN_num 5 // クイックソートから切り替える要素数の最小値
+#define switchMAX_num 9  // クイックソートから切り替える要素数の最大値
+#define switchMIN_num 3 // クイックソートから切り替える要素数の最小値
 #define bogoType 0       // ボゴソート
 #define selectionType 1  // 選択ソート
 #define heapType 2       // ヒープソート
