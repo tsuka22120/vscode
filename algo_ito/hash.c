@@ -18,8 +18,8 @@ int main() {
         count[i] = 0;
     }
     // ファイルの読み込み
-    from = fopen("dist.all.last.txt", "r");
-    to = fopen("algo_ito/hash4.csv", "w");
+    from = fopen("algo_ito/text/dist.all.last.txt", "r");
+    to = fopen("algo_ito/text/hash4.csv", "w");
     if (from == NULL) {
         printf("read file not open!\n");
         return -1;
