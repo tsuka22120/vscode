@@ -32,6 +32,7 @@ void makeSkipTable(char strings[], char searchWord[]) {
         for (j = 0; j < strlen(searchWord); j++) {
             if ((char)(0x20 + i) == searchWord[j]) {
                 skipTable[i] = strlen(searchWord) - j;
+                break;
             } else {
                 skipTable[i] = strlen(searchWord);
             }
