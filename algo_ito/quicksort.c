@@ -9,9 +9,9 @@
 // バブルソートを行うようにした。また、ピボットの選択において
 // 3つの要素を比較して中央値を選択するようにした。
 
-#define index_num 10000    // 要素数
-#define count_num 10000     // 試行回数
-#define sortType_num 4  // ソートの種類の数
+#define index_num 10000  // 要素数
+#define count_num 10000  // 試行回数
+#define sortType_num 4   // ソートの種類の数
 #define switchMAX_num 14  // クイックソートから切り替える要素数の最大値
 #define switchMIN_num 5  // クイックソートから切り替える要素数の最小値
 #define bogoType 0       // ボゴソート
@@ -153,7 +153,8 @@ int main(void) {
                           &CN[count][switchNum][sortType]);
                 averageComparableNum +=
                     (float)CN[count][switchNum][sortType].ComparableNum;
-                averageChangeNum += (float)CN[count][switchNum][sortType].ChangeNum;
+                averageChangeNum +=
+                    (float)CN[count][switchNum][sortType].ChangeNum;
             }
             averageComparableNum /= count_num;
             averageChangeNum /= count_num;
