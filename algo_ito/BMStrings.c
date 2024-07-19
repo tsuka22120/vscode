@@ -11,8 +11,6 @@ int main(void) {
     char strings[MAX + 1], searchWord[MAX + 1];
     int skipTable[SKIPTABLENUM];
     int strings_len, searchWord_len, i, j, count = 0;
-    strings_len = strlen(strings);
-    searchWord_len = strlen(searchWord);
     printf("被検索文字列を入力してください(%d字以内しか読み込まれません)\n",
            MAX);
     scanf("%100s", strings);
@@ -25,16 +23,34 @@ int main(void) {
     }
     printf("被検索文字列: [ %s ]\n", strings);
     printf("検索文字列: [ %s ]\n", searchWord);
+    strings_len = strlen(strings);
+    searchWord_len = strlen(searchWord);
     makeSkipTable(skipTable, searchWord, searchWord_len);
     for (i = 0; i < strings_len - searchWord_len + 1; i++) {
         for (j = searchWord_len - 1; j >= 0; j--) {
             if (strings[i + j] == searchWord[j]) {
                 if (j == 0) {
-                    printf("検索文字列が見つかりました(%d文字目)\n", i);
+                    printf("検索文字列が見つかりました(%d文字目):", i + 1);
+                    if (i > 1) {
+                        printf("[ %c%c \"", strings[i - 2], strings[i - 1]);
+                    } else {
+                        printf("[ \"");
+                    }
+                    for (int k = i; k < i + searchWord_len; k++) {
+                        printf("%c", strings[k]);
+                    }
+                    if (i < strings_len - searchWord_len) {
+                        printf("\" %c%c ]\n", strings[i + searchWord_len],
+                               strings[i + searchWord_len + 1]);
+                    } else {
+                        printf("\" ]\n");
+                    }
+                    i += searchWord_len - 1;
                     break;
                 }
             } else {
-                i += skipTable[(int)strings[i + j] - 0x20];
+                i += skipTable[(int)strings[i + j] - 0x20] - 1;
+                break;
             }
         }
     }
@@ -59,4 +75,5 @@ void makeSkipTable(int skipTable[], char searchWord[], int searchWord_len) {
             printf("\n");
         }
     }
+    printf("\n");
 }
