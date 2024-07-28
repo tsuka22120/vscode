@@ -112,7 +112,9 @@ void showResult(int result) {
             printf(":Enqueue error:No space left(ErrorCode-101)\n");
             break;
         case -102:
-            printf(":Enqueue error:Not natural number was entered:(ErrorCode-102)\n");
+            printf(
+                ":Enqueue error:Not natural number was "
+                "entered:(ErrorCode-102)\n");
             break;
         case -201:
             printf(":Dequeue error:Nothing data(ErrorCode-201)\n");
@@ -135,7 +137,8 @@ int main() {
     int dequeueData, dequeueResult;
     int i;
     // キューの初期化
-    initQueue(&queue);
+    printf("Queue initialize");
+    showResult(initQueue(&queue));
     // データがいっぱいになった時の挙動を確認
     for (i = 1; i <= 6; i++) {
         showQueue(&queue);
@@ -162,7 +165,7 @@ int main() {
     showQueue(&queue);
     printf("<--%d", 2);
     showResult(enqueue(&queue, 2));
-    for(i = 3;i < 10;i++){
+    for (i = 3; i < 10; i++) {
         showQueue(&queue);
         printf("<--%d", i);
         showResult(enqueue(&queue, i));

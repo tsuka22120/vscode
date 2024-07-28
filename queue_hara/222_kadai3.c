@@ -19,10 +19,8 @@ int enqueue(int data) {
     struct queue *new_queue;
     if (data <= 0) {
         r_value = -102;
-    }
-
-    else if ((new_queue = (struct queue *)malloc(sizeof(struct queue))) ==
-             NULL) {
+    } else if ((new_queue = (struct queue *)malloc(sizeof(struct queue))) ==
+               NULL) {
         r_value = -101;
     } else {
         new_queue->value = data;
@@ -51,7 +49,7 @@ int dequeue() {
         bottom_queue = NULL;
         top_queue = NULL;
     } else if (bottom_queue != NULL &&
-               bottom_queue != NULL) {  // キューにデータが複数ある場合
+               top_queue != NULL) {  // キューにデータが複数ある場合
         r_value = bottom_queue->value;
         new_bottom = bottom_queue->addr;
         free(bottom_queue);
@@ -119,6 +117,7 @@ void freeQueue() {
         bottom_queue = this_Queue;
     }
 }
+
 int main(void) {
     int i;
     int dequeueData, dequeueResult;
@@ -139,7 +138,7 @@ int main(void) {
             showResult(dequeueResult);
         }
     }
-    for(i = 2;i >= 0;i--){
+    for (i = 2; i >= 0; i--) {
         showQueue();
         printf("<--%d:", i);
         showResult(enqueue(i));

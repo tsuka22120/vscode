@@ -41,18 +41,1839 @@ lineskip=-0.5ex
 \newpage
 
 \section{目的}
-
+与えられた課題をこなすことで、キューに対する理解を深めることをこのレポートの目的と
+します。
 
 \section{原理}
+この章ではキューについてと、再構築するキュー、リングキュー、リストキューの三種類の
+キューの原理について説明します。
+\subsection{キュー}
+キューは、データを一時的に保存するためのデータ構造の一つです。キューは、データを
+先入れ先出し（FIFOと呼ばれる。First-In-First-Outの略）の原則に基づいて動作します。
+キューは、データを追加するエンキューとデータを取り出すデキューの二つの操作を持ちます。
+キューはデータの一時的な保存に使われるため、データの追加と取り出しの操作が頻繁に行われる
+場合に適しています。
+
+\subsection{再構築するキュー}
+再構築するキューは、キューの要素を配列で表現したものです。再構築するキューは、
+配列の個数を示す変数を持ち、エンキューとデキューの操作を行う際に、
+配列の要素を移動させることでキューを実装します。再構築するキューは、
+エンキューとデキューの操作が頻繁に行われる場合には、リングキューやリストキューに比べて
+遅いという欠点があります。
+
+\subsection{リングキュー}
+リングキューは、再構築するキューの欠点を改善したキューです。配列の末尾と先頭が
+つながっていると捉えることで、エンキューとデキューの操作を行う際に要素の移動を
+行う必要がなくなり、キューのために用意された領域全体を使うことができます。
+リングキューは、エンキューとデキューの操作が頻繁に行われる場合に適しています。
+
+\subsection{リストキュー}
+リストキューは上記の二つのキューと違い、連結リストを用いて動的にデータ領域を確保できる
+キューです。動的にデータ領域を確保できるため、リングキューや再構築するキューに比べて
+メモリの使用効率が良いという利点があります。リストキューは、データの個数が不定な場合に
+適しています。
 
 \section{実験環境}
+キューの課題のプログラムを実装した環境を表\ref{table:environment}に示します。
+\begin{table}
+  \centering
+  \caption{実験環境}
+  \label{table:environment}
+  \begin{tabular}{|c|c|}
+    \hline
+    OS    & Windows 11 Pro     \\
+    \hline
+    CPU   & AMD Ryzen 7 5800H  \\
+    \hline
+    メモリ   & 16GB               \\
+    \hline
+    コンパイラ & gcc version 11.4.0 \\
+    \hline
+    エディタ  & Visual Studio Code \\
+    \hline
+  \end{tabular}
+\end{table}
 
 \section{プログラムの設計と説明}
+この章では、再構築するキュー、リングキュー、リストキューのプログラムの実装に使われている
+データ構造や関数について説明します。
+
+\subsection{再構築するキュー}
+再構築するキューのプログラムでは、リスト\ref{queue}のようにキューを定義しています。
+\begin{lstlisting}[caption=再構築するキュープログラムのキューの定義,label=queue]
+  #define QUEUE_SIZE 4
+
+  int queue[QUEUE_SIZE]; // キュー用の配列
+  int quantity = 0; // キューに格納されているデータの個数
+\end{lstlisting}
+
+
+このプログラムでは表\ref{queuefunc}の関数を実装しています。
+\begin{table}[htbp]
+  \centering
+  \caption{再構築するキューの関数}
+  \label{queuefunc}
+  \begin{tabular}{|c|c|}
+    \hline
+    関数名        & 説明                                 \\
+    \hline
+    enqueue    & キューにデータを積み上げる関数                    \\
+    \hline
+    dequeue    & キューからデータを取り出す関数                    \\
+    \hline
+    initQueue  & キュー用の配列を0で初期化する関数                  \\
+    \hline
+    showQueue  & キューの中身を表示する関数                      \\
+    \hline
+    showResult & 変数resultの値に応じて、対応するエラーメッセージを表示する関数 \\
+    \hline
+  \end{tabular}
+\end{table}
+それぞれの関数について説明します。
+
+\subsubsection{enqueue関数}
+enqueue関数は表\ref{table:enqueue}のように定義され、
+リスト\ref{list:enqueue}のように実装されています。
+
+\newpage
+
+\begin{table}[htbp]
+  \centering
+  \caption{再構築するキューのenqueue関数}
+  \label{table:enqueue}
+  \begin{tabular}{|c|c|}
+    \hline
+    関数名 & enqueue              \\
+    \hline
+    型   & int                  \\
+    \hline
+    引数  & int data:キューに格納するデータ \\
+    \hline
+    戻り値 & 実行の成否を返す             \\
+    \hline
+    概要  & キューにデータを積み上げる関数      \\
+    \hline
+  \end{tabular}
+\end{table}
+
+\begin{lstlisting}[caption=再構築するキューのenqueue関数の実装,label=list:enqueue]
+    int enqueue(int data) {
+    // 残り領域があるか確認する
+    if (quantity >= QUEUE_SIZE) {
+        // 残り領域がない場合はエラーコードを返す
+        return -101;
+    }
+    // データが自然数か確認する
+    if (data <= 0) {
+        // 自然数でない場合はエラーコードを返す
+        return -102;
+    }
+    // 配列のキューにデータを保存する
+    queue[quantity] = data;
+    // キューのポインタをインクリメントする
+    quantity++;
+    // 返り値を返す
+    return -100;
+    }
+\end{lstlisting}
+enqueue関数は、次のような処理が実装されています。
+\begin{enumerate}
+  \item 残り領域があるか確認し、なかったらエラーコードを返す。
+  \item データが自然数か確認し、自然数でなかったらエラーコードを返す。
+  \item 配列のキューにデータを保存する。
+  \item キューに格納されているデータの個数を増やす。
+  \item 成功を示す返り値を返す。
+\end{enumerate}
+
+\subsubsection{dequeue関数}
+dequeue関数は表\ref{table:dequeue}のように定義され、
+リスト\ref{list:dequeue}のように実装されています。
+
+\newpage
+
+\begin{table}[htbp]
+  \centering
+  \caption{再構築するキューのdequeue関数}
+  \label{table:dequeue}
+  \begin{tabular}{|c|c|}
+    \hline
+    関数名 & dequeue             \\
+    \hline
+    型   & int                 \\
+    \hline
+    引数  & なし                  \\
+    \hline
+    戻り値 & 取り出したデータ、もしくはエラーコード \\
+    \hline
+    概要  & キューからデータを取り出す関数     \\
+    \hline
+  \end{tabular}
+\end{table}
+
+\begin{lstlisting}[caption=再構築するキューのdequeue関数の実装,label=list:dequeue]
+    int dequeue(void) {
+    // データが存在するかどうか確認する．
+    if (quantity == 0) {
+        // データが存在しない場合はエラーコードを返す．
+        return -201;
+    }
+    // キューからデータをとりだす．
+    int data = queue[0];
+    // データの個数カウントを減らす
+    quantity--;
+    // 取り出されたデータ部分を埋めるように再構築する
+    for (int i = 0; i < quantity; i++) {
+        queue[i] = queue[i + 1];
+    }
+    queue[quantity] = 0;
+    // データを返す
+    return data;
+    }
+\end{lstlisting}
+
+dequeue関数は、次のような処理が実装されています。
+\begin{enumerate}
+  \item データが存在するかどうか確認し、存在しない場合はエラーコードを返す。
+  \item キューからデータを取り出す。
+  \item キューに格納されているデータの個数を減らす。
+  \item 取り出されたデータ部分を埋めるように再構築する。
+  \item 取り出されたデータを返す。
+\end{enumerate}
+
+\subsubsection{initQueue関数}
+initQueue関数は表\ref{table:initQueue}のように定義され、
+リスト\ref{list:initQueue}のように実装されています。
+
+\newpage
+
+\begin{table}[htbp]
+  \centering
+  \caption{再構築するキューのinitQueue関数}
+  \label{table:initQueue}
+  \begin{tabular}{|c|c|}
+    \hline
+    関数名 & initQueue         \\
+    \hline
+    型   & int               \\
+    \hline
+    引数  & なし                \\
+    \hline
+    戻り値 & 成功したら0を返す         \\
+    \hline
+    概要  & キュー用の配列を0で初期化する関数 \\
+    \hline
+  \end{tabular}
+\end{table}
+
+\begin{lstlisting}[caption=再構築するキューのinitQueue関数の実装,label=list:initQueue]
+    int initQueue() {
+    // キューのデータを入れる配列をすべて 0 に初期化する．
+    for (int i = 0; i < QUEUE_SIZE; i++) {
+        queue[i] = 0;
+    }
+    // 格納データ個数を 0 に初期化する．
+    quantity = 0;
+    return 0;
+    }
+\end{lstlisting}
+
+initQueue関数は、次のような処理が実装されています。
+\begin{enumerate}
+  \item キューのデータを入れる配列をすべて0に初期化する。
+  \item 格納データ個数を0に初期化する。
+  \item 成功を示す返り値を返す。
+\end{enumerate}
+
+\subsubsection{showQueue関数}
+showQueue関数は表\ref{table:showQueue}のように定義され、
+リスト\ref{list:showQueue}のように実装されています。
+\begin{table}[htbp]
+  \centering
+  \caption{再構築するキューのshowQueue関数}
+  \label{table:showQueue}
+  \begin{tabular}{|c|c|}
+    \hline
+    関数名 & showQueue     \\
+    \hline
+    型   & int           \\
+    \hline
+    引数  & なし            \\
+    \hline
+    戻り値 & 成功したら0を返す     \\
+    \hline
+    概要  & キューの中身を表示する関数 \\
+    \hline
+  \end{tabular}
+\end{table}
+
+\begin{lstlisting}[caption=再構築するキューのshowQueue関数の実装,label=list:showQueue]
+  int showQueue() {
+    // 配列全体のデータを順に表示する．
+    printf("|");
+    for (int i = 0; i < QUEUE_SIZE; i++) {
+        printf("%d", queue[i]);
+        // データとデータの間に区切り文字「|」を表示する．
+        printf("|");
+      }
+    return 0;
+    }
+\end{lstlisting}
+
+showQueue関数は、次のような処理が実装されています。
+\begin{enumerate}
+  \item データとデータの間に区切り文字「|」を表示する。
+  \item 配列全体のデータを順に表示する。
+  \item 成功を示す返り値を返す。
+\end{enumerate}
+
+\subsubsection{showResult関数}
+showResult関数は表\ref{table:showResult}のように定義され、
+リスト\ref{list:showResult}のように実装されています。
+\begin{table}[htbp]
+  \centering
+  \caption{再構築するキューのshowResult関数}
+  \label{table:showResult}
+  \begin{tabular}{|c|c|}
+    \hline
+    関数名 & showResult                         \\
+    \hline
+    型   & void                               \\
+    \hline
+    引数  & int result:エラーコード                  \\
+    \hline
+    戻り値 & なし                                 \\
+    \hline
+    概要  & 変数resultの値に応じて、対応するエラーメッセージを表示する関数 \\
+    \hline
+  \end{tabular}
+\end{table}
+
+\begin{lstlisting}[caption=再構築するキューのshowResult関数の実装,label=list:showResult]
+  void showResult(int result) {
+      // result の値に応じて，対応するエラーメッセージを表示する．
+      switch (result) {
+          case -100:
+              printf(":Enqueue success\n");
+              break;
+          case -101:
+              printf(":Enqueue error:No space left(ErrorCode-101)\n");
+              break;
+          case -102:
+              printf(":Enqueue error:Not natural number was entered:(ErrorCode-102)\n");
+              break;
+          case -201:
+              printf(":Dequeue error:Nothing data(ErrorCode-201)\n");
+              break;
+          case 0:
+              printf(":success\n");
+              break;
+          default:
+              printf(":Dequeue success\n");
+              break;
+      }
+  }
+\end{lstlisting}
+
+showResult関数は、次のような処理が実装されています。
+\begin{enumerate}
+  \item resultの値を、次の項目に分けてエラーメッセージを表示する。
+        \begin{itemize}
+          \item -100:エンキュー成功
+          \item -101:エンキューエラー:残り領域なし
+          \item -102:エンキューエラー:自然数が入力されていない
+          \item -201:デキューエラー:データがない
+          \item 0:成功
+          \item その他:デキュー成功
+        \end{itemize}
+\end{enumerate}
+
+\subsection{リングキュー}
+リングキューのプログラムでは、リスト\ref{ringqueue}のようにキューを定義しています。
+\begin{lstlisting}[caption=リングキュープログラムのキューの定義,label=ringqueue]
+  #define QUEUE_SIZE 5
+
+  typedef struct {
+      int data[QUEUE_SIZE];  // データが入る配列
+      int wp;                // 次にデータを入れる場所の配列番号
+      int quantity;          // データの個数
+  } Queue;
+\end{lstlisting}
+リングキューでは表\ref{ringqueuefunc}の関数を実装しています。
+再構築するキューでも実装している関数と同じ関数が実装されて
+いますが、関数の内容は変わっています。
+
+\begin{table}[htbp]
+  \centering
+  \caption{リングキューの関数}
+  \label{ringqueuefunc}
+  \begin{tabular}{|c|c|}
+    \hline
+    関数名          & 説明                                 \\
+    \hline
+    enqueue      & キューにデータを積み上げる関数                    \\
+    \hline
+    dequeue      & キューからデータを取り出す関数                    \\
+    \hline
+    initQueue    & キュー用の配列を0で初期化する関数                  \\
+    \hline
+    showQueue    & キューの中身を表示する関数                      \\
+    \hline
+    showResult   & 変数resultの値に応じて、対応するエラーメッセージを表示する関数 \\
+    \hline
+    dequeueIndex & キューからデータを取り出す際のインデックスを返す関数         \\
+    \hline
+  \end{tabular}
+\end{table}
+それぞれの関数について説明します。
+
+\subsubsection{enqueue関数}
+enqueue関数は表\ref{table:ringenqueue}のように定義され、
+リスト\ref{list:ringenqueue}のように実装されています。
+
+\newpage
+
+\begin{table}[htbp]
+  \centering
+  \caption{リングキューのenqueue関数}
+  \label{table:ringenqueue}
+  \begin{tabular}{|c|c|}
+    \hline
+    関数名 & enqueue                         \\
+    \hline
+    型   & int                             \\
+    \hline
+    引数1 & Queue *obj:データを追加するキューの構造体のアドレス \\
+    \hline
+    引数2 & int data:キューに格納するデータ            \\
+    \hline
+    戻り値 & 実行の成否を返す                        \\
+    \hline
+    概要  & キューにデータを積み上げる関数                 \\
+    \hline
+  \end{tabular}
+\end{table}
+
+\begin{lstlisting}[caption=リングキューのenqueue関数の実装,label=list:ringenqueue]
+  int enqueue(Queue *obj, int data) {
+      // 残り領域があるか確認する
+      if (obj->quantity >= QUEUE_SIZE) {
+          // 残り領域がない場合はエラーコードを返す
+          return -101;
+      }
+      // データが自然数か確認する
+      if (data <= 0) {
+          // 自然数でない場合はエラーコードを返す
+          return -102;
+      }
+      // 配列のキューにデータを保存する
+      obj->data[obj->wp] = data;
+      // キューのポインタをインクリメントする
+      obj->quantity++;
+      if (obj->wp == QUEUE_SIZE - 1) {
+          obj->wp = 0;
+      } else {
+          obj->wp++;
+      }
+      // 返り値を返す
+      return -100;
+  }
+\end{lstlisting}
+
+enqueue関数は、次のような処理が実装されています。
+\begin{enumerate}
+  \item 残り領域があるか確認し、なかったらエラーコードを返す。
+  \item データが自然数か確認し、自然数でなかったらエラーコードを返す。
+  \item 配列のキューにデータを保存する。
+  \item キューに格納されているデータの個数を増やす。
+  \item データが配列の最後まで入ったら次のデータを入れる配列番号を0とし、そうでない場合はインクリメントする。
+  \item 成功を示す返り値を返す。
+\end{enumerate}
+
+\subsubsection{dequeue関数}
+dequeue関数は表\ref{table:ringdequeue}のように定義され、
+リスト\ref{list:ringdequeue}のように実装されています。
+
+\begin{table}[htbp]
+  \centering
+  \caption{リングキューのdequeue関数}
+  \label{table:ringdequeue}
+  \begin{tabular}{|c|c|}
+    \hline
+    関数名 & dequeue                         \\
+    \hline
+    型   & int                             \\
+    \hline
+    引数  & Queue *obj:データを取り出すキューの構造体のアドレス \\
+    \hline
+    戻り値 & 取り出したデータ、もしくはエラーコード             \\
+    \hline
+    概要  & キューからデータを取り出す関数                 \\
+    \hline
+  \end{tabular}
+\end{table}
+
+\begin{lstlisting}[caption=リングキューのdequeue関数の実装,label=list:ringdequeue]
+  int dequeue(Queue *obj) {
+      int index;
+      index = dequeueIndex(*obj);
+      // データが存在するかどうか確認する．
+      if (obj->quantity == 0) {
+          // データが存在しない場合はエラーコードを返す．
+          return -201;
+      }
+      // キューからデータをとりだす．
+      int data = obj->data[index];
+      // 取り出されたデータ部分を埋めるように再構築する
+      obj->data[index] = 0;
+      // データの個数のカウントを減らす．
+      obj->quantity--;
+      // データを返す．
+      return data;
+  }
+\end{lstlisting}
+
+dequeue関数は、次のような処理が実装されています。
+\begin{enumerate}
+  \item キューからデータを取り出す際のインデックスを取得する。
+  \item データが存在するかどうか確認し、存在しない場合はエラーコードを返す。
+  \item キューからデータを取り出す。
+  \item 取り出されたデータ部分を埋めるように再構築する。
+  \item キューに格納されているデータの個数を減らす。
+  \item 取り出されたデータを返す。
+\end{enumerate}
+
+\subsubsection{initQueue関数}
+initQueue関数は表\ref{table:ringinitQueue}のように定義され、
+リスト\ref{list:ringinitQueue}のように実装されています。
+\begin{table}[htbp]
+  \centering
+  \caption{リングキューのinitQueue関数}
+  \label{table:ringinitQueue}
+  \begin{tabular}{|c|c|}
+    \hline
+    関数名 & initQueue                    \\
+    \hline
+    型   & int                          \\
+    \hline
+    引数  & Queue *obj:初期化するキューの構造体のアドレス \\
+    \hline
+    戻り値 & 成功したら-400を返す                 \\
+    \hline
+    概要  & キュー用の配列を0で初期化する関数            \\
+    \hline
+  \end{tabular}
+\end{table}
+
+\begin{lstlisting}[caption=リングキューのinitQueue関数の実装,label=list:ringinitQueue]
+  int initQueue(Queue *obj) {
+      int i;
+      // キューのデータを入れる配列をすべて 0 に初期化する．
+      for (i = 0; i < QUEUE_SIZE; i++) {
+          obj->data[i] = 0;
+      }
+      // キューのデータ格納個数を 0 に初期化する
+      obj->quantity = 0;
+      // キューの wp ポインタを 0 に初期化する．
+      obj->wp = 0;
+      return -400;
+  }
+\end{lstlisting}
+
+initQueue関数は、次のような処理が実装されています。
+\begin{enumerate}
+  \item キューのデータを入れる配列をすべて0に初期化する。
+  \item キューのデータ格納個数を0に初期化する。
+  \item 次のデータを入れる配列番号を0に初期化する。
+  \item 成功を示す返り値を返す。
+\end{enumerate}
+
+\subsubsection{showQueue関数}
+showQueue関数は表\ref{table:showQueue}のように定義され、
+リスト\ref{list:showQueue}のように実装されています。
+
+\begin{table}[htbp]
+  \centering
+  \caption{リングキューのshowQueue関数}
+  \label{table:showQueue}
+  \begin{tabular}{|c|c|}
+    \hline
+    関数名 & showQueue                   \\
+    \hline
+    型   & int                         \\
+    \hline
+    引数  & Queue *obj:表示するキューの構造体のアドレス \\
+    \hline
+    戻り値 & 成功したら-500を返す                \\
+    \hline
+    概要  & キューのデータを表示する関数              \\
+    \hline
+  \end{tabular}
+\end{table}
+
+\begin{lstlisting}[caption=リングキューのshowQueue関数の実装,label=list:showQueue]
+  int showQueue(Queue *obj) {
+      int i;
+      // 配列全体のデータを順に表示する．
+      // データとデータの間に区切り文字「|」を表示する．
+      printf("|");
+      for (i = 0; i < QUEUE_SIZE; i++) {
+          printf("%d", obj->data[i]);
+          printf("|");
+      }
+      return -500;
+  }
+\end{lstlisting}
+
+showQueue関数は、次のような処理が実装されています。
+\begin{enumerate}
+  \item データとデータの間に区切り文字「|」を表示する。
+  \item 配列全体のデータを順に表示する。
+  \item 成功を示す返り値を返す。
+\end{enumerate}
+
+\subsubsection{showResult関数}
+showResult関数は表\ref{table:showResult}のように定義され、
+リスト\ref{list:showResult}のように実装されています。
+
+\begin{table}[htbp]
+  \centering
+  \caption{リングキューのshowResult関数}
+  \label{table:showResult}
+  \begin{tabular}{|c|c|}
+    \hline
+    関数名 & showResult                         \\
+    \hline
+    型   & void                               \\
+    \hline
+    引数  & int result:エラーコード                  \\
+    \hline
+    戻り値 & なし                                 \\
+    \hline
+    概要  & 変数resultの値に応じて、対応するエラーメッセージを表示する関数 \\
+    \hline
+  \end{tabular}
+\end{table}
+
+\begin{lstlisting}[caption=リングキューのshowResult関数の実装,label=list:showResult]
+  void showResult(int result) {
+      switch (result) {
+          case -100:
+              printf(":Enqueue success\n");
+              break;
+          case -101:
+              printf(":Enqueue error:No space left(ErrorCode-101)\n");
+              break;
+          case -102:
+              printf(":Enqueue error:Not natural number was entered:(ErrorCode-102)\n");
+              break;
+          case -201:
+              printf(":Dequeue error:Nothing data(ErrorCode-201)\n");
+              break;
+          case -400:
+              printf(":Init success\n");
+              break;
+          case -500:
+              printf(":Print success\n");
+              break;
+          default:
+              printf(":Dequeue success\n");
+              break;
+      }
+      // result の値に応じて，対応するエラーメッセージを表示する．
+  }
+\end{lstlisting}
+
+showResult関数は、次のような処理が実装されています。
+\begin{enumerate}
+  \item resultの値を、次の項目に分けてエラーメッセージを表示する。
+        \begin{itemize}
+          \item -100:エンキュー成功
+          \item -101:エンキューエラー:残り領域なし
+          \item -102:エンキューエラー:自然数が入力されていない
+          \item -201:デキューエラー:データがない
+          \item -400:初期化成功
+          \item -500:表示成功
+          \item その他:デキュー成功
+        \end{itemize}
+\end{enumerate}
+
+\subsubsection{dequeueIndex関数}
+dequeueIndex関数は表\ref{table:dequeueIndex}のように定義され、
+リスト\ref{list:dequeueIndex}のように実装されています。
+
+\begin{table}[htbp]
+  \centering
+  \caption{リングキューのdequeueIndex関数}
+  \label{table:dequeueIndex}
+  \begin{tabular}{|c|c|}
+    \hline
+    関数名 & dequeueIndex               \\
+    \hline
+    型   & int                        \\
+    \hline
+    引数  & Queue obj:データを取り出すキューの構造体  \\
+    \hline
+    戻り値 & キューからデータを取り出す際のインデックス      \\
+    \hline
+    概要  & キューからデータを取り出す際のインデックスを返す関数 \\
+    \hline
+  \end{tabular}
+\end{table}
+
+\begin{lstlisting}[caption=リングキューのdequeueIndex関数の実装,label=list:dequeueIndex]
+  int dequeueIndex(Queue obj) {
+    if (obj.wp - obj.quantity < 0) {
+        return QUEUE_SIZE + obj.wp - obj.quantity;
+    } else {
+        return obj.wp - obj.quantity;
+    }
+}
+\end{lstlisting}
+
+dequeueIndex関数は、次のような処理が実装されています。
+\begin{enumerate}
+  \item 次のデータを入れる配列番号からデータの個数を引いた値が0未満の場合、
+        次のデータを入れる配列番号から、配列のサイズを足してデータの個数を引いた値を返す。
+        そうでない場合は次のデータを入れる配列番号から配列のデータの個数を引いた値を返す。
+\end{enumerate}
+
+\subsection{リストキュー}
+リストキューのプログラムでは、リスト\ref{listqueue}のようにキューを定義しています。
+\begin{lstlisting}[caption=リストキュープログラムのキューの定義,label=listqueue]
+  struct queue {
+    int value;
+    struct queue *addr;
+  };
+
+  struct queue *bottom_queue =
+  NULL;  // 最古のキューのアドレスを記憶しておくポインタ
+
+  struct queue *top_queue =
+  NULL;  // 最新のキューのアドレスを記憶しておくポインタ
+\end{lstlisting}
+
+リストキューでは表\ref{listqueuefunc}の関数を実装しています。
+再構築するキューやリングキューでも実装している関数と同じ関数が
+実装されていますが、関数の内容は変わっています。
+
+\begin{table}[htbp]
+  \centering
+  \caption{リストキューの関数}
+  \label{listqueuefunc}
+  \begin{tabular}{|c|c|}
+    \hline
+    関数名        & 説明                                 \\
+    \hline
+    enqueue    & キューにデータを積み上げる関数                    \\
+    \hline
+    dequeue    & キューからデータを取り出す関数                    \\
+    \hline
+    showQueue  & キューの中身を表示する関数                      \\
+    \hline
+    showResult & 変数resultの値に応じて、対応するエラーメッセージを表示する関数 \\
+    \hline
+    freeQueue  & キューのデータを解放する関数                     \\
+    \hline
+  \end{tabular}
+\end{table}
+それぞれの関数について説明します。
+
+\subsubsection{enqueue関数}
+enqueue関数は表\ref{table:listenqueue}のように定義され、
+リスト\ref{listlistenqueue}のように実装されています。
+
+\begin{table}[htbp]
+  \centering
+  \caption{リストキューのenqueue関数}
+  \label{table:listenqueue}
+  \begin{tabular}{|c|c|}
+    \hline
+    関数名 & enqueue              \\
+    \hline
+    型   & int                  \\
+    \hline
+    引数  & int data:キューに格納するデータ \\
+    \hline
+    戻り値 & 実行の成否を返す             \\
+    \hline
+    概要  & キューにデータを積み上げる関数      \\
+    \hline
+  \end{tabular}
+\end{table}
+
+\begin{lstlisting}[caption=リストキューのenqueue関数の実装,label=listlistenqueue]
+  int enqueue(int data) {
+      int r_value = -100;
+      struct queue *new_queue;
+      if (data <= 0) {
+          r_value = -102;
+      } else if ((new_queue = (struct queue *)malloc(sizeof(struct queue))) ==
+              NULL) {
+          r_value = -101;
+      } else {
+          new_queue->value = data;
+          new_queue->addr = NULL;
+          if (bottom_queue == NULL) {
+              bottom_queue = new_queue;
+          } else {
+              top_queue->addr = new_queue;
+          }
+          top_queue = new_queue;
+      }
+      return r_value;
+  }
+\end{lstlisting}
+
+enqueue関数は、次のような処理が実装されています。
+\begin{enumerate}
+  \item データが自然数か確認し、自然数でなかったらエラーコードを返す。
+  \item メモリを確保できなかった場合はエラーコードを返す。
+  \item メモリを確保できた場合は、データを格納し、次のキューのアドレスをNULLにする。
+  \item 最古のキューのアドレスがNULLの場合は、新しいキューのアドレスを最古のキューのアドレスにする。
+        そうでない場合は、最新のキューのアドレスのアドレスに新しいキューのアドレスを格納する。
+  \item 最新のキューのアドレスを新しいキューのアドレスにする。
+  \item 成功を示す返り値を返す。
+\end{enumerate}
+
+\subsubsection{dequeue関数}
+dequeue関数は表\ref{table:listdequeue}のように定義され、
+リスト\ref{listlistdequeue}のように実装されています。
+
+\begin{table}[htbp]
+  \centering
+  \caption{リストキューのdequeue関数}
+  \label{table:listdequeue}
+  \begin{tabular}{|c|c|}
+    \hline
+    関数名 & dequeue             \\
+    \hline
+    型   & int                 \\
+    \hline
+    引数  & なし                  \\
+    \hline
+    戻り値 & 取り出したデータ、もしくはエラーコード \\
+    \hline
+    概要  & キューからデータを取り出す関数     \\
+    \hline
+  \end{tabular}
+\end{table}
+
+\begin{lstlisting}[caption=リストキューのdequeue関数の実装,label=listlistdequeue]
+  int dequeue() {
+      int r_value = -200;
+      struct queue *new_bottom;
+      if (top_queue == bottom_queue &&
+          bottom_queue != NULL) {  // キューにデータが一つしかない場合
+          r_value = bottom_queue->value;
+          free(bottom_queue);
+          bottom_queue = NULL;
+          top_queue = NULL;
+      } else if (bottom_queue != NULL &&
+               top_queue != NULL) {  // キューにデータが複数ある場合
+          r_value = bottom_queue->value;
+          new_bottom = bottom_queue->addr;
+          free(bottom_queue);
+          bottom_queue = new_bottom;
+      } else if (bottom_queue == NULL) {  // キューにデータがない場合
+          r_value = -201;
+      } else {  // その他のエラー
+          r_value = -202;
+      }
+      return r_value;
+  }
+\end{lstlisting}
+
+dequeue関数は、次のような処理が実装されています。
+\begin{enumerate}
+  \item キューにデータが一つしかない場合、最新のキューの値を
+        取得し、最古のキューのアドレスを解放し、NULLにする。
+  \item キューにデータが複数ある場合、最新のキューの値を
+        取得し、最新のキューのアドレスを最古のキューの
+        アドレスにする。
+  \item キューにデータがない場合はエラーコードを返す。
+  \item その他のエラーの場合はエラーコードを返す。
+\end{enumerate}
+
+\subsubsection{showQueue関数}
+showQueue関数は表\ref{table:listshowQueue}のように定義され、
+リスト\ref{listlistshowQueue}のように実装されています。
+
+\begin{table}[htbp]
+  \centering
+  \caption{リストキューのshowQueue関数}
+  \label{table:listshowQueue}
+  \begin{tabular}{|c|c|}
+    \hline
+    関数名 & showQueue      \\
+    \hline
+    型   & int            \\
+    \hline
+    引数  & なし             \\
+    \hline
+    戻り値 & 成功したら0を返す      \\
+    \hline
+    概要  & キューのデータを表示する関数 \\
+    \hline
+  \end{tabular}
+\end{table}
+
+\begin{lstlisting}[caption=リストキューのshowQueue関数の実装,label=listlistshowQueue]
+  int showQueue() {
+      struct queue *print_queue;
+      print_queue = bottom_queue;
+      printf("|");
+      while (print_queue != NULL) {
+          printf("%d|", print_queue->value);
+          print_queue = print_queue->addr;
+      }
+      return 0;
+  }
+\end{lstlisting}
+
+showQueue関数は、次のような処理が実装されています。
+\begin{enumerate}
+  \item データとデータの間に区切り文字「|」を表示する。
+  \item キューのデータを表示する。
+  \item 成功を示す返り値を返す。
+\end{enumerate}
+
+\subsubsection{showResult関数}
+showResult関数は表\ref{table:listshowResult}のように定義され、
+リスト\ref{listlistshowResult}のように実装されています。
+
+\begin{table}[htbp]
+  \centering
+  \caption{リストキューのshowResult関数}
+  \label{table:listshowResult}
+  \begin{tabular}{|c|c|}
+    \hline
+    関数名 & showResult                         \\
+    \hline
+    型   & void                               \\
+    \hline
+    引数  & int result:エラーコード                  \\
+    \hline
+    戻り値 & なし                                 \\
+    \hline
+    概要  & 変数resultの値に応じて、対応するエラーメッセージを表示する関数 \\
+    \hline
+  \end{tabular}
+\end{table}
+
+\begin{lstlisting}[caption=リストキューのshowResult関数の実装,label=listlistshowResult]
+  void showResult(int result) {
+      switch (result) {
+          case 0:
+              printf("Print success\n");
+              break;
+          case -100:
+              printf("Enqueue success\n");
+              break;
+          case -101:
+              printf("Enqueue error: no remaining area(ErrorCode-101)\n");
+              break;
+          case -102:
+              printf(
+                "Enqueue error:Enqueue error:Not natural number was "
+                "entered:(ErrorCode-102)\n");
+              break;
+          case -200:
+              printf("Dequeue error:Other error(ErrorCode-200)\n");
+              break;
+          case -201:
+              printf("Dequeue error:Nothing data(ErrorCode-201)\n");
+              break;
+          case -202:
+              printf("Dequeue error:Dequeue error(ErrorCode-202)\n");
+              break;
+          default:
+              printf("Dequeue success\n");
+              break;
+      }
+  }
+\end{lstlisting}
+
+showResult関数は、次のような処理が実装されています。
+\begin{enumerate}
+  \item resultの値を、次の項目に分けてエラーメッセージを表示する。
+        \begin{itemize}
+          \item 0:表示成功
+          \item -100:エンキュー成功
+          \item -101:エンキューエラー:残り領域なし
+          \item -102:エンキューエラー:自然数が入力されていない
+          \item -200:デキューエラー:その他のエラー
+          \item -201:デキューエラー:データがない
+          \item -202:デキューエラー:デキューエラー
+          \item その他:デキュー成功
+        \end{itemize}
+\end{enumerate}
+
+\subsubsection{freeQueue関数}
+freeQueue関数は表\ref{table:freeQueue}のように定義され、
+リスト\ref{listfreeQueue}のように実装されています。
+
+\begin{table}[htbp]
+  \centering
+  \caption{リストキューのfreeQueue関数}
+  \label{table:freeQueue}
+  \begin{tabular}{|c|c|}
+    \hline
+    関数名 & freeQueue      \\
+    \hline
+    型   & void           \\
+    \hline
+    引数  & なし             \\
+    \hline
+    戻り値 & なし             \\
+    \hline
+    概要  & キューのデータを解放する関数 \\
+    \hline
+  \end{tabular}
+\end{table}
+
+\begin{lstlisting}[caption=リストキューのfreeQueue関数の実装,label=listfreeQueue]
+  void freeQueue() {
+      struct queue *this_Queue;
+      while (bottom_queue != NULL) {
+          this_Queue = bottom_queue->addr;
+          free(bottom_queue);
+          bottom_queue = this_Queue;
+      }
+  }
+\end{lstlisting}
+
+freeQueue関数は、次のような処理が実装されています。
+\begin{enumerate}
+  \item 古いキューから順にメモリを解放する。
+\end{enumerate}
 
 \section{プログラム}
+この章では、再構築するキュー、リングキュー、リストキューの
+メイン関数を示し、処理について説明します。なおそれぞれの
+プログラム全文は長いので、レポートの最後の付録に示します。
+
+\subsection{再構築するキュー}
+再構築するキューのメイン関数をリスト\ref{mainqueue}に示します。
+
+\begin{lstlisting}[caption=再構築するキューのメイン関数,label=mainqueue]
+  int main() {
+      int i;
+      int dequeueData, dequeueResult;
+      // キューの初期化
+      printf("Queue initialize");
+      showResult(initQueue());
+      // キューにデータを積み上げる
+      for (i = 1; i <= 5; i++) {
+          showQueue();
+          printf("<--%d", i);
+          showResult(enqueue(i));
+      }
+      // キューのデータを表示する
+      // キューからデータを取り出す
+      for (i = 0; i < 5; i++) {
+          dequeueData = queue[0];
+          dequeueResult = dequeue();
+          showQueue();
+          printf("-->%d", dequeueData);
+          showResult(dequeueResult);
+      }
+      // キューのデータを表示する
+      for(i = 2; i >= 0;i--){
+          showQueue();
+          printf("<--%d", i);
+          showResult(enqueue(i));
+      }
+      return 0;
+  }
+\end{lstlisting}
+
+メイン関数では次の処理が行われています。
+\begin{enumerate}
+  \item キューの初期化を行う。
+  \item キューにデータを1から5まで積み上げる。
+  \item キューからデータを5つ取り出す。
+  \item キューにデータを2から0まで積み上げる。
+\end{enumerate}
+
+\subsection{リングキュー}
+リングキューのメイン関数をリスト\ref{mainringqueue}に示します。
+
+\begin{lstlisting}[caption=リングキューのメイン関数,label=mainringqueue]
+  int main() {
+      Queue queue;
+      int dequeueData, dequeueResult;
+      int i;
+      // キューの初期化
+      printf("Queue initialize");
+      showResult(initQueue(&queue));
+      // データがいっぱいになった時の挙動を確認
+      for (i = 1; i <= 6; i++) {
+          showQueue(&queue);
+          printf("<--%d", i);
+          showResult(enqueue(&queue, i));
+      }
+
+      // 空の時にデータを取り出す時の挙動を確認
+      for (i = 0; i < 6; i++) {
+          dequeueData = queue.data[dequeueIndex(queue)];
+          dequeueResult = dequeue(&queue);
+          showQueue(&queue);
+          printf("-->%d", dequeueData);
+          showResult(dequeueResult);
+      }
+      // 自然数以外の値を入力した時の挙動を確認
+      showQueue(&queue);
+      printf("<--%d", 0);
+      showResult(enqueue(&queue, 0));
+      // キューがリングバッファであることを確認
+      showQueue(&queue);
+      printf("<--%d", 1);
+      showResult(enqueue(&queue, 1));
+      showQueue(&queue);
+      printf("<--%d", 2);
+      showResult(enqueue(&queue, 2));
+      for(i = 3;i < 10;i++){
+          showQueue(&queue);
+          printf("<--%d", i);
+          showResult(enqueue(&queue, i));
+          dequeueData = queue.data[dequeueIndex(queue)];
+          dequeueResult = dequeue(&queue);
+          showQueue(&queue);
+          printf("-->%d", dequeueData);
+          showResult(dequeueResult);
+      }
+      return 0;
+  }
+\end{lstlisting}
+
+メイン関数では次の処理が行われています。
+\begin{enumerate}
+  \item キューの初期化を行う。
+  \item キューにデータを1から6まで積み上げる。
+  \item キューからデータを6つ取り出す。
+  \item キューに0を積み上げる。
+  \item キューに1から2まで積み上げる。
+  \item キューにデータを積み上げ、取り出すのを3から9まで繰り返す。
+\end{enumerate}
+
+\subsection{リストキュー}
+リストキューのメイン関数をリスト\ref{mainlistqueue}に示します。
+
+\begin{lstlisting}[caption=リストキューのメイン関数,label=mainlistqueue]
+  int main(void) {
+      int i;
+      int dequeueData, dequeueResult;
+      // データをキューに積み上げる
+      for (i = 1; i < 10; i++) {
+          showQueue();
+          printf("<--%d:", i);
+          showResult(enqueue(i));
+      }
+      // データをキューから取り出す
+      for (i = 0; i < 10; i++) {
+          dequeueResult = dequeue();
+          if (dequeueResult > 0) {
+              showQueue();
+              printf("-->%d:", dequeueResult);
+              showResult(dequeueResult);
+          } else {
+              showResult(dequeueResult);
+          }
+      }
+      for (i = 2; i >= 0; i--) {
+          showQueue();
+          printf("<--%d:", i);
+          showResult(enqueue(i));
+      }
+      return 0;
+  }
+\end{lstlisting}
+
+メイン関数では次の処理が行われています。
+\begin{enumerate}
+  \item キューにデータを1から9まで積み上げる。
+  \item キューからデータを10個取り出す。
+  \item キューにデータを2から0まで積み上げる。
+\end{enumerate}
 
 \section{実行結果}
+この章では、再構築するキュー、リングキュー、リストキューの
+実行結果を示し、課題の内容に沿っているか確認します。
+
+\subsection{再構築するキュー}
+再構築するキューの実行結果をリスト\ref{resultqueue}に示します。
+
+\begin{lstlisting}[caption=再構築するキューの実行結果,label=resultqueue]
+  Queue initialize:success
+  |0|0|0|0|<--1:Enqueue success
+  |1|0|0|0|<--2:Enqueue success
+  |1|2|0|0|<--3:Enqueue success
+  |1|2|3|0|<--4:Enqueue success
+  |1|2|3|4|<--5:Enqueue error:No space left(ErrorCode-101)
+  |2|3|4|0|-->1:Dequeue success
+  |3|4|0|0|-->2:Dequeue success
+  |4|0|0|0|-->3:Dequeue success
+  |0|0|0|0|-->4:Dequeue success
+  |0|0|0|0|-->0:Dequeue error:Nothing data(ErrorCode-201)
+  |0|0|0|0|<--2:Enqueue success
+  |2|0|0|0|<--1:Enqueue success
+  |2|1|0|0|<--0:Enqueue error:Not natural number was entered:(ErrorCode-102)
+\end{lstlisting}
+
+再構築するキューでは以下の事項を確認できるように実装されています。
+\begin{itemize}
+  \item データがいっぱいになった時にエラー処理ができているか。
+  \item 空の時にデータを取り出す時のエラー処理ができているか。
+  \item 自然数以外の値を入力した時のエラー処理ができているか。
+  \item 再構築が行われているか。
+\end{itemize}
+
+それぞれについて説明します。
+
+\subsubsection{データがいっぱいになった時にエラー処理ができているか}
+リスト\ref{resultqueue}の2から6行目を見ると、
+キューの最大容量は4であるため、4つのデータを積み上げた後に
+5つ目のデータを積み上げるとエラーが表示されてます。
+よって、データがいっぱいになった時にエラー処理ができていることが
+確認できます。
+
+\subsubsection{空の時にデータを取り出す時のエラー処理ができているか}
+リスト\ref{resultqueue}の11行目を見ると、
+データがない状態でデータを取り出そうとするとエラーが表示されて
+いることがわかります。
+よって、空の時にデータを取り出す時のエラー処理ができていることが
+確認できます。
+
+\subsubsection{自然数以外の値を入力した時のエラー処理ができているか}
+リスト\ref{resultqueue}の14行目を見ると、0を
+エンキューしようとした時にエラーが表示されていることがわかります。
+よって、自然数以外の値を入力した時のエラー処理ができていることが
+確認できます。
+
+\subsubsection{再構築が行われているか}
+リスト\ref{resultqueue}をみると、デキューした際に、すべての
+データが左揃えに直されているので、再構築が行われていることが
+確認できます。
+
+\subsection{リングキュー}
+リングキューの実行結果をリスト\ref{resultringqueue}に示します。
+
+\begin{lstlisting}[caption=リングキューの実行結果,label=resultringqueue]
+Queue initialize:Init success
+|0|0|0|0|0|<--1:Enqueue success
+|1|0|0|0|0|<--2:Enqueue success
+|1|2|0|0|0|<--3:Enqueue success
+|1|2|3|0|0|<--4:Enqueue success
+|1|2|3|4|0|<--5:Enqueue success
+|1|2|3|4|5|<--6:Enqueue error:No space left(ErrorCode-101)
+|0|2|3|4|5|-->1:Dequeue success
+|0|0|3|4|5|-->2:Dequeue success
+|0|0|0|4|5|-->3:Dequeue success
+|0|0|0|0|5|-->4:Dequeue success
+|0|0|0|0|0|-->5:Dequeue success
+|0|0|0|0|0|-->0:Dequeue error:Nothing data(ErrorCode-201)
+|0|0|0|0|0|<--0:Enqueue error:Not natural number was entered:(ErrorCode-102)
+|0|0|0|0|0|<--1:Enqueue success
+|1|0|0|0|0|<--2:Enqueue success
+|1|2|0|0|0|<--3:Enqueue success
+|0|2|3|0|0|-->1:Dequeue success
+|0|2|3|0|0|<--4:Enqueue success
+|0|0|3|4|0|-->2:Dequeue success
+|0|0|3|4|0|<--5:Enqueue success
+|0|0|0|4|5|-->3:Dequeue success
+|0|0|0|4|5|<--6:Enqueue success
+|6|0|0|0|5|-->4:Dequeue success
+|6|0|0|0|5|<--7:Enqueue success
+|6|7|0|0|0|-->5:Dequeue success
+|6|7|0|0|0|<--8:Enqueue success
+|0|7|8|0|0|-->6:Dequeue success
+|0|7|8|0|0|<--9:Enqueue success
+|0|0|8|9|0|-->7:Dequeue success
+\end{lstlisting}
+
+リングキューでは以下の事項を確認できるように実装されています。
+\begin{itemize}
+  \item データがいっぱいになった時にエラー処理ができているか。
+  \item 空の時にデータを取り出す時のエラー処理ができているか。
+  \item 自然数以外の値を入力した時のエラー処理ができているか。
+  \item キューがリングバッファであることを確認できるか。
+\end{itemize}
+
+それぞれについて説明します。
+
+\subsubsection{データがいっぱいになった時にエラー処理ができているか}
+リスト\ref{resultringqueue}の6行目を見ると、
+キューの最大容量は5であるため、5つのデータを積み上げた後に
+6つ目のデータを積み上げるとエラーが表示されてます。
+よって、データがいっぱいになった時にエラー処理ができていることが
+確認できます。
+
+\subsubsection{空の時にデータを取り出す時のエラー処理ができているか}
+リスト\ref{resultringqueue}の13行目を見ると、
+データがない状態でデータを取り出そうとするとエラーが表示されて
+いることがわかります。
+よって、空の時にデータを取り出す時のエラー処理ができていることが
+確認できます。
+
+\subsubsection{自然数以外の値を入力した時のエラー処理ができているか}
+リスト\ref{resultringqueue}の14行目を見ると、0を
+エンキューしようとした時にエラーが表示されていることがわかります。
+よって、自然数以外の値を入力した時のエラー処理ができていることが
+確認できます。
+
+\subsubsection{キューがリングバッファであることを確認できるか}
+リスト\ref{resultringqueue}の17行目から最後までを見ると、
+データを積み上げ、取り出すのを繰り返すと、データが端にそろわず
+移動していくため、リングバッファであることが確認できます。
+
+\subsection{リストキュー}
+リストキューの実行結果をリスト\ref{resultlistqueue}に示します。
+
+\begin{lstlisting}[caption=リストキューの実行結果,label=resultlistqueue]
+|<--1:Enqueue success
+|1|<--2:Enqueue success
+|1|2|<--3:Enqueue success
+|1|2|3|<--4:Enqueue success
+|1|2|3|4|<--5:Enqueue success
+|1|2|3|4|5|<--6:Enqueue success
+|1|2|3|4|5|6|<--7:Enqueue success
+|1|2|3|4|5|6|7|<--8:Enqueue success
+|1|2|3|4|5|6|7|8|<--9:Enqueue success
+|2|3|4|5|6|7|8|9|-->1:Dequeue success
+|3|4|5|6|7|8|9|-->2:Dequeue success
+|4|5|6|7|8|9|-->3:Dequeue success
+|5|6|7|8|9|-->4:Dequeue success
+|6|7|8|9|-->5:Dequeue success
+|7|8|9|-->6:Dequeue success
+|8|9|-->7:Dequeue success
+|9|-->8:Dequeue success
+|-->9:Dequeue success
+Dequeue error:Nothing data(ErrorCode-201)
+|<--2:Enqueue success
+|2|<--1:Enqueue success
+|2|1|<--0:Enqueue error:Enqueue error:Not natural number was entered:(ErrorCode-102)
+\end{lstlisting}
+
+リストキューでは以下の事項を確認できるように実装されています。
+\begin{itemize}
+  \item 空の時にデータを取り出す時のエラー処理ができているか。
+  \item 自然数以外の値を入力した時のエラー処理ができているか。
+  \item リストになっていることが確認できるか。
+\end{itemize}
+
+それぞれについて説明します。
+
+\subsubsection{空の時にデータを取り出す時のエラー処理ができているか}
+リスト\ref{resultlistqueue}の18行目を見ると、
+データがない状態でデータを取り出そうとするとエラーが表示されて
+いることがわかります。
+よって、空の時にデータを取り出す時のエラー処理ができていることが
+確認できます。
+
+\subsubsection{自然数以外の値を入力した時のエラー処理ができているか}
+リスト\ref{resultlistqueue}の22行目を見ると、0を
+エンキューしようとした時にエラーが表示されていることがわかります。
+よって、自然数以外の値を入力した時のエラー処理ができていることが
+確認できます。
+
+\subsubsection{リストになっていることが確認できるか}
+リスト\ref{resultlistqueue}を見ると、データを積み上げた
+分だけのキューのみ表示されているので、リストになっていることが
+確認できます。
+
 
 \section{考察}
+この章では、再構築するキュー、リングキュー、リストキューの
+実行結果をもとに、それぞれのキューの特徴について考察します。
+
+\subsection{再構築するキュー}
+再構築するキューは、固定長の配列を使用して実装されています。
+デキュー、エンキューのたびにデータを再構築するため、
+データが多い場合は処理が遅くなります。
+
+\subsection{リングキュー}
+リングキューは、固定長の配列を使用して実装されています。
+再構築するキューとちがい、容量を効率よく使え、無駄がありません。
+
+\subsection{リストキュー}
+リストキューは、連結リストを使用して実装されています。
+連結リストの長さに制限はありませんので、理論上は無限のデータを追加できます。
+そのため、データの個数を制限したい場合などは向きません。
+
+\section{付録}
+この章では、再構築するキュー、リングキュー、リストキューのプログラム
+全文を示します。
+
+\subsection{再構築するキュー}
+再構築するキューのプログラム全文をリスト\ref{queue}に示します。
+
+\begin{lstlisting}[caption=再構築するキューのプログラム,label=queue]
+  #include <stdio.h>
+
+  #define QUEUE_SIZE 4
+  
+  int queue[QUEUE_SIZE]; // キュー用の配列
+  int quantity = 0; // キューに格納されているデータの個数
+  
+  /// @brief キューにデータを積み上げる
+  /// @param data キューに格納するデータ
+  /// @return
+  /// 実行の成否を返す。成功:-100,残領域がない:-101,0以下の値が入力された:-102
+  int enqueue(int data) {
+      // 残り領域があるか確認する
+      if (quantity >= QUEUE_SIZE) {
+          // 残り領域がない場合はエラーコードを返す
+          return -101;
+      }
+      // データが自然数か確認する
+      if (data <= 0) {
+          // 自然数でない場合はエラーコードを返す
+          return -102;
+      }
+      // 配列のキューにデータを保存する
+      queue[quantity] = data;
+      // キューのポインタをインクリメントする
+      quantity++;
+      // 返り値を返す
+      return -100;
+  }
+  
+  /// @brief キューからデータを取り出す
+  /// @return
+  /// 取り出したデータ,もしくはエラーコード（取り出せるデータがなかった時:-201）
+  int dequeue(void) {
+      // データが存在するかどうか確認する．
+      if (quantity == 0) {
+          // データが存在しない場合はエラーコードを返す．
+          return -201;
+      }
+      // キューからデータをとりだす．
+      int data = queue[0];
+      // データの個数カウントを減らす
+      quantity--;
+      // 取り出されたデータ部分を埋めるように再構築する
+      for (int i = 0; i < quantity; i++) {
+          queue[i] = queue[i + 1];
+      }
+      queue[quantity] = 0;
+      // データを返す
+      return data;
+  }
+  
+  /// @brief キュー用の配列を0で初期化する。
+  /// @return 成功したら0を返す。
+  int initQueue() {
+      // キューのデータを入れる配列をすべて 0 に初期化する．
+      for (int i = 0; i < QUEUE_SIZE; i++) {
+          queue[i] = 0;
+      }
+      // 格納データ個数を 0 に初期化する．
+      quantity = 0;
+      return 0;
+  }
+  
+  int showQueue() {
+      // 配列全体のデータを順に表示する．
+      printf("|");
+      for (int i = 0; i < QUEUE_SIZE; i++) {
+          printf("%d", queue[i]);
+          // データとデータの間に区切り文字「|」を表示する．
+          printf("|");
+      }
+      return 0;
+  }
+  
+  void showResult(int result) {
+      // result の値に応じて，対応するエラーメッセージを表示する．
+      switch (result) {
+          case -100:
+              printf(":Enqueue success\n");
+              break;
+          case -101:
+              printf(":Enqueue error:No space left(ErrorCode-101)\n");
+              break;
+          case -102:
+              printf(":Enqueue error:Not natural number was entered:(ErrorCode-102)\n");
+              break;
+          case -201:
+              printf(":Dequeue error:Nothing data(ErrorCode-201)\n");
+              break;
+          case 0:
+              printf(":success\n");
+              break;
+          default:
+              printf(":Dequeue success\n");
+              break;
+      }
+  }
+  
+  int main() {
+      int i;
+      int dequeueData, dequeueResult;
+      // キューの初期化
+      printf("Queue initialize");
+      showResult(initQueue());
+      // キューにデータを積み上げる
+      for (i = 1; i <= 5; i++) {
+          showQueue();
+          printf("<--%d", i);
+          showResult(enqueue(i));
+      }
+      // キューのデータを表示する
+      // キューからデータを取り出す
+      for (i = 0; i < 5; i++) {
+          dequeueData = queue[0];
+          dequeueResult = dequeue();
+          showQueue();
+          printf("-->%d", dequeueData);
+          showResult(dequeueResult);
+      }
+      // キューのデータを表示する
+      for(i = 2; i >= 0;i--){
+          showQueue();
+          printf("<--%d", i);
+          showResult(enqueue(i));
+      }
+      return 0;
+  }
+\end{lstlisting}
+
+\subsection{リングキュー}
+リングキューのプログラム全文をリスト\ref{ringqueue}に示します。
+
+\begin{lstlisting}[caption=リングキューのプログラム,label=ringqueue]
+  #include <stdio.h>
+
+#define QUEUE_SIZE 5
+
+typedef struct {
+    int data[QUEUE_SIZE];  // データが入る配列
+    int wp;                // 次にデータを入れる場所の配列番号
+    int quantity;          // データの個数
+} Queue;
+
+/// @brief キューからデータを取り出す際のインデックスを返す
+/// @param obj データを取り出すキューの構造体
+/// @return キューからデータを取り出す際のインデックス
+int dequeueIndex(Queue obj) {
+    if (obj.wp - obj.quantity < 0) {
+        return QUEUE_SIZE + obj.wp - obj.quantity;
+    } else {
+        return obj.wp - obj.quantity;
+    }
+}
+
+/// @brief キューにデータを積み上げる
+/// @param obj データを追加するキューの構造体のアドレス
+/// @param data キューに格納するデータ
+/// @return
+/// 実行の成否を返す。成功:-100,残領域がない:-101,0以下の値が入力された:-102
+int enqueue(Queue *obj, int data) {
+    // 残り領域があるか確認する
+    if (obj->quantity >= QUEUE_SIZE) {
+        // 残り領域がない場合はエラーコードを返す
+        return -101;
+    }
+    // データが自然数か確認する
+    if (data <= 0) {
+        // 自然数でない場合はエラーコードを返す
+        return -102;
+    }
+    // 配列のキューにデータを保存する
+    obj->data[obj->wp] = data;
+    // キューのポインタをインクリメントする
+    obj->quantity++;
+    if (obj->wp == QUEUE_SIZE - 1) {
+        obj->wp = 0;
+    } else {
+        obj->wp++;
+    }
+    // 返り値を返す
+    return -100;
+}
+
+/// @brief キューからデータを取り出す
+/// @param obj データを取り出すキューの構造体のアドレス
+/// @return
+/// 取り出したデータ,もしくはエラーコード（取り出せるデータがなかった時:-201）
+int dequeue(Queue *obj) {
+    int index;
+    index = dequeueIndex(*obj);
+    // データが存在するかどうか確認する．
+    if (obj->quantity == 0) {
+        // データが存在しない場合はエラーコードを返す．
+        return -201;
+    }
+    // キューからデータをとりだす．
+    int data = obj->data[index];
+    // 取り出されたデータ部分を埋めるように再構築する
+    obj->data[index] = 0;
+    // データの個数のカウントを減らす．
+    obj->quantity--;
+    // データを返す．
+    return data;
+}
+
+/// @brief キュー用の配列を0で初期化する。
+/// @param obj キューの構造体のアドレス
+/// @return 成功したら-400を返す。
+int initQueue(Queue *obj) {
+    int i;
+    // キューのデータを入れる配列をすべて 0 に初期化する．
+    for (i = 0; i < QUEUE_SIZE; i++) {
+        obj->data[i] = 0;
+    }
+    // キューのデータ格納個数を 0 に初期化する
+    obj->quantity = 0;
+    // キューの wp ポインタを 0 に初期化する．
+    obj->wp = 0;
+    return -400;
+}
+
+/// @brief キューのデータを表示する
+/// @param obj キューの構造体のアドレス
+/// @return 成功したら-500を返す。
+int showQueue(Queue *obj) {
+    int i;
+    // 配列全体のデータを順に表示する．
+    // データとデータの間に区切り文字「|」を表示する．
+    printf("|");
+    for (i = 0; i < QUEUE_SIZE; i++) {
+        printf("%d", obj->data[i]);
+        printf("|");
+    }
+    return -500;
+}
+
+/// @brief 動作に対しての結果を表示する
+/// @param result 結果の値
+void showResult(int result) {
+    switch (result) {
+        case -100:
+            printf(":Enqueue success\n");
+            break;
+        case -101:
+            printf(":Enqueue error:No space left(ErrorCode-101)\n");
+            break;
+        case -102:
+            printf(
+                ":Enqueue error:Not natural number was "
+                "entered:(ErrorCode-102)\n");
+            break;
+        case -201:
+            printf(":Dequeue error:Nothing data(ErrorCode-201)\n");
+            break;
+        case -400:
+            printf(":Init success\n");
+            break;
+        case -500:
+            printf(":Print success\n");
+            break;
+        default:
+            printf(":Dequeue success\n");
+            break;
+    }
+    // result の値に応じて，対応するエラーメッセージを表示する．
+}
+
+int main() {
+    Queue queue;
+    int dequeueData, dequeueResult;
+    int i;
+    // キューの初期化
+    printf("Queue initialize");
+    showResult(initQueue(&queue));
+    // データがいっぱいになった時の挙動を確認
+    for (i = 1; i <= 6; i++) {
+        showQueue(&queue);
+        printf("<--%d", i);
+        showResult(enqueue(&queue, i));
+    }
+
+    // 空の時にデータを取り出す時の挙動を確認
+    for (i = 0; i < 6; i++) {
+        dequeueData = queue.data[dequeueIndex(queue)];
+        dequeueResult = dequeue(&queue);
+        showQueue(&queue);
+        printf("-->%d", dequeueData);
+        showResult(dequeueResult);
+    }
+    // 自然数以外の値を入力した時の挙動を確認
+    showQueue(&queue);
+    printf("<--%d", 0);
+    showResult(enqueue(&queue, 0));
+    // キューがリングバッファであることを確認
+    showQueue(&queue);
+    printf("<--%d", 1);
+    showResult(enqueue(&queue, 1));
+    showQueue(&queue);
+    printf("<--%d", 2);
+    showResult(enqueue(&queue, 2));
+    for (i = 3; i < 10; i++) {
+        showQueue(&queue);
+        printf("<--%d", i);
+        showResult(enqueue(&queue, i));
+        dequeueData = queue.data[dequeueIndex(queue)];
+        dequeueResult = dequeue(&queue);
+        showQueue(&queue);
+        printf("-->%d", dequeueData);
+        showResult(dequeueResult);
+    }
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{リストキュー}
+リストキューのプログラム全文をリスト\ref{listqueue}に示します。
+
+\begin{lstlisting}[caption=リストキューのプログラム,label=listqueue]
+  #include <stdio.h>
+  #include <stdlib.h>
+  
+  struct queue {
+      int value;
+      struct queue *addr;
+  };
+  
+  struct queue *bottom_queue =
+      NULL;  // 最古のキューのアドレスを記憶しておくポインタ
+  struct queue *top_queue = NULL;  // 最新のキューのアドレスを記憶しておくポインタ
+  
+  /// @brief キューにデータを積み上げる
+  /// @param data キューに格納するデータ
+  /// @return
+  /// 実行の成否を返す。成功:-100,残領域がない:-101,0以下の値が入力された:-102
+  int enqueue(int data) {
+      int r_value = -100;
+      struct queue *new_queue;
+      if (data <= 0) {
+          r_value = -102;
+      } else if ((new_queue = (struct queue *)malloc(sizeof(struct queue))) ==
+                 NULL) {
+          r_value = -101;
+      } else {
+          new_queue->value = data;
+          new_queue->addr = NULL;
+          if (bottom_queue == NULL) {
+              bottom_queue = new_queue;
+          } else {
+              top_queue->addr = new_queue;
+          }
+          top_queue = new_queue;
+      }
+      return r_value;
+  }
+  
+  /// @brief キューからデータを取り出す
+  /// @return
+  /// 取り出したデータ,もしくはエラーコード（取り出せるデータがなかった時:-201,
+  /// キュ取り出しエラー:-202,その他のエラー:-200)
+  int dequeue() {
+      int r_value = -200;
+      struct queue *new_bottom;
+      if (top_queue == bottom_queue &&
+          bottom_queue != NULL) {  // キューにデータが一つしかない場合
+          r_value = bottom_queue->value;
+          free(bottom_queue);
+          bottom_queue = NULL;
+          top_queue = NULL;
+      } else if (bottom_queue != NULL &&
+                 top_queue != NULL) {  // キューにデータが複数ある場合
+          r_value = bottom_queue->value;
+          new_bottom = bottom_queue->addr;
+          free(bottom_queue);
+          bottom_queue = new_bottom;
+      } else if (bottom_queue == NULL) {  // キューにデータがない場合
+          r_value = -201;
+      } else {  // その他のエラー
+          r_value = -202;
+      }
+      return r_value;
+  }
+  
+  /// @brief キュー用の配列のデータを表示する。
+  /// @return 成功したら0を返す。
+  int showQueue() {
+      struct queue *print_queue;
+      print_queue = bottom_queue;
+      printf("|");
+      while (print_queue != NULL) {
+          printf("%d|", print_queue->value);
+          print_queue = print_queue->addr;
+      }
+      return 0;
+  }
+  
+  /// @brief エラーメッセージを表示する
+  /// @param result エラーコード
+  void showResult(int result) {
+      switch (result) {
+          case 0:
+              printf("Print success\n");
+              break;
+          case -100:
+              printf("Enqueue success\n");
+              break;
+          case -101:
+              printf("Enqueue error: no remaining area(ErrorCode-101)\n");
+              break;
+          case -102:
+              printf(
+                  "Enqueue error:Enqueue error:Not natural number was "
+                  "entered:(ErrorCode-102)\n");
+              break;
+          case -200:
+              printf("Dequeue error:Other error(ErrorCode-200)\n");
+              break;
+          case -201:
+              printf("Dequeue error:Nothing data(ErrorCode-201)\n");
+              break;
+          case -202:
+              printf("Dequeue error:Dequeue error(ErrorCode-202)\n");
+              break;
+          default:
+              printf("Dequeue success\n");
+              break;
+      }
+  }
+  
+  /// @brief キューのデータを解放する
+  void freeQueue() {
+      struct queue *this_Queue;
+      while (bottom_queue != NULL) {
+          this_Queue = bottom_queue->addr;
+          free(bottom_queue);
+          bottom_queue = this_Queue;
+      }
+  }
+  
+  int main(void) {
+      int i;
+      int dequeueData, dequeueResult;
+      // データをキューに積み上げる
+      for (i = 1; i < 10; i++) {
+          showQueue();
+          printf("<--%d:", i);
+          showResult(enqueue(i));
+      }
+      // データをキューから取り出す
+      for (i = 0; i < 10; i++) {
+          dequeueResult = dequeue();
+          if (dequeueResult > 0) {
+              showQueue();
+              printf("-->%d:", dequeueResult);
+              showResult(dequeueResult);
+          } else {
+              showResult(dequeueResult);
+          }
+      }
+      for (i = 2; i >= 0; i--) {
+          showQueue();
+          printf("<--%d:", i);
+          showResult(enqueue(i));
+      }
+      return 0;
+  }
+\end{lstlisting}
 
 \end{document}

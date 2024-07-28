@@ -48,8 +48,6 @@ int main(void) {
     }
     if (count == 0) {
         printf("検索文字列はありません\n");
-        return -1;
-    } else {
-        return 0;
     }
+    return 0;
 }

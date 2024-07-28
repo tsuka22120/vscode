@@ -2,8 +2,8 @@
 
 #define QUEUE_SIZE 4
 
-int queue[QUEUE_SIZE];
-int quantity = 0;
+int queue[QUEUE_SIZE]; // キュー用の配列
+int quantity = 0; // キューに格納されているデータの個数
 
 /// @brief キューにデータを積み上げる
 /// @param data キューに格納するデータ
@@ -88,6 +88,9 @@ void showResult(int result) {
         case -201:
             printf(":Dequeue error:Nothing data(ErrorCode-201)\n");
             break;
+        case 0:
+            printf(":success\n");
+            break;
         default:
             printf(":Dequeue success\n");
             break;
@@ -98,7 +101,8 @@ int main() {
     int i;
     int dequeueData, dequeueResult;
     // キューの初期化
-    initQueue();
+    printf("Queue initialize");
+    showResult(initQueue());
     // キューにデータを積み上げる
     for (i = 1; i <= 5; i++) {
         showQueue();
