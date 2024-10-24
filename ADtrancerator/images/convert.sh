@@ -1,0 +1,1 @@
+inkscape.com --export-type="png" --export-width="1024" "image.svg"
