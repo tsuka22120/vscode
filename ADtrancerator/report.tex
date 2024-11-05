@@ -5,7 +5,6 @@
 \usepackage{amsmath,amsfonts}
 \usepackage{bm}
 % 画像
-% \documentclass{article}
 \usepackage[dvipdfmx]{graphicx}
 \usepackage{circuitikz}
 \usepackage{amsmath,amssymb}
@@ -19,13 +18,14 @@
 \newcommand{\Figure}[4]{
   \begin{figure}[H]
     \centering
-    \includegraphics[width=#1\linewidth]{#2}
+    \includegraphics[width=#1\linewidth]{./images/#2}
     \caption{#3}
     \label{fig:#4}
   \end{figure}
 }
 
 \begin{document}
+
 
 \begin{table}[b]
   \centering
@@ -149,22 +149,22 @@ ICでは内部の特徴に違いがあり、それを名前で表している。
 \subsubsection{SN74LS04N}
 SN74LS04Nとは、NOTゲートを6つ内蔵したICである。NOTゲートは、入力された信号を反転させる回路である。
 SN74LS04Nのピンアサインを図\ref{fig:NOT}に示す。
-\Figure{0.4}{./images/74LS04.png}{SN74LS04Nのピンアサイン}{NOT}
+\Figure{0.4}{74LS04.png}{SN74LS04Nのピンアサイン}{NOT}
 
 \subsubsection{SN74LS08N}
 SN74LS08Nとは、ANDゲートを4つ内蔵したICである。ANDゲートは、入力された信号がすべてHighのときにHighを出力する回路である。
 SN74LS08Nのピンアサインを図\ref{fig:AND}に示す。
-\Figure{0.4}{./images/74LS08.png}{SN74LS08Nのピンアサイン}{AND}
+\Figure{0.4}{74LS08.png}{SN74LS08Nのピンアサイン}{AND}
 
 \subsubsection{SN74LS32N}
 SN74LS32Nとは、ORゲートを4つ内蔵したICである。ORゲートは、入力された信号のうち1つでもHighがあればHighを出力する回路である。
 SN74LS32Nのピンアサインを図\ref{fig:OR}に示す。
-\Figure{0.4}{./images/74LS32.png}{SN74LS32Nのピンアサイン}{OR}
+\Figure{0.4}{74LS32.png}{SN74LS32Nのピンアサイン}{OR}
 
 \subsubsection{SN74LS86N}
 SN74LS86Nとは、XORゲートを4つ内蔵したICである。XORゲートは、入力された信号が異なるときにHighを出力する回路である。
 SN74LS86Nのピンアサインを図\ref{fig:XOR}に示す。
-\Figure{0.4}{./images/74LS86.png}{SN74LS86Nのピンアサイン}{XOR}
+\Figure{0.4}{74LS86.png}{SN74LS86Nのピンアサイン}{XOR}
 
 % ICには論理回路に入出力があるように、入出力するための端子がある。その内部の構造として、出力端子を説明する。
 % ICの内部は複数のトランジスタで構成されている。
