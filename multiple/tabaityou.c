@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include "MT.h"
 
 #define KETA 100
 
@@ -65,7 +66,7 @@ void setRnd(struct NUMBER *a, int k) {
     }
     int i;
     for (i = 0; i < k; i++) {
-        a->n[i] = rand() % 10;
+        a->n[i] = genrand_int32() % 10;
     }
     for (i = k; i >= 0; i--) {
         if (a->n[i] != 0) {
@@ -76,7 +77,7 @@ void setRnd(struct NUMBER *a, int k) {
             return;
         }
     }
-    if (rand() % 2 == 0) {
+    if (genrand_int32() % 2 == 0) {
         a->sign = 1;
     } else {
         a->sign = -1;
@@ -152,17 +153,15 @@ int divBy10(const struct NUMBER *a, struct NUMBER *b) {
 }
 
 int main(void) {
-    srand(time(NULL));
+    init_genrand((unsigned)time(NULL));
     int i;
     struct NUMBER b, c;
     clearByZero(&b);
-    setRnd(&b, 10);
-    b.sign = -1;
     for (i = 0; i < 10; i++) {
-        dispNumberZeroSuppress(&b);
-        printf("\n");
-        printf("%d\n", divBy10(&b, &c));
-        copyNumber(&b, &c);
+    setRnd(&b, 10);
+    printf("b = ");
+    dispNumberZeroSuppress(&b);
+    printf("\n");
     }
     return 0;
 }

@@ -1,0 +1,13 @@
+     SETC  100    //  0: Acc <-- 3       3+2+1 -> M[0]
+     STORE 0    //  2: R[0] <-- Acc
+     SETC  0    //  4: Acc <-- 0
+     STORE 1    //  6: R[1] <-- Acc
+     LOAD  0    //  8: Acc <-- R[0] 
+     ADD   1    // 10: Acc <-- Acc+R[1] 
+     STORE 1    // 12: R[1] <-- Acc
+     LOAD  0    // 14: Acc <-- R[0] 
+     PRED       // 16: Acc <-- Acc-1
+     JZERO 24   // 18: (Acc=0 ?)==> Ip <-- 24
+     STORE 0    // 20: R[0] <-- Acc
+     JUMP  10   // 22: Ip <-- 10
+     HALT       // 24:
