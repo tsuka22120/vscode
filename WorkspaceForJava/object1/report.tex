@@ -1,0 +1,109 @@
+\documentclass[a4j]{jarticle}
+
+% 数式
+\usepackage{amsmath,amsfonts}
+\usepackage{bm}
+% 画像
+\usepackage[dvipdfmx]{graphicx}
+\usepackage{listings,jvlisting}
+\usepackage{jlisting}
+
+
+\lstset{
+basicstyle={\ttfamily},
+identifierstyle={\small},
+commentstyle={\smallitshape},
+keywordstyle={\small\bfseries},
+ndkeywordstyle={\small},
+stringstyle={\small\ttfamily},
+frame={tb},
+breaklines=true,
+columns=[l]{fullflexible},
+numbers=left,
+xrightmargin=0zw,
+xleftmargin=3zw,
+numberstyle={\scriptsize},
+stepnumber=1,
+numbersep=1zw,
+lineskip=-0.5ex
+}
+
+% プログラミングリストコマンド
+\renewcommand{\lstlistingname}{リスト}
+
+\newcommand{\Figure}[4]{
+\begin{figure}[H]
+\centering
+\includegraphics[width=#1\linewidth]{./images/#2}
+\caption{#3}
+\label{fig:#4}
+\end{figure}
+}
+
+%*-------使い方--------%
+%\begin{lstlisting}[caption=キャプション,label=ラベル]
+% コード
+%\end{lstlisting}
+
+%\lstinputlisting[caption=キャプション,label=ラベル]{ファイル名}
+
+%\Figure{横幅(大体0.8)}{ファイル名}{キャプション}{ラベル}
+
+\begin{document}
+
+\title{オブジェクト指向プログラミング}
+\author{学籍番号:22120 \\ 組番号:222 \\名前:塚田 勇人}
+\date{\today}
+\maketitle
+
+\section{ソースコード}
+\lstinputlisting[caption=Main.java,label=src:Main.java]{./src/Main.java}
+\lstinputlisting[caption=Ambulance.java,label=src:Ambulance.java]{./src/Ambulance.java}
+\lstinputlisting[caption=Car.java,label=src:Car.java]{./src/Car.java}
+\lstinputlisting[caption=Bus.java,label=src:Bus.java]{./src/Bus.java}
+\lstinputlisting[caption=PatrolCar.java,label=src:PatrolCar.java]{./src/PatrolCar.java}
+\lstinputlisting[caption=Siren.java,label=src:Siren.java]{./src/Siren.java}
+
+\section{実行結果}
+\begin{lstlisting}[caption=実行結果,label=src:result]
+  ===バス===
+  車製造
+  バス製造
+  搭載燃料：20
+  タイヤ:6
+  燃費：10
+  ぶいーん  残燃料：10
+  ぶいーん  残燃料：0
+  ガス欠です！うごけません！
+  ガス欠です！うごけません！
+  ===救急車===
+  車製造
+  救急車製造
+  タイヤ:4
+  搭載燃料：120
+  燃費：5
+  ピーポーピーポー
+  ===パトカー===
+  車製造
+  パトカー製造
+  タイヤ:4
+  搭載燃料：12
+  燃費：5
+  うおーーーーん
+  ぶいーん  残燃料：7
+  うおーーーーん
+  ぶいーん  残燃料：2
+  うおーーーーん
+  ガス欠です！うごけません！
+  うおーーーーん
+  ガス欠です！うごけません！
+\end{lstlisting}
+
+\section{考察}
+クラスの継承を用いることで、共通の機能を持つクラスを作成することができる。例えば、車のクラスを作成し、
+そのクラスを継承してバス、救急車、パトカーのクラスを作成することで、車の共通の機能を持つクラスを
+作成することができる。\\
+また、インターフェースを用いることで、クラスに共通の機能を持たせることができる。
+例えば、サイレンのインターフェースを作成し、そのインターフェースを実装することで、
+サイレンの機能を持つクラスを作成することができる。
+\end{document}
