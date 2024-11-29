@@ -1,4 +1,4 @@
-#define KETA 3
+#define KETA 20
 
 struct NUMBER {
     int n[KETA];  // 各桁の変数
@@ -24,3 +24,5 @@ int add(const struct NUMBER *, const struct NUMBER *, struct NUMBER *);
 int sub(const struct NUMBER *, const struct NUMBER *, struct NUMBER *);
 int increment(struct NUMBER *, struct NUMBER *);
 int decrement(struct NUMBER *, struct NUMBER *);
+int simpleMultiple(int, int, int *);
+int multiple(const struct NUMBER *, const struct NUMBER *, struct NUMBER *);

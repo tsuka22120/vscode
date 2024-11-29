@@ -483,3 +483,53 @@ int decrement(struct NUMBER *a, struct NUMBER *b) {
     r = sub(a, &one, b);
     return r;
 }
+
+/// @brief 2つの整数を掛け算する
+/// @param a 掛け算する値
+/// @param b 掛け算する値
+/// @param c 掛け算した値を代入するポインタ
+/// @return オーバーフロー: -1, 正常終了: 0
+int simpleMultiple(int a, int b, int *c) {
+    *c = 0;
+    while (1) {
+        if (INT_MAX - a < b) {
+            return -1;
+        }
+        if (b == 0) {
+            break;
+        }
+        *c += a;
+        b--;
+    }
+    return 0;
+}
+
+/// @brief 2つの多倍長整数を掛け算する
+/// @param a 掛け算する構造体
+/// @param b 掛け算する構造体
+/// @param c 掛け算した値を代入する構造体
+/// @return オーバーフロー: -1, 正常終了: 0
+int multiple(const struct NUMBER *a, const struct NUMBER *b, struct NUMBER *c) {
+    clearByZero(c);
+    int numA, numB;
+    int h, d, e;
+    for (int i = 0; i < KETA - 1; i++) {
+        numB = b->n[i];
+        h = 0;
+        d = 0;
+        for (int j = 0; j < KETA - 1; j++) {
+            numA = a->n[j];
+            e = numA * numB + h;
+            d = e % 10;
+            h = e % 100 - d;
+            for(int k = 0; k < d; k++) {
+                increment(c, c);
+            }
+        }
+        // if(h != 0) {
+        //     return -1;
+        // }
+    }
+    c->sign = 1;
+    return 0;
+}

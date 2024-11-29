@@ -10,11 +10,21 @@ int main(int argc, char **argv) {
     st = time(NULL);
     init_genrand((unsigned long)time(NULL));
 
-    struct NUMBER a, b;
-    setInt(&a, -999);
-    if(decrement(&a, &b) == -1) {
+    struct NUMBER a, b, c;
+    clearByZero(&a);
+    clearByZero(&b);
+    clearByZero(&c);
+    setInt(&a, 1234);
+    setInt(&b, 568);
+    if(multiple(&a, &b, &c) == -1) {
         printf("overflow\n");
     }
+    dispNumber(&a);
+    printf("\n");
+    dispNumber(&b);
+    printf("\n");
+    dispNumber(&c);
+    printf("\n");
 
     et = time(NULL);
     printf("time: %ld\n", et - st);
