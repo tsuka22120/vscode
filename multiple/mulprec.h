@@ -1,4 +1,4 @@
-#define KETA 20
+#define KETA 3
 
 struct NUMBER {
     int n[KETA];  // 各桁の変数
@@ -20,3 +20,7 @@ int setSign(struct NUMBER *, int);
 int getSign(const struct NUMBER *);
 int numComp(const struct NUMBER *, const struct NUMBER *);
 void swap(struct NUMBER *, struct NUMBER *);
+int add(const struct NUMBER *, const struct NUMBER *, struct NUMBER *);
+int sub(const struct NUMBER *, const struct NUMBER *, struct NUMBER *);
+int increment(struct NUMBER *, struct NUMBER *);
+int decrement(struct NUMBER *, struct NUMBER *);

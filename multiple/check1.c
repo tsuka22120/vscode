@@ -6,27 +6,17 @@
 #include "mulprec.h"
 
 int main(int argc, char **argv) {
-    struct NUMBER a,b;
-    int r;
-
+    time_t st, et;
+    st = time(NULL);
     init_genrand((unsigned long)time(NULL));
 
-    setInt(&a, -12345);
-    printf("a = ");
-    dispNumber(&a);
-    printf("\n");
+    struct NUMBER a, b;
+    setInt(&a, -999);
+    if(decrement(&a, &b) == -1) {
+        printf("overflow\n");
+    }
 
-    copyNumber(&b, &a);
-    setSign(&b, 1);
-    printf("b = ");
-    dispNumber(&b);
-    printf("\n");
-
-    r = getSign(&b);
-    printf("getSign() = %d\n", r);
-
-    r = numComp(&a, &b);
-    printf("numComp() = %d\n", r);
-
+    et = time(NULL);
+    printf("time: %ld\n", et - st);
     return 0;
 }

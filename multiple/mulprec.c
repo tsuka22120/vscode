@@ -190,11 +190,15 @@ int getInt(const struct NUMBER *a, int *x) {
         return 0;
     }
     int i;
-    int MAX = INT_MAX;
-    int MIN = INT_MIN;
-    int MAXlen = 0, MINlen = 0;
-    int MAXdigit[KETA], MINdigit[KETA];
+    int MAX = INT_MAX;           // int型の最大値
+    int MIN = INT_MIN;           // int型の最小値
+    int MAXlen = 0, MINlen = 0;  // int型の最大値と最小値の桁数
+    int MAXdigit[KETA], MINdigit[KETA];  // int型の最大値と最小値の各桁の値
     // int型の最大値と最小値の桁数とそれぞれの桁の値を求める
+    for (i = 0; i < KETA; i++) {
+        MAXdigit[i] = 0;
+        MINdigit[i] = 0;
+    }
     i = 0;
     while (MAX != 0) {
         MAXdigit[i] = MAX % 10;
@@ -206,6 +210,10 @@ int getInt(const struct NUMBER *a, int *x) {
     i = 0;
     while (MIN != 0) {
         MINdigit[i] = MIN % 10;
+        if (MINdigit[i] <
+            0) {  // なぜかMINdigit[i]が負の値になる場合とならない場合があるので強制で正にする
+            MINdigit[i] *= -1;
+        }
         MIN -= MINdigit[i];
         MIN /= 10;
         MINlen++;
@@ -234,20 +242,20 @@ int getInt(const struct NUMBER *a, int *x) {
         }
     } else {
         for (i = 0; i < MINlen; i++) {
-            if (a->n[MINlen - 1 - i] < MINdigit[MINlen - 1 - i]) {
+            if (a->n[MINlen - 1 - i] > MINdigit[MINlen - 1 - i]) {
                 return -1;
-            } else if (a->n[MINlen - 1 - i] > MINdigit[MINlen - 1 - i]) {
+            } else if (a->n[MINlen - 1 - i] < MINdigit[MINlen - 1 - i]) {
                 break;
             }
         }
     }
     *x = 0;
     for (i = KETA - 1; i >= 0; i--) {
-        *x *= 10;
-        *x += a->n[i];
+        (*x) *= 10;
+        (*x) += a->n[i];
     }
     if (getSign(a) == -1) {
-        *x *= -1;
+        (*x) *= -1;
     }
     return 0;
 }
@@ -288,7 +296,7 @@ int numComp(const struct NUMBER *a, const struct NUMBER *b) {
     if (getSign(a) == getSign(b) && getSign(a) == 0) {
         return 0;
     }
-    if(getSign(a) == getSign(b) && getSign(a) == 1){
+    if (getSign(a) == getSign(b) && getSign(a) == 1) {
         for (i = KETA - 1; i >= 0; i--) {
             if (a->n[i] > b->n[i]) {
                 return 1;
@@ -297,7 +305,7 @@ int numComp(const struct NUMBER *a, const struct NUMBER *b) {
             }
         }
         return 0;
-    }else if(getSign(a) == getSign(b) && getSign(a) == -1){
+    } else if (getSign(a) == getSign(b) && getSign(a) == -1) {
         for (i = KETA - 1; i >= 0; i--) {
             if (a->n[i] < b->n[i]) {
                 return 1;
@@ -318,4 +326,160 @@ void swap(struct NUMBER *a, struct NUMBER *b) {
     copyNumber(&tmp, a);
     copyNumber(a, b);
     copyNumber(b, &tmp);
+}
+
+/// @brief 2つの多倍長整数を加算する
+/// @param a 加算する構造体
+/// @param b 加算する構造体
+/// @param c 加算した値を代入する構造体
+/// @return オーバーフロー: -1, 正常終了: 0
+int add(const struct NUMBER *a, const struct NUMBER *b, struct NUMBER *c) {
+    clearByZero(c);
+    int i, rtn;
+    int d, e = 0;
+    struct NUMBER numA, numB;
+    if (getSign(a) == 1) {
+        if (getSign(b) == 1) {
+            copyNumber(&numA, a);
+            copyNumber(&numB, b);
+            setSign(c, 1);
+        } else if (getSign(b) == 0) {
+            copyNumber(c, a);
+            return 0;
+        } else {
+            getAbs(b, &numB);
+            rtn = sub(a, &numB, c);
+            return rtn;
+        }
+    } else if (getSign(a) == 0) {
+        copyNumber(c, b);
+        return 0;
+    } else if (getSign(a) == -1) {
+        if (getSign(b) == 1) {
+            getAbs(a, &numA);
+            rtn = sub(b, &numA, c);
+            return rtn;
+        } else if (getSign(b) == 0) {
+            copyNumber(c, a);
+            return 0;
+        } else {
+            getAbs(a, &numA);
+            getAbs(b, &numB);
+            setSign(c, -1);
+        }
+    }
+    for (i = 0; i < KETA; i++) {
+        d = numA.n[i] + numB.n[i] + e;
+        if (d >= 10) {
+            d -= 10;
+            e = 1;
+        } else {
+            e = 0;
+        }
+        c->n[i] = d;
+    }
+    if (e > 0) {
+        return -1;
+    }
+    return 0;
+}
+
+/// @brief 2つの多倍長整数を減算する
+/// @param a 減算する構造体
+/// @param b 減算する構造体
+/// @param c 減算した値を代入する構造体
+/// @return オーバーフロー: -1, 正常終了: 0
+int sub(const struct NUMBER *a, const struct NUMBER *b, struct NUMBER *c) {
+    clearByZero(c);
+    int i;
+    int e;
+    int num;
+    int rtn;
+    e = 0;
+    struct NUMBER numA, numB;
+    if (getSign(a) == 1) {
+        if (getSign(b) == 1) {
+            copyNumber(&numA, a);
+            copyNumber(&numB, b);
+        } else if (getSign(b) == 0) {
+            copyNumber(c, a);
+            return 0;
+        } else {
+            getAbs(b, &numB);
+            rtn = add(a, &numB, c);
+            return rtn;
+        }
+    } else if (getSign(a) == 0) {
+        copyNumber(c, b);
+        return 0;
+    } else if (getSign(a) == -1) {
+        if (getSign(b) == 1) {
+            getAbs(a, &numA);
+            rtn = add(&numA, b, c);
+            setSign(c, -1);
+            return rtn;
+        } else if (getSign(b) == 0) {
+            copyNumber(c, a);
+            return 0;
+        } else {
+            getAbs(a, &numB);
+            getAbs(b, &numA);
+            setSign(c, -1);
+        }
+    }
+    if (numComp(a, b) == 1) {
+        for (i = 0; i < KETA; i++) {
+            num = numA.n[i] - e;
+            if (num < numB.n[i]) {
+                c->n[i] = num + 10 - numB.n[i];
+                e = 1;
+            } else {
+                c->n[i] = num - numB.n[i];
+                e = 0;
+            }
+            setSign(c, 1);
+        }
+    } else if (numComp(a, b) == -1) {
+        for (i = 0; i < KETA; i++) {
+            num = numB.n[i] - e;
+            if (num < numA.n[i]) {
+                c->n[i] = num + 10 - numA.n[i];
+                e = 1;
+            } else {
+                c->n[i] = num - numA.n[i];
+                e = 0;
+            }
+        }
+        setSign(c, -1);
+    } else {
+        setSign(c, 0);
+    }
+    if (e > 0) {
+        return -1;
+    }
+    return 0;
+}
+
+/// @brief 多倍長整数をインクリメントする
+/// @param a インクリメントする構造体
+/// @param b インクリメントした値を代入する構造体
+/// @return オーバーフロー: -1, 正常終了: 0
+int increment(struct NUMBER *a, struct NUMBER *b) {
+    struct NUMBER one;
+    int r;
+    setInt(&one, 1);
+    r = add(a, &one, b);
+    return r;
+}
+
+/// @brief 多倍長整数をデクリメントする
+/// @param a デクリメントする構造体
+/// @param b デクリメントした値を代入する構造体
+/// @return オーバーフロー: -1, 正常終了: 0
+int decrement(struct NUMBER *a, struct NUMBER *b) {
+    struct NUMBER one;
+    int r;
+    setInt(&one, 1);
+    r = sub(a, &one, b);
+    return r;
 }
