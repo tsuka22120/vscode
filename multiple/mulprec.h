@@ -1,5 +1,9 @@
 #define KETA 20
 
+#define PLUS 1
+#define ZERO 0
+#define MINUS -1
+
 struct NUMBER {
     int n[KETA];  // 各桁の変数
     int sign;     // 符号変数 -1: 負, 0: 0, 1: 正

@@ -1,6 +1,7 @@
 #include "mulprec.h"
 
 #include <limits.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -13,14 +14,14 @@ void clearByZero(struct NUMBER *a) {
     for (i = 0; i < KETA; i++) {
         a->n[i] = 0;
     }
-    setSign(a, 0);
+    setSign(a, ZERO);
 }
 
 /// @brief 数値を表示する
 /// @param a 表示する構造体
 void dispNumber(const struct NUMBER *a) {
     int i;
-    if (getSign(a) == -1) {
+    if (getSign(a) == MINUS) {
         printf("-");
     } else {
         printf("+");
@@ -97,10 +98,10 @@ void copyNumber(struct NUMBER *a, const struct NUMBER *b) {
 /// @param b 絶対値を代入する構造体
 void getAbs(const struct NUMBER *a, struct NUMBER *b) {
     copyNumber(b, a);
-    if (getSign(a) == 0) {
-        setSign(b, 0);
+    if (getSign(a) == ZERO) {
+        setSign(b, ZERO);
     } else {
-        setSign(b, 1);
+        setSign(b, PLUS);
     }
 }
 
@@ -108,7 +109,7 @@ void getAbs(const struct NUMBER *a, struct NUMBER *b) {
 /// @param a 判定する構造体
 /// @return 0: 0でない, -1: 0
 int isZero(const struct NUMBER *a) {
-    if (getSign(a) == 0) {
+    if (getSign(a) == ZERO) {
         return 0;
     } else {
         return -1;
@@ -158,12 +159,12 @@ int setInt(struct NUMBER *a, int x) {
     int i;
     int r;
     if (x < 0) {
-        setSign(a, -1);
+        setSign(a, MINUS);
         x *= -1;
     } else if (x == 0) {
-        setSign(a, 0);
+        setSign(a, ZERO);
     } else {
-        setSign(a, 1);
+        setSign(a, PLUS);
     }
     for (i = 0; i < KETA; i++) {
         r = x % 10;
@@ -185,7 +186,7 @@ int setInt(struct NUMBER *a, int x) {
 /// @param x int型に変換した値を代入する変数
 /// @return 成功: 0, エラー(overflow): -1
 int getInt(const struct NUMBER *a, int *x) {
-    if (getSign(a) == 0) {
+    if (getSign(a) == ZERO) {
         *x = 0;
         return 0;
     }
@@ -221,7 +222,7 @@ int getInt(const struct NUMBER *a, int *x) {
     }
     // 多倍長の桁数がint型の最大値と最小値の桁数より大きい場合はエラー
     for (i = 0; i < KETA - MAXlen; i++) {
-        if (getSign(a) == -1) {
+        if (getSign(a) == MINUS) {
             if (a->n[MAXlen + i] != 0) {
                 return -1;
             }
@@ -232,7 +233,7 @@ int getInt(const struct NUMBER *a, int *x) {
         }
     }
     // 多倍長とint型の各桁を比較
-    if (getSign(a) == 1) {
+    if (getSign(a) == PLUS) {
         for (i = 0; i < MAXlen; i++) {
             if (a->n[MAXlen - 1 - i] > MAXdigit[MAXlen - 1 - i]) {
                 return -1;
@@ -254,7 +255,7 @@ int getInt(const struct NUMBER *a, int *x) {
         (*x) *= 10;
         (*x) += a->n[i];
     }
-    if (getSign(a) == -1) {
+    if (getSign(a) == MINUS) {
         (*x) *= -1;
     }
     return 0;
@@ -266,11 +267,11 @@ int getInt(const struct NUMBER *a, int *x) {
 /// @return 成功: 0, エラー: -1
 int setSign(struct NUMBER *a, int s) {
     if (s == 0) {
-        a->sign = 0;
+        a->sign = ZERO;
     } else if (s == 1) {
-        a->sign = 1;
+        a->sign = PLUS;
     } else if (s == -1) {
-        a->sign = -1;
+        a->sign = MINUS;
     } else {
         return -1;
     }
@@ -338,12 +339,12 @@ int add(const struct NUMBER *a, const struct NUMBER *b, struct NUMBER *c) {
     int i, rtn;
     int d, e = 0;
     struct NUMBER numA, numB;
-    if (getSign(a) == 1) {
-        if (getSign(b) == 1) {
+    if (getSign(a) == PLUS) {
+        if (getSign(b) == PLUS) {
             copyNumber(&numA, a);
             copyNumber(&numB, b);
-            setSign(c, 1);
-        } else if (getSign(b) == 0) {
+            setSign(c, PLUS);
+        } else if (getSign(b) == ZERO) {
             copyNumber(c, a);
             return 0;
         } else {
@@ -351,21 +352,21 @@ int add(const struct NUMBER *a, const struct NUMBER *b, struct NUMBER *c) {
             rtn = sub(a, &numB, c);
             return rtn;
         }
-    } else if (getSign(a) == 0) {
+    } else if (getSign(a) == ZERO) {
         copyNumber(c, b);
         return 0;
-    } else if (getSign(a) == -1) {
-        if (getSign(b) == 1) {
+    } else if (getSign(a) == MINUS) {
+        if (getSign(b) == PLUS) {
             getAbs(a, &numA);
             rtn = sub(b, &numA, c);
             return rtn;
-        } else if (getSign(b) == 0) {
+        } else if (getSign(b) == ZERO) {
             copyNumber(c, a);
             return 0;
         } else {
             getAbs(a, &numA);
             getAbs(b, &numB);
-            setSign(c, -1);
+            setSign(c, MINUS);
         }
     }
     for (i = 0; i < KETA; i++) {
@@ -397,11 +398,11 @@ int sub(const struct NUMBER *a, const struct NUMBER *b, struct NUMBER *c) {
     int rtn;
     e = 0;
     struct NUMBER numA, numB;
-    if (getSign(a) == 1) {
-        if (getSign(b) == 1) {
+    if (getSign(a) == PLUS) {
+        if (getSign(b) == PLUS) {
             copyNumber(&numA, a);
             copyNumber(&numB, b);
-        } else if (getSign(b) == 0) {
+        } else if (getSign(b) == ZERO) {
             copyNumber(c, a);
             return 0;
         } else {
@@ -409,22 +410,22 @@ int sub(const struct NUMBER *a, const struct NUMBER *b, struct NUMBER *c) {
             rtn = add(a, &numB, c);
             return rtn;
         }
-    } else if (getSign(a) == 0) {
+    } else if (getSign(a) == ZERO) {
         copyNumber(c, b);
         return 0;
-    } else if (getSign(a) == -1) {
-        if (getSign(b) == 1) {
+    } else if (getSign(a) == MINUS) {
+        if (getSign(b) == PLUS) {
             getAbs(a, &numA);
             rtn = add(&numA, b, c);
-            setSign(c, -1);
+            setSign(c, MINUS);
             return rtn;
-        } else if (getSign(b) == 0) {
+        } else if (getSign(b) == ZERO) {
             copyNumber(c, a);
             return 0;
         } else {
             getAbs(a, &numB);
             getAbs(b, &numA);
-            setSign(c, -1);
+            setSign(c, MINUS);
         }
     }
     if (numComp(a, b) == 1) {
@@ -437,7 +438,7 @@ int sub(const struct NUMBER *a, const struct NUMBER *b, struct NUMBER *c) {
                 c->n[i] = num - numB.n[i];
                 e = 0;
             }
-            setSign(c, 1);
+            setSign(c, PLUS);
         }
     } else if (numComp(a, b) == -1) {
         for (i = 0; i < KETA; i++) {
@@ -450,9 +451,9 @@ int sub(const struct NUMBER *a, const struct NUMBER *b, struct NUMBER *c) {
                 e = 0;
             }
         }
-        setSign(c, -1);
+        setSign(c, MINUS);
     } else {
-        setSign(c, 0);
+        setSign(c, ZERO);
     }
     if (e > 0) {
         return -1;
@@ -465,10 +466,11 @@ int sub(const struct NUMBER *a, const struct NUMBER *b, struct NUMBER *c) {
 /// @param b インクリメントした値を代入する構造体
 /// @return オーバーフロー: -1, 正常終了: 0
 int increment(struct NUMBER *a, struct NUMBER *b) {
-    struct NUMBER one;
+    struct NUMBER one, num;
     int r;
+    copyNumber(&num, a);
     setInt(&one, 1);
-    r = add(a, &one, b);
+    r = add(&num, &one, b);
     return r;
 }
 
@@ -477,10 +479,11 @@ int increment(struct NUMBER *a, struct NUMBER *b) {
 /// @param b デクリメントした値を代入する構造体
 /// @return オーバーフロー: -1, 正常終了: 0
 int decrement(struct NUMBER *a, struct NUMBER *b) {
-    struct NUMBER one;
+    struct NUMBER one, num;
     int r;
+    copyNumber(&num, a);
     setInt(&one, 1);
-    r = sub(a, &one, b);
+    r = sub(&num, &one, b);
     return r;
 }
 
@@ -512,7 +515,7 @@ int simpleMultiple(int a, int b, int *c) {
 int multiple(const struct NUMBER *a, const struct NUMBER *b, struct NUMBER *c) {
     clearByZero(c);
     int numA, numB;
-    int h, d, e;
+    int h, e, d;
     for (int i = 0; i < KETA - 1; i++) {
         numB = b->n[i];
         h = 0;
@@ -521,14 +524,17 @@ int multiple(const struct NUMBER *a, const struct NUMBER *b, struct NUMBER *c) {
             numA = a->n[j];
             e = numA * numB + h;
             d = e % 10;
-            h = e % 100 - d;
-            for(int k = 0; k < d; k++) {
+            h = e / 10;
+            for(int k = 0; k < j + i; k++) {
+                d *= 10;
+            }
+            for(int k = 0;k < d;k++){
                 increment(c, c);
             }
         }
-        // if(h != 0) {
-        //     return -1;
-        // }
+        if (h != 0) {
+            return -1;
+        }
     }
     c->sign = 1;
     return 0;
