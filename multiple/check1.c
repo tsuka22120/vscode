@@ -15,7 +15,7 @@ int main(int argc, char **argv) {
     clearByZero(&a);
     clearByZero(&b);
     clearByZero(&c);
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 1000; i++) {
         numA = genrand_int32() % 1000;
         numB = genrand_int32() % 1000;
         setInt(&a, numA);
