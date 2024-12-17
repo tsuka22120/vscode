@@ -122,15 +122,18 @@ int isZero(const struct NUMBER *a) {
 /// @return 0: 正常終了, -1: オーバーフロー
 int mulBy10(const struct NUMBER *a, struct NUMBER *b) {
     int i;
-    if (a->n[KETA - 1] != 0) {
+    struct NUMBER tmp;
+    copyNumber(&tmp, a);
+    clearByZero(b);
+    if (tmp.n[KETA - 1] != 0) {
         printf("ERROR:overflow\n");
         return -1;
     }
     for (i = 0; i < KETA - 1; i++) {
-        b->n[i + 1] = a->n[i];
+        b->n[i + 1] = tmp.n[i];
     }
     b->n[0] = 0;
-    setSign(b, getSign(a));
+    setSign(b, getSign(&tmp));
     return 0;
 }
 
@@ -329,7 +332,7 @@ void swap(struct NUMBER *a, struct NUMBER *b) {
     copyNumber(b, &tmp);
 }
 
-/// @brief 2つの多倍長整数を加算する
+/// @brief 2つの多倍長整数を加算する(同じ変数を関数内に入れてはいけない)
 /// @param a 加算する構造体
 /// @param b 加算する構造体
 /// @param c 加算した値を代入する構造体
@@ -385,7 +388,7 @@ int add(const struct NUMBER *a, const struct NUMBER *b, struct NUMBER *c) {
     return 0;
 }
 
-/// @brief 2つの多倍長整数を減算する
+/// @brief 2つの多倍長整数を減算する(同じ変数を関数内に入れてはいけない)
 /// @param a 減算する構造体
 /// @param b 減算する構造体
 /// @param c 減算した値を代入する構造体
@@ -514,28 +517,50 @@ int simpleMultiple(int a, int b, int *c) {
 /// @return オーバーフロー: -1, 正常終了: 0
 int multiple(const struct NUMBER *a, const struct NUMBER *b, struct NUMBER *c) {
     clearByZero(c);
-    int numA, numB;
+    if (getSign(a) == ZERO || getSign(b) == ZERO) {
+        return 0;
+    }
+    int numA, numB, signA, signB;
+    struct NUMBER tmp, A, B, numC;
     int h, e, d;
+    signA = getSign(a);
+    signB = getSign(b);
+    getAbs(a, &A);
+    getAbs(b, &B);
     for (int i = 0; i < KETA - 1; i++) {
-        numB = b->n[i];
+        numB = B.n[i];
         h = 0;
         d = 0;
-        for (int j = 0; j < KETA - 1; j++) {
-            numA = a->n[j];
-            e = numA * numB + h;
-            d = e % 10;
-            h = e / 10;
-            for(int k = 0; k < j + i; k++) {
-                d *= 10;
+        if (numB == 0) {
+        } else if (numB == 1) {
+            copyNumber(&tmp, &A);
+            for (int j = 0; j < i; j++) {
+                mulBy10(&tmp, &tmp);
             }
-            for(int k = 0;k < d;k++){
-                increment(c, c);
+            copyNumber(&numC, c);
+            add(&numC, &tmp, c);
+        } else {
+            for (int j = 0; j < KETA - 1; j++) {
+                numA = A.n[j];
+                e = numA * numB + h;
+                d = e % 10;
+                h = e / 10;
+                for (int k = 0; k < j + i; k++) {
+                    d *= 10;
+                }
+                for (int k = 0; k < d; k++) {
+                    increment(c, c);
+                }
             }
         }
         if (h != 0) {
             return -1;
         }
     }
-    c->sign = 1;
+    if (signA == signB && signA == 1) {
+        setSign(c, PLUS);
+    } else {
+        setSign(c, MINUS);
+    }
     return 0;
 }
