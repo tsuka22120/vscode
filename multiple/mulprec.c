@@ -126,7 +126,6 @@ int mulBy10(const struct NUMBER *a, struct NUMBER *b) {
     copyNumber(&tmp, a);
     clearByZero(b);
     if (tmp.n[KETA - 1] != 0) {
-        printf("ERROR:overflow\n");
         return -1;
     }
     for (i = 0; i < KETA - 1; i++) {
@@ -584,24 +583,24 @@ int simpleDivide(int x, int y, int *z, int *w) {
     int zSign, wSign;
     switch ((x < 0) * 2 + (y < 0)) {
         case 0:
-            zSign = 1;
-            wSign = 1;
+            zSign = PLUS;
+            wSign = PLUS;
             break;
         case 1:
             y *= -1;
-            zSign = -1;
-            wSign = 1;
+            zSign = MINUS;
+            wSign = PLUS;
             break;
         case 2:
             x *= -1;
-            zSign = -1;
-            wSign = -1;
+            zSign = MINUS;
+            wSign = MINUS;
             break;
         case 3:
             x *= -1;
             y *= -1;
-            zSign = 1;
-            wSign = -1;
+            zSign = PLUS;
+            wSign = MINUS;
             break;
     }
     while (1) {
