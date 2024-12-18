@@ -30,3 +30,5 @@ int increment(struct NUMBER *, struct NUMBER *);
 int decrement(struct NUMBER *, struct NUMBER *);
 int simpleMultiple(int, int, int *);
 int multiple(const struct NUMBER *, const struct NUMBER *, struct NUMBER *);
+int simpleDivide(int, int, int *, int *);
+int divide(const struct NUMBER *, const struct NUMBER *, struct NUMBER *, struct NUMBER *);

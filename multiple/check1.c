@@ -10,32 +10,30 @@ int main(int argc, char **argv) {
     st = time(NULL);
     init_genrand((unsigned long)time(NULL));
 
-    // struct NUMBER a, b,c;
-    // setInt(&a, -70);
-    // setInt(&b, 31);
-    // printf("a: ");
+    // struct NUMBER a, b, c, d;
+    // setInt(&a, 322);
+    // setInt(&b, 3);
+    // divide(&a, &b, &c, &d);
     // dispNumberZeroSuppress(&a);
-    // printf("\n");
-    // printf("b: ");
+    // printf(" / ");
     // dispNumberZeroSuppress(&b);
-    // printf("\n");
-    // multiple(&a, &b, &c);
-    // printf("c: ");
+    // printf(" = ");
     // dispNumberZeroSuppress(&c);
+    // printf(" ... ");
+    // dispNumberZeroSuppress(&d);
     // printf("\n");
 
-    struct NUMBER a, b, c;
-    int numA, numB, numC;
-    for (int i = 0; i < 1000; i++) {
-        numA = genrand_int32() % 10000 * -1;
-        numB = genrand_int32() % 10000;
-
+    struct NUMBER a, b, c, d;
+    int numA, numB, numC, numD;
+    for (int i = 0; i < 100000; i++) {
+        numA = genrand_int32() % 10000000;
+        numB = genrand_int32() % 100 + 1;
         setInt(&a, numA);
         setInt(&b, numB);
-        multiple(&a, &b, &c);
+        divide(&a, &b, &c, &d);
         getInt(&c, &numC);
-        if(numA * numB != numC) {
-            printf("numA: %d, numB: %d, numC: %d\n", numA, numB, numC);
+        getInt(&d, &numD);
+        if (numA / numB != numC || numA % numB != numD) {
             printf("error\n");
             break;
         }

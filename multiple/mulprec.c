@@ -521,8 +521,8 @@ int multiple(const struct NUMBER *a, const struct NUMBER *b, struct NUMBER *c) {
         return 0;
     }
     int numA, numB, signA, signB;
-    struct NUMBER tmp, A, B, numC;
-    int h, e, d;
+    struct NUMBER tmp, A, B, numC, D;
+    int h, e, d = 0;
     signA = getSign(a);
     signB = getSign(b);
     getAbs(a, &A);
@@ -530,7 +530,6 @@ int multiple(const struct NUMBER *a, const struct NUMBER *b, struct NUMBER *c) {
     for (int i = 0; i < KETA - 1; i++) {
         numB = B.n[i];
         h = 0;
-        d = 0;
         if (numB == 0) {
         } else if (numB == 1) {
             copyNumber(&tmp, &A);
@@ -545,11 +544,17 @@ int multiple(const struct NUMBER *a, const struct NUMBER *b, struct NUMBER *c) {
                 e = numA * numB + h;
                 d = e % 10;
                 h = e / 10;
+                setInt(&D, d);
                 for (int k = 0; k < j + i; k++) {
-                    d *= 10;
+                    if (mulBy10(&D, &D) == -1) {
+                        clearByZero(c);
+                        return -1;
+                    }
                 }
-                for (int k = 0; k < d; k++) {
-                    increment(c, c);
+                copyNumber(&numC, c);
+                if (add(&numC, &D, c) == -1) {
+                    clearByZero(c);
+                    return -1;
                 }
             }
         }
@@ -563,4 +568,116 @@ int multiple(const struct NUMBER *a, const struct NUMBER *b, struct NUMBER *c) {
         setSign(c, MINUS);
     }
     return 0;
+}
+
+/// @brief 2つの整数を割り算する
+/// @param x 被乗数
+/// @param y 除数
+/// @param z 商を代入するポインタ
+/// @param w 余りを代入するポインタ
+/// @return ゼロ除算: -1, 正常終了: 0
+int simpleDivide(int x, int y, int *z, int *w) {
+    if (y == 0) {
+        return -1;
+    }
+    int k = 0;
+    int zSign, wSign;
+    switch ((x < 0) * 2 + (y < 0)) {
+        case 0:
+            zSign = 1;
+            wSign = 1;
+            break;
+        case 1:
+            y *= -1;
+            zSign = -1;
+            wSign = 1;
+            break;
+        case 2:
+            x *= -1;
+            zSign = -1;
+            wSign = -1;
+            break;
+        case 3:
+            x *= -1;
+            y *= -1;
+            zSign = 1;
+            wSign = -1;
+            break;
+    }
+    while (1) {
+        if (x < y) {
+            break;
+        }
+        x -= y;
+        k++;
+    }
+    *z = k * zSign;
+    *w = x * wSign;
+    return 0;
+}
+
+/// @brief 2つの多倍長整数を割り算する
+/// @param a 被除数
+/// @param b 除数
+/// @param c 商を代入する構造体
+/// @param d 余りを代入する構造体
+/// @return ゼロ除算: -1, 正常終了: 0
+int divide(const struct NUMBER *a, const struct NUMBER *b, struct NUMBER *c,
+           struct NUMBER *d) {
+    clearByZero(c);
+    clearByZero(d);
+    if (isZero(b) == 0) {
+        return -1;
+    }
+    if (isZero(a) == 0) {
+        return 0;
+    }
+    int cSign, dSign;
+    struct NUMBER A, B, tmp, numB, q;
+    getAbs(a, &A);
+    getAbs(b, &B);
+    switch ((getSign(a) < 0) * 2 + (getSign(b) < 0)) {
+        case 0:
+            cSign = 1;
+            dSign = 1;
+            break;
+        case 1:
+            cSign = -1;
+            dSign = 1;
+            break;
+        case 2:
+            cSign = -1;
+            dSign = -1;
+            break;
+        case 3:
+            cSign = 1;
+            dSign = -1;
+            break;
+    }
+    while (1) {
+        switch (numComp(&A, &B)) {
+            case -1:
+                copyNumber(d, &A);
+                c->sign = cSign;
+                d->sign = dSign;
+                return 0;
+            default:
+                setInt(&q, 1);
+                copyNumber(&numB, &B);
+                while (1) {
+                    mulBy10(&numB, &numB);
+                    mulBy10(&q, &q);
+                    if (numComp(&numB, &A) == 1) {
+                        divBy10(&numB, &numB);
+                        divBy10(&q, &q);
+                        break;
+                    }
+                }
+                copyNumber(&tmp, &A);
+                sub(&tmp, &numB, &A);
+                copyNumber(&tmp, c);
+                add(&tmp, &q, c);
+                break;
+        }
+    }
 }
