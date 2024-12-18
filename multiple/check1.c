@@ -1,13 +1,16 @@
 #include <limits.h>
 #include <stdio.h>
+#include <sys/time.h>
 #include <time.h>
 
 #include "mt19937ar.h"
 #include "mulprec.h"
 
 int main(int argc, char **argv) {
-    time_t st, et;
-    st = time(NULL);
+    struct timeval tv;
+    double tstart,tend;
+    gettimeofday(&tv, NULL);
+    tstart = (double)tv.tv_sec + (double)tv.tv_usec * 1.e-6;
     init_genrand((unsigned long)time(NULL));
 
     // struct NUMBER a, b, c, d;
@@ -39,7 +42,8 @@ int main(int argc, char **argv) {
         }
     }
 
-    et = time(NULL);
-    printf("time: %ld\n", et - st);
+    gettimeofday(&tv, NULL);
+    tend = (double)tv.tv_sec + (double)tv.tv_usec * 1.e-6;
+    printf("所要時間: %f秒\n", tend - tstart);
     return 0;
 }
