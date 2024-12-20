@@ -35,13 +35,16 @@ void dispNumber(const struct NUMBER *a) {
 /// @param a 表示する構造体
 void dispNumberZeroSuppress(const struct NUMBER *a) {
     int i;
-    if (getSign(a) == -1) {
-        printf("-");
-    } else if (getSign(a) == 0) {
-        printf("+ 0");
-        return;
-    } else {
-        printf("+");
+    switch (getSign(a)) {
+        case PLUS:
+            printf("+");
+            break;
+        case ZERO:
+            printf("+ 0");
+            return;
+        case MINUS:
+            printf("-");
+            break;
     }
     for (i = KETA - 1; i >= 0; i--) {
         if (a->n[i] > 0) {
@@ -97,12 +100,14 @@ void copyNumber(struct NUMBER *a, const struct NUMBER *b) {
 /// @param a 絶対値を求める構造体
 /// @param b 絶対値を代入する構造体
 void getAbs(const struct NUMBER *a, struct NUMBER *b) {
-    copyNumber(b, a);
+    struct NUMBER tmp;
+    copyNumber(&tmp, a);
     if (getSign(a) == ZERO) {
-        setSign(b, ZERO);
+        setSign(&tmp, ZERO);
     } else {
-        setSign(b, PLUS);
+        setSign(&tmp, PLUS);
     }
+    copyNumber(b, &tmp);
 }
 
 /// @brief aが0かどうかを判定する
@@ -268,14 +273,18 @@ int getInt(const struct NUMBER *a, int *x) {
 /// @param s 1: 正, 0: 0, -1: 負
 /// @return 成功: 0, エラー: -1
 int setSign(struct NUMBER *a, int s) {
-    if (s == 0) {
-        a->sign = ZERO;
-    } else if (s == 1) {
-        a->sign = PLUS;
-    } else if (s == -1) {
-        a->sign = MINUS;
-    } else {
-        return -1;
+    switch (s) {
+        case PLUS:
+            a->sign = PLUS;
+            break;
+        case ZERO:
+            a->sign = ZERO;
+            break;
+        case MINUS:
+            a->sign = MINUS;
+            break;
+        default:
+            return -1;
     }
     return 0;
 }
@@ -290,7 +299,45 @@ int getSign(const struct NUMBER *a) { return a->sign; }
 /// @param b 比較する構造体
 /// @return 1: a > b, 0: a = b, -1: a < b
 int numComp(const struct NUMBER *a, const struct NUMBER *b) {
-    int i;
+    int rtn = 0;
+    switch (getSign(a) * 3 + getSign(b)) {
+        case -4:  // aとbが負
+            for (int i = KETA - 1; i >= 0; i--) {
+                if (a->n[i] < b->n[i]) {
+                    rtn = 1;
+                    break;
+                } else if (a->n[i] > b->n[i]) {
+                    rtn = -1;
+                    break;
+                }
+            }
+            break;
+        case 4:  // aとbが正
+            for (int i = KETA - 1; i >= 0; i--) {
+                if (a->n[i] > b->n[i]) {
+                    rtn = 1;
+                    break;
+                } else if (a->n[i] < b->n[i]) {
+                    rtn = -1;
+                    break;
+                }
+            }
+            break;
+        case -3:  // aが負でbが0
+        case -2:  // aが負でbが正
+        case 1:   // aが0でbが正
+            rtn = -1;
+            break;
+        case -1:  // aが0でbが負
+        case 2:   // aが正でbが負
+        case 3:   // aが正でbが0
+            rtn = 1;
+            break;
+        case 0:  // aとbが0
+            break;
+    }
+    return rtn;
+#if 0
     if (getSign(a) > getSign(b)) {
         return 1;
     } else if (getSign(a) < getSign(b)) {
@@ -309,7 +356,7 @@ int numComp(const struct NUMBER *a, const struct NUMBER *b) {
         }
         return 0;
     } else if (getSign(a) == getSign(b) && getSign(a) == -1) {
-        for (i = KETA - 1; i >= 0; i--) {
+        for (int i = KETA - 1; i >= 0; i--) {
             if (a->n[i] < b->n[i]) {
                 return 1;
             } else if (a->n[i] > b->n[i]) {
@@ -318,6 +365,8 @@ int numComp(const struct NUMBER *a, const struct NUMBER *b) {
         }
         return 0;
     }
+    return 0;
+#endif
     return 0;
 }
 
@@ -337,54 +386,63 @@ void swap(struct NUMBER *a, struct NUMBER *b) {
 /// @param c 加算した値を代入する構造体
 /// @return オーバーフロー: -1, 正常終了: 0
 int add(const struct NUMBER *a, const struct NUMBER *b, struct NUMBER *c) {
+    struct NUMBER A, B;
+    copyNumber(&A, a);
+    copyNumber(&B, b);
     clearByZero(c);
     int i, rtn;
     int d, e = 0;
-    struct NUMBER numA, numB;
-    if (getSign(a) == PLUS) {
-        if (getSign(b) == PLUS) {
-            copyNumber(&numA, a);
-            copyNumber(&numB, b);
-            setSign(c, PLUS);
-        } else if (getSign(b) == ZERO) {
-            copyNumber(c, a);
-            return 0;
-        } else {
-            getAbs(b, &numB);
-            rtn = sub(a, &numB, c);
-            return rtn;
-        }
-    } else if (getSign(a) == ZERO) {
-        copyNumber(c, b);
-        return 0;
-    } else if (getSign(a) == MINUS) {
-        if (getSign(b) == PLUS) {
-            getAbs(a, &numA);
-            rtn = sub(b, &numA, c);
-            return rtn;
-        } else if (getSign(b) == ZERO) {
-            copyNumber(c, a);
-            return 0;
-        } else {
-            getAbs(a, &numA);
-            getAbs(b, &numB);
-            setSign(c, MINUS);
-        }
+    int caseNum = getSign(&A) * 3 + getSign(&B);
+    switch (caseNum) {
+        case -4:  // aとbが負
+        case 4:   // aとbが正
+            if (caseNum == -4) {
+                getAbs(&A, &A);
+                getAbs(&B, &B);
+                setSign(c, MINUS);
+            } else {
+                setSign(c, PLUS);
+            }
+            for (i = 0; i < KETA; i++) {
+                d = A.n[i] + B.n[i] + e;
+                if (d >= 10) {
+                    d -= 10;
+                    e = 1;
+                } else {
+                    e = 0;
+                }
+                c->n[i] = d;
+            }
+            if (e > 0) {
+                rtn = -1;
+            } else {
+                rtn = 0;
+            }
+            break;
+        case -3:  // aが負でbが0
+        case 3:   // aが正でbが0
+            copyNumber(c, &A);
+            rtn = 0;
+            break;
+        case -2:  // aが負でbが正
+            getAbs(&A, &A);
+            rtn = sub(&B, &A, c);
+            break;
+        case -1:  // aが0でbが負
+        case 1:   // aが0でbが正
+            copyNumber(c, &B);
+            rtn = 0;
+            break;
+        case 0:  // aとbが0
+            clearByZero(c);
+            rtn = 0;
+            break;
+        case 2:  // aが正でbが負
+            getAbs(&B, &B);
+            rtn = sub(&A, &B, c);
+            break;
     }
-    for (i = 0; i < KETA; i++) {
-        d = numA.n[i] + numB.n[i] + e;
-        if (d >= 10) {
-            d -= 10;
-            e = 1;
-        } else {
-            e = 0;
-        }
-        c->n[i] = d;
-    }
-    if (e > 0) {
-        return -1;
-    }
-    return 0;
+    return rtn;
 }
 
 /// @brief 2つの多倍長整数を減算する(同じ変数を関数内に入れてはいけない)
@@ -393,74 +451,87 @@ int add(const struct NUMBER *a, const struct NUMBER *b, struct NUMBER *c) {
 /// @param c 減算した値を代入する構造体
 /// @return オーバーフロー: -1, 正常終了: 0
 int sub(const struct NUMBER *a, const struct NUMBER *b, struct NUMBER *c) {
+    struct NUMBER A, B;
+    copyNumber(&A, a);
+    copyNumber(&B, b);
     clearByZero(c);
-    int i;
-    int e;
-    int num;
-    int rtn;
-    e = 0;
+    int i, e, num, rtn;
+    int caseNum = getSign(&A) * 3 + getSign(&B);
     struct NUMBER numA, numB;
-    if (getSign(a) == PLUS) {
-        if (getSign(b) == PLUS) {
-            copyNumber(&numA, a);
-            copyNumber(&numB, b);
-        } else if (getSign(b) == ZERO) {
-            copyNumber(c, a);
-            return 0;
-        } else {
-            getAbs(b, &numB);
-            rtn = add(a, &numB, c);
-            return rtn;
-        }
-    } else if (getSign(a) == ZERO) {
-        copyNumber(c, b);
-        return 0;
-    } else if (getSign(a) == MINUS) {
-        if (getSign(b) == PLUS) {
-            getAbs(a, &numA);
-            rtn = add(&numA, b, c);
-            setSign(c, MINUS);
-            return rtn;
-        } else if (getSign(b) == ZERO) {
-            copyNumber(c, a);
-            return 0;
-        } else {
-            getAbs(a, &numB);
-            getAbs(b, &numA);
-            setSign(c, MINUS);
-        }
-    }
-    if (numComp(a, b) == 1) {
-        for (i = 0; i < KETA; i++) {
-            num = numA.n[i] - e;
-            if (num < numB.n[i]) {
-                c->n[i] = num + 10 - numB.n[i];
-                e = 1;
+    switch (caseNum) {
+        case -4:  // aとbが負
+        case 4:   // aとbが正
+            if (caseNum == -4) {
+                getAbs(&A, &numB);
+                getAbs(&B, &numA);
             } else {
-                c->n[i] = num - numB.n[i];
-                e = 0;
+                copyNumber(&numA, &A);
+                copyNumber(&numB, &B);
             }
+            e = 0;
+            if (numComp(&A, &B) == 1) {
+                for (i = 0; i < KETA; i++) {
+                    num = numA.n[i] - e;
+                    if (num < numB.n[i]) {
+                        c->n[i] = num + 10 - numB.n[i];
+                        e = 1;
+                    } else {
+                        c->n[i] = num - numB.n[i];
+                        e = 0;
+                    }
+                    setSign(c, PLUS);
+                }
+            } else if (numComp(&A, &B) == -1) {
+                for (i = 0; i < KETA; i++) {
+                    num = numB.n[i] - e;
+                    if (num < numA.n[i]) {
+                        c->n[i] = num + 10 - numA.n[i];
+                        e = 1;
+                    } else {
+                        c->n[i] = num - numA.n[i];
+                        e = 0;
+                    }
+                }
+                setSign(c, MINUS);
+            } else {
+                setSign(c, ZERO);
+            }
+            if (e > 0) {
+                rtn = -1;
+            } else {
+                rtn = 0;
+            }
+            break;
+        case -3:  // aが負でbが0
+        case 3:   // aが正でbが0
+            copyNumber(c, &A);
+            rtn = 0;
+            break;
+        case -2:  // aが負でbが正
+            getAbs(&A, &A);
+            rtn = add(&A, &B, c);
+            setSign(c, MINUS);
+            break;
+        case -1:  // aが0でbが負
+            copyNumber(c, &B);
             setSign(c, PLUS);
-        }
-    } else if (numComp(a, b) == -1) {
-        for (i = 0; i < KETA; i++) {
-            num = numB.n[i] - e;
-            if (num < numA.n[i]) {
-                c->n[i] = num + 10 - numA.n[i];
-                e = 1;
-            } else {
-                c->n[i] = num - numA.n[i];
-                e = 0;
-            }
-        }
-        setSign(c, MINUS);
-    } else {
-        setSign(c, ZERO);
+            rtn = 0;
+            break;
+        case 1:  // aが0でbが正
+            copyNumber(c, &B);
+            setSign(c, MINUS);
+            rtn = 0;
+            break;
+        case 0:  // aとbが0
+            clearByZero(c);
+            rtn = 0;
+            break;
+        case 2:  // aが正でbが負
+            getAbs(&B, &B);
+            rtn = add(&A, &B, c);
+            break;
     }
-    if (e > 0) {
-        return -1;
-    }
-    return 0;
+    return rtn;
 }
 
 /// @brief 多倍長整数をインクリメントする
@@ -468,11 +539,10 @@ int sub(const struct NUMBER *a, const struct NUMBER *b, struct NUMBER *c) {
 /// @param b インクリメントした値を代入する構造体
 /// @return オーバーフロー: -1, 正常終了: 0
 int increment(struct NUMBER *a, struct NUMBER *b) {
-    struct NUMBER one, num;
+    struct NUMBER one;
     int r;
-    copyNumber(&num, a);
     setInt(&one, 1);
-    r = add(&num, &one, b);
+    r = add(a, &one, b);
     return r;
 }
 
@@ -481,11 +551,10 @@ int increment(struct NUMBER *a, struct NUMBER *b) {
 /// @param b デクリメントした値を代入する構造体
 /// @return オーバーフロー: -1, 正常終了: 0
 int decrement(struct NUMBER *a, struct NUMBER *b) {
-    struct NUMBER one, num;
+    struct NUMBER one;
     int r;
-    copyNumber(&num, a);
     setInt(&one, 1);
-    r = sub(&num, &one, b);
+    r = sub(a, &one, b);
     return r;
 }
 
@@ -515,58 +584,71 @@ int simpleMultiple(int a, int b, int *c) {
 /// @param c 掛け算した値を代入する構造体
 /// @return オーバーフロー: -1, 正常終了: 0
 int multiple(const struct NUMBER *a, const struct NUMBER *b, struct NUMBER *c) {
-    clearByZero(c);
+    int rtn = 0;
     if (getSign(a) == ZERO || getSign(b) == ZERO) {
-        return 0;
-    }
-    int numA, numB, signA, signB;
-    struct NUMBER tmp, A, B, numC, D;
-    int h, e, d = 0;
-    signA = getSign(a);
-    signB = getSign(b);
-    getAbs(a, &A);
-    getAbs(b, &B);
-    for (int i = 0; i < KETA - 1; i++) {
-        numB = B.n[i];
-        h = 0;
-        if (numB == 0) {
-        } else if (numB == 1) {
-            copyNumber(&tmp, &A);
-            for (int j = 0; j < i; j++) {
-                mulBy10(&tmp, &tmp);
-            }
-            copyNumber(&numC, c);
-            add(&numC, &tmp, c);
-        } else {
-            for (int j = 0; j < KETA - 1; j++) {
-                numA = A.n[j];
-                e = numA * numB + h;
-                d = e % 10;
-                h = e / 10;
-                setInt(&D, d);
-                for (int k = 0; k < j + i; k++) {
-                    if (mulBy10(&D, &D) == -1) {
+        clearByZero(c);
+    } else {
+        int numA, numB, signA, signB;
+        struct NUMBER tmp, A, B, D;
+        int h, e, d = 0;
+        signA = getSign(a);
+        signB = getSign(b);
+        getAbs(a, &A);
+        getAbs(b, &B);
+        clearByZero(c);
+        for (int i = 0; i < KETA - 1; i++) {
+            numB = B.n[i];
+            h = 0;
+            if (numB == 0) {
+                continue;
+            } else if (numB == 1) {
+                copyNumber(&tmp, &A);
+                for (int j = 0; j < i; j++) {
+                    mulBy10(&tmp, &tmp);
+                }
+                add(c, &tmp, c);
+            } else {
+                for (int j = 0; j < KETA - 1; j++) {
+                    numA = A.n[j];
+                    e = numA * numB + h;
+                    d = e % 10;
+                    h = e / 10;
+                    setInt(&D, d);
+                    for (int k = 0; k < j + i; k++) {
+                        if (mulBy10(&D, &D) == -1) {
+                            clearByZero(c);
+                            rtn = -1;
+                        }
+                    }
+                    if (add(c, &D, c) == -1) {
                         clearByZero(c);
-                        return -1;
+                        rtn = -1;
                     }
                 }
-                copyNumber(&numC, c);
-                if (add(&numC, &D, c) == -1) {
-                    clearByZero(c);
-                    return -1;
+                if (h != 0) {
+                    rtn = -1;
+                }
+                if (rtn == -1) {
+                    break;
                 }
             }
         }
-        if (h != 0) {
-            return -1;
+        if (rtn == 0) {
+            switch (signA * 3 + signB) {
+                case -4:  // aとbが負
+                case 4:   // aとbが正
+                    setSign(c, PLUS);
+                    break;
+                case -2:  // aが負でbが正
+                case 2:   // aが正でbが負
+                    setSign(c, MINUS);
+                    break;
+                    // case 3:,case 1:,case 0:,case -1:,case
+                    // -3:は最初で判定しているのでここには来ない
+            }
         }
     }
-    if (signA == signB && signA == 1) {
-        setSign(c, PLUS);
-    } else {
-        setSign(c, MINUS);
-    }
-    return 0;
+    return rtn;
 }
 
 /// @brief 2つの整数を割り算する
@@ -576,42 +658,44 @@ int multiple(const struct NUMBER *a, const struct NUMBER *b, struct NUMBER *c) {
 /// @param w 余りを代入するポインタ
 /// @return ゼロ除算: -1, 正常終了: 0
 int simpleDivide(int x, int y, int *z, int *w) {
+    int rtn;
     if (y == 0) {
-        return -1;
-    }
-    int k = 0;
-    int zSign, wSign;
-    switch ((x < 0) * 2 + (y < 0)) {
-        case 0:
-            zSign = PLUS;
-            wSign = PLUS;
-            break;
-        case 1:
-            y *= -1;
-            zSign = MINUS;
-            wSign = PLUS;
-            break;
-        case 2:
-            x *= -1;
-            zSign = MINUS;
-            wSign = MINUS;
-            break;
-        case 3:
-            x *= -1;
-            y *= -1;
-            zSign = PLUS;
-            wSign = MINUS;
-            break;
-    }
-    while (1) {
-        if (x < y) {
-            break;
+        rtn - 1;
+    } else {
+        int k = 0;
+        int zSign, wSign;
+        switch ((x < 0) * 2 + (y < 0)) {
+            case 0:  // xが正でyが正
+                zSign = PLUS;
+                wSign = PLUS;
+                break;
+            case 1:  // xが正でyが負
+                y *= -1;
+                zSign = MINUS;
+                wSign = PLUS;
+                break;
+            case 2:  // xが負でyが正
+                x *= -1;
+                zSign = MINUS;
+                wSign = MINUS;
+                break;
+            case 3:  // xが負でyが負
+                x *= -1;
+                y *= -1;
+                zSign = PLUS;
+                wSign = MINUS;
+                break;
         }
-        x -= y;
-        k++;
+        while (1) {
+            if (x < y) {
+                break;
+            }
+            x -= y;
+            k++;
+        }
+        *z = k * zSign;
+        *w = x * wSign;
     }
-    *z = k * zSign;
-    *w = x * wSign;
     return 0;
 }
 
@@ -623,60 +707,62 @@ int simpleDivide(int x, int y, int *z, int *w) {
 /// @return ゼロ除算: -1, 正常終了: 0
 int divide(const struct NUMBER *a, const struct NUMBER *b, struct NUMBER *c,
            struct NUMBER *d) {
-    clearByZero(c);
-    clearByZero(d);
+    int rtn;
     if (isZero(b) == 0) {
-        return -1;
-    }
-    if (isZero(a) == 0) {
-        return 0;
-    }
-    int cSign, dSign;
-    struct NUMBER A, B, tmp, numB, q;
-    getAbs(a, &A);
-    getAbs(b, &B);
-    switch ((getSign(a) < 0) * 2 + (getSign(b) < 0)) {
-        case 0:
-            cSign = 1;
-            dSign = 1;
-            break;
-        case 1:
-            cSign = -1;
-            dSign = 1;
-            break;
-        case 2:
-            cSign = -1;
-            dSign = -1;
-            break;
-        case 3:
-            cSign = 1;
-            dSign = -1;
-            break;
-    }
-    while (1) {
-        switch (numComp(&A, &B)) {
-            case -1:
-                copyNumber(d, &A);
-                c->sign = cSign;
-                d->sign = dSign;
-                return 0;
-            default:
-                setInt(&q, 1);
-                copyNumber(&numB, &B);
-                while (1) {
-                    mulBy10(&numB, &numB);
-                    mulBy10(&q, &q);
-                    if (numComp(&numB, &A) == 1) {
-                        divBy10(&numB, &numB);
-                        divBy10(&q, &q);
+        rtn = -1;
+    } else {
+        clearByZero(c);
+        clearByZero(d);
+        if (isZero(a) == 0) {
+            rtn = 0;
+        } else {
+            int cSign, dSign;
+            struct NUMBER A, B, numB, q;
+            getAbs(a, &A);
+            getAbs(b, &B);
+            switch ((getSign(a) < 0) * 2 + (getSign(b) < 0)) {
+                case 0:
+                    cSign = 1;
+                    dSign = 1;
+                    break;
+                case 1:
+                    cSign = -1;
+                    dSign = 1;
+                    break;
+                case 2:
+                    cSign = -1;
+                    dSign = -1;
+                    break;
+                case 3:
+                    cSign = 1;
+                    dSign = -1;
+                    break;
+            }
+            while (1) {
+                switch (numComp(&A, &B)) {
+                    case -1:
+                        copyNumber(d, &A);
+                        c->sign = cSign;
+                        d->sign = dSign;
+                        rtn = 0;
+                    default:
+                        setInt(&q, 1);
+                        copyNumber(&numB, &B);
+                        while (1) {
+                            mulBy10(&numB, &numB);
+                            mulBy10(&q, &q);
+                            if (numComp(&numB, &A) == 1) {
+                                divBy10(&numB, &numB);
+                                divBy10(&q, &q);
+                                break;
+                            }
+                        }
+                        sub(&A, &numB, &A);
+                        add(c, &q, c);
                         break;
-                    }
                 }
-                copyNumber(&tmp, &A);
-                sub(&tmp, &numB, &A);
-                copyNumber(&tmp, c);
-                add(&tmp, &q, c);
-                break;
+            }
         }
     }
+    // devideのreturnを全部最後にもってこよう
 }

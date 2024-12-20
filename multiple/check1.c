@@ -8,35 +8,25 @@
 
 int main(int argc, char **argv) {
     struct timeval tv;
-    double tstart,tend;
+    double tstart, tend;
     gettimeofday(&tv, NULL);
     tstart = (double)tv.tv_sec + (double)tv.tv_usec * 1.e-6;
     init_genrand((unsigned long)time(NULL));
 
-    // struct NUMBER a, b, c, d;
-    // setInt(&a, 322);
-    // setInt(&b, 3);
-    // divide(&a, &b, &c, &d);
-    // dispNumberZeroSuppress(&a);
-    // printf(" / ");
-    // dispNumberZeroSuppress(&b);
-    // printf(" = ");
-    // dispNumberZeroSuppress(&c);
-    // printf(" ... ");
-    // dispNumberZeroSuppress(&d);
-    // printf("\n");
-
-    struct NUMBER a, b, c, d;
-    int numA, numB, numC, numD;
-    for (int i = 0; i < 100000; i++) {
-        numA = genrand_int32() % 10000000;
-        numB = genrand_int32() % 100 + 1;
-        setInt(&a, numA);
-        setInt(&b, numB);
-        divide(&a, &b, &c, &d);
+    struct NUMBER a, b, c;
+    int numA, numB, numC = 1;
+    for (int i = 0; i < 10000; i++) {
+        setRnd(&a, 4);
+        setRnd(&b, 4);
+        getInt(&a, &numA);
+        getInt(&b, &numB);
+        if (multiple(&a, &b, &c) == -1) {
+            printf("error\n");
+            break;
+        }
         getInt(&c, &numC);
-        getInt(&d, &numD);
-        if (numA / numB != numC || numA % numB != numD) {
+        if (numA * numB != numC) {
+            printf("numA: %d, numB: %d, numC: %d\n", numA, numB, numC);
             printf("error\n");
             break;
         }
