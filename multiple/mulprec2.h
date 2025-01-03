@@ -1,6 +1,7 @@
-#define KETA 100000
-#define RADIX 1000000000
-#define RADIX_LEN 9
+#define KETA 20
+
+#define RADIX 10
+#define RADIX_LEN 1
 
 #define PLUS 1
 #define ZERO 0
@@ -11,8 +12,8 @@
 
 typedef struct NUMBER {
     long n[KETA];  // 各桁の変数
-    int sign;     // 符号変数 -1: 負, 0: 0, 1: 正
-}Number;
+    int sign;      // 符号変数 -1: 負, 0: 0, 1: 正
+} Number;
 
 void clearByZero(Number *);
 void dispNumber(const Number *);
@@ -38,3 +39,10 @@ int simpleMultiple(int, int, int *);
 int multiple(const Number *, const Number *, Number *);
 int simpleDivide(int, int, int *, int *);
 int divide(const Number *, const Number *, Number *, Number *);
+int sqrt_mp(const Number *, Number *);
+int power(const Number *, int, Number *);
+int p_recursive(int x, int n);
+int fastpower(const Number *, int, Number *);
+int factorial(int, Number *);
+void gcd(const Number *, const Number *, Number *);
+int lcm(const Number *, const Number *, Number *);

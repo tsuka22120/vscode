@@ -74,10 +74,10 @@ void dispNumberInB(const Number *a, int n) {
         printf("ERROR:invalid number\n");
         return;
     }
-    Number tmp, q, y, numN;
+    Number A, y, numN;
     int numY, i;
     char str[KETA + 1];
-    copyNumber(&tmp, a);
+    copyNumber(&A, a);
     setInt(&numN, n);
     switch (getSign(a)) {
         case PLUS:
@@ -92,16 +92,15 @@ void dispNumberInB(const Number *a, int n) {
     }
     i = 0;
     while (1) {
-        // if (isZero(&tmp) == 1) {
-        //     str[i] = '\0';
-        //     break;
-        // }
-        printf("%d\n", divide(&tmp, &numN, &q, &y));
+        if (isZero(&A) == 1) {
+            str[i] = '\0';
+            break;
+        }
+        divide(&A, &numN, NULL, &y);
         getInt(&y, &numY);
         str[i] = (numY < 10) ? numY + '0' : numY - 10 + 'A';
-        sub(&tmp, &y, &tmp);
-        divide(&tmp, &numN, &tmp, &q);
-        dispNumber(&tmp);
+        sub(&A, &y, &A);
+        divide(&A, &numN, &A, NULL);
         i++;
     }
     for (i = i - 1; i >= 0; i--) {
@@ -703,62 +702,422 @@ int divide(const Number *a, const Number *b, Number *c, Number *d) {
     if (isZero(b)) {
         rtn = -1;
     } else {
-        if (isZero(a)) {
-            clearByZero(c);
-            clearByZero(d);
-            rtn = 0;
-        } else {
-            int cSign, dSign;
-            Number A, B, numB, q;
-            getAbs(a, &A);
-            getAbs(b, &B);
-            clearByZero(c);
-            clearByZero(d);
-            switch ((getSign(a) < 0) * 2 + (getSign(b) < 0)) {
-                case 0:
-                    cSign = 1;
-                    dSign = 1;
-                    break;
-                case 1:
-                    cSign = -1;
-                    dSign = 1;
-                    break;
-                case 2:
-                    cSign = -1;
-                    dSign = -1;
-                    break;
-                case 3:
-                    cSign = 1;
-                    dSign = -1;
-                    break;
-            }
-            while (rtn != 0) {
-                switch (numComp(&A, &B)) {
-                    case -1:
-                        copyNumber(d, &A);
-                        c->sign = cSign;
-                        d->sign = dSign;
-                        rtn = 0;
-                        break;
-                    default:
-                        setInt(&q, 1);
-                        copyNumber(&numB, &B);
-                        while (1) {
-                            mulBy10(&numB, &numB);
-                            mulBy10(&q, &q);
-                            if (numComp(&numB, &A) == 1) {
-                                divBy10(&numB, &numB);
-                                divBy10(&q, &q);
+        Number one;
+        setInt(&one, 1);
+        switch ((c == NULL) + (d == NULL) * 2) {
+            case 0:  // 商も余りも必要な場合
+                if (isZero(a)) {
+                    clearByZero(c);
+                    clearByZero(d);
+                    rtn = 0;
+                } else {
+                    int cSign, dSign;
+                    Number A, B, numB, q;
+                    getAbs(a, &A);
+                    getAbs(b, &B);
+                    clearByZero(c);
+                    clearByZero(d);
+                    switch ((getSign(a) < 0) * 2 + (getSign(b) < 0)) {
+                        case 0:
+                            cSign = 1;
+                            dSign = 1;
+                            break;
+                        case 1:
+                            cSign = -1;
+                            dSign = 1;
+                            break;
+                        case 2:
+                            cSign = -1;
+                            dSign = -1;
+                            break;
+                        case 3:
+                            cSign = 1;
+                            dSign = -1;
+                            break;
+                    }
+                    while (rtn != 0) {
+                        switch (numComp(&A, &B)) {
+                            case -1:
+                                if (numComp(&A, &one) ==
+                                    -1) {  // 余りがゼロの時
+                                    clearByZero(d);
+                                } else {
+                                    copyNumber(d, &A);
+                                    d->sign = dSign;
+                                }
+                                c->sign = cSign;
+                                rtn = 0;
                                 break;
-                            }
+                            default:
+                                copyNumber(&q, &one);
+                                copyNumber(&numB, &B);
+                                while (1) {
+                                    mulBy10(&numB, &numB);
+                                    mulBy10(&q, &q);
+                                    if (numComp(&numB, &A) == 1) {
+                                        divBy10(&numB, &numB);
+                                        divBy10(&q, &q);
+                                        break;
+                                    }
+                                }
+                                sub(&A, &numB, &A);
+                                add(c, &q, c);
+                                break;
                         }
-                        sub(&A, &numB, &A);
-                        add(c, &q, c);
-                        break;
+                    }
                 }
-            }
+                break;
+            case 1:  // 商が不要で余りが必要な場合
+                if (isZero(a)) {
+                    clearByZero(d);
+                    rtn = 0;
+                } else {
+                    int dSign;
+                    Number A, B, numB, q;
+                    getAbs(a, &A);
+                    getAbs(b, &B);
+                    clearByZero(d);
+                    switch ((getSign(a) < 0) * 2 + (getSign(b) < 0)) {
+                        case 0:
+                        case 1:
+                            dSign = 1;
+                            break;
+                        case 2:
+                        case 3:
+                            dSign = -1;
+                            break;
+                    }
+                    while (rtn != 0) {
+                        switch (numComp(&A, &B)) {
+                            case -1:
+                                if (numComp(&A, &one) ==
+                                    -1) {  // 余りがゼロの時
+                                    clearByZero(d);
+                                } else {
+                                    copyNumber(d, &A);
+                                    d->sign = dSign;
+                                }
+                                rtn = 0;
+                                break;
+                            default:
+                                copyNumber(&q, &one);
+                                copyNumber(&numB, &B);
+                                while (1) {
+                                    mulBy10(&numB, &numB);
+                                    if (numComp(&numB, &A) == 1) {
+                                        divBy10(&numB, &numB);
+                                        break;
+                                    }
+                                }
+                                sub(&A, &numB, &A);
+                                break;
+                        }
+                    }
+                }
+                break;
+            case 2:  // 商が必要で余りが不要な場合
+                if (isZero(a)) {
+                    clearByZero(c);
+                    rtn = 0;
+                } else {
+                    int cSign;
+                    Number A, B, numB, q;
+                    getAbs(a, &A);
+                    getAbs(b, &B);
+                    clearByZero(c);
+                    switch ((getSign(a) < 0) * 2 + (getSign(b) < 0)) {
+                        case 0:
+                            cSign = 1;
+                            break;
+                        case 1:
+                            cSign = -1;
+                            break;
+                        case 2:
+                            cSign = -1;
+                            break;
+                        case 3:
+                            cSign = 1;
+                            break;
+                    }
+                    while (rtn != 0) {
+                        switch (numComp(&A, &B)) {
+                            case -1:
+                                c->sign = cSign;
+                                rtn = 0;
+                                break;
+                            default:
+                                copyNumber(&q, &one);
+                                copyNumber(&numB, &B);
+                                while (1) {
+                                    mulBy10(&numB, &numB);
+                                    mulBy10(&q, &q);
+                                    if (numComp(&numB, &A) == 1) {
+                                        divBy10(&numB, &numB);
+                                        divBy10(&q, &q);
+                                        break;
+                                    }
+                                }
+                                sub(&A, &numB, &A);
+                                add(c, &q, c);
+                                break;
+                        }
+                    }
+                }
+                break;
         }
     }
     return rtn;
-    // devideのreturnを全部最後にもってこよう
+}
+
+/// @brief 多倍長整数の平方根を求める
+/// @param a 平方根を求める構造体
+/// @param b 平方根を代入する構造体
+/// @return エラー: -1, 正常終了: 0
+int sqrt_mp(const Number *a, Number *b) {
+    Number x;  //  現在の平方根の近似値
+    Number c;  //  1つ前のx
+    Number d;  //  2つ前のx
+    Number tmp; //作業用変数
+    setInt(&tmp, 1);
+    if (getSign(a) == -1) {
+        clearByZero(b);
+        return -1;
+    }  //  N<0 ならエラーで-1を返す
+    if ((isZero(a)) || (numComp(a, &tmp) == 0)) {
+        copyNumber(b, a);
+        return 0;
+    }  //  N=0 or 1なら \sqrt{N}=N
+
+    setInt(&tmp, 2);            //  初期値
+    divide(a, &tmp, &x, NULL);  //  x_{0}=N/2
+    copyNumber(&c, &x);
+    copyNumber(&d, &x);
+
+    while (1) {
+        copyNumber(&d, &c);          //  2つ前のx
+        copyNumber(&c, &x);          //  1つ前のx
+        divide(a, &c, &x, NULL);     //  x_{i+1}=N/x_{i}
+        add(&c, &x, &x);             //  x_{i+1}=x_{i}+N/x_{i}
+        divide(&x, &tmp, &x, NULL);  //  x_{i+1}=(x_{i}+N/x_{i})/2
+
+        if (numComp(&x, &c) == 0) break;  //  収束
+        if (numComp(&x, &d) == 0)         //  振動
+        {
+            if (numComp(&x, &c) == 1) copyNumber(&x, &c);  //  小さい方をとる
+            break;
+        }
+    }
+    copyNumber(b, &x);
+    return 0;
+}
+
+/// @brief 多倍長整数の累乗を求める
+/// @param a 累乗する構造体
+/// @param n 累乗する値
+/// @param b 累乗した値を代入する構造体
+/// @return エラー: -1, 正常終了: 0
+int power(const Number *a, int n, Number *b) {
+    int i;
+    if (n < 0) {
+        clearByZero(b);
+        return -1;
+    }
+    if (n == 0) {
+        setInt(b, 1);
+        return 0;
+    }
+    if (n == 1) {
+        copyNumber(b, a);
+        return 0;
+    }
+    Number one;
+    setInt(&one, 1);
+    if (isZero(a)) {
+        clearByZero(b);
+        return 0;
+    }
+    if (numComp(a, &one) == 0) {
+        setInt(b, 1);
+        return 0;
+    }
+    i = 1;
+    copyNumber(b, a);
+    while (1) {
+        if (i == n) {
+            break;
+        }
+        multiple(a, b, b);
+        i++;
+    }
+    return 0;
+}
+
+/// @brief 再起的に整数の累乗を求める
+/// @param x 底
+/// @param n 指数
+/// @return 累乗した値
+int p_recursive(int x, int n) {
+    if (n == 0) {
+        printf("x: %d, n: %d\n", x, n);
+        return 1;
+    }
+    if (n == 1) {
+        printf("x: %d, n: %d\n", x, n);
+        return x;
+    }
+    if (n % 2 == 0) {
+        printf("x: %d, n: %d\n", x, n);
+        return p_recursive(x * x, n / 2);
+    } else {
+        printf("x: %d, n: %d\n", x, n);
+        return x * p_recursive(x, n - 1);
+    }
+}
+
+/// @brief 再起的に多倍長整数の累乗を求める
+/// @param a 底
+/// @param n 指数
+/// @param b 累乗した値を代入する構造体
+/// @return エラー: -1, 正常終了: 0
+int fastpower(const Number *a, int n, Number *b) {
+    if (n < 0) {
+        clearByZero(b);
+        return -1;
+    }
+    if (n == 0) {
+        setInt(b, 1);
+        return 0;
+    }
+    if (n == 1) {
+        copyNumber(b, a);
+        return 0;
+    }
+    Number one;
+    setInt(&one, 1);
+    if (isZero(a)) {
+        clearByZero(b);
+        return 0;
+    }
+    if (numComp(a, &one) == 0) {
+        setInt(b, 1);
+        return 0;
+    }
+    while (1) {
+        Number tmp;
+        if (n % 2 == 0) {
+            if (multiple(a, a, &tmp) == -1) {
+                printf("ERROR:overflow\n");
+                clearByZero(b);
+                return -1;
+            }
+            fastpower(&tmp, n / 2, b);
+        } else {
+            fastpower(a, n - 1, b);
+            if (multiple(a, b, b) == -1) {
+                printf("ERROR:overflow\n");
+                clearByZero(b);
+                return -1;
+            }
+        }
+        break;
+    }
+    return 0;
+}
+
+/// @brief 多倍長整数を階乗する
+/// @param a 階乗する値
+/// @param b 階乗した値を代入する構造体
+/// @return エラー: -1, 正常終了: 0
+int factorial(int a, Number *b) {
+    if (a < 0) {
+        clearByZero(b);
+        return -1;
+    }
+    if (a == 0) {
+        setInt(b, 1);
+        return 0;
+    }
+    Number tmp;
+    setInt(b, 1);
+    for (int i = 1; i <= a; i++) {
+        setInt(&tmp, i);
+        if (multiple(b, &tmp, b) == -1) {
+            printf("ERROR:overflow\n");
+            clearByZero(b);
+            return -1;
+        }
+    }
+    return 0;
+}
+
+/// @brief 多倍長整数の最大公約数を求める
+/// @param a 最大公約数を求める構造体
+/// @param b 最大公約数を求める構造体b
+/// @param c 最大公約数を代入する構造体
+/// @return エラー: -1, 正常終了: 0
+void gcd(const Number *a, const Number *b, Number *c) {
+    if (isZero(a)) {
+        copyNumber(c, b);
+        return;
+    } else if (isZero(b)) {
+        copyNumber(c, a);
+        return;
+    }
+    Number A, B, tmp;
+    switch (numComp(a, b)) {
+        case 1:
+            getAbs(a, &A);
+            getAbs(b, &B);
+            break;
+        case -1:
+            getAbs(b, &A);
+            getAbs(a, &B);
+            break;
+        case 0:
+            copyNumber(c, a);
+            if (isZero(a)) {
+                setSign(c, ZERO);
+            } else {
+                setSign(c, PLUS);
+            }
+            return;
+    }
+    while (1) {
+        divide(&A, &B, NULL, &tmp);
+        if (isZero(&tmp)) {
+            copyNumber(c, &B);
+            return;
+        }
+        copyNumber(&A, &B);
+        copyNumber(&B, &tmp);
+    }
+}
+
+/// @brief 多倍長整数の最小公倍数を求める
+/// @param a 最小公倍数を求める構造体
+/// @param b 最小公倍数を求める構造体b
+/// @param c 最小公倍数を代入する構造体
+/// @return エラー: -1, 正常終了: 0
+int lcm(const Number *a, const Number *b, Number *c) {
+    if (isZero(a) || isZero(b)) {
+        clearByZero(c);
+        return 0;
+    }
+    Number tmp;
+    switch (numComp(a, b)) {
+        case 1:
+            gcd(a, b, &tmp);
+            divide(b, &tmp, c, NULL);
+            multiple(a, c, c);
+            break;
+        case -1:
+            gcd(a, b, &tmp);
+            divide(a, &tmp, c, NULL);
+            multiple(b, c, c);
+            break;
+        case 0:
+            copyNumber(c, a);
+            return 0;
+    }
+    return 0;
 }
