@@ -1,7 +1,7 @@
-#define KETA 20
+#define KETA 25
 
-#define RADIX 10
-#define RADIX_LEN 1
+#define RADIX 1000000000
+#define RADIX_LEN 9
 
 #define PLUS 1
 #define ZERO 0
@@ -30,6 +30,7 @@ int getInt(const Number *, int *);
 int setSign(Number *, int);
 int getSign(const Number *);
 int numComp(const Number *, const Number *);
+int numCompWithInt(const Number *, int);
 void swap(Number *, Number *);
 int add(const Number *, const Number *, Number *);
 int sub(const Number *, const Number *, Number *);
