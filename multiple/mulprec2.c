@@ -91,7 +91,7 @@ void dispNumberInB(const Number *a, int n) {
     i = 0;
     while (1) {
         setInt(&numN, (int)pow(n, i));
-        divide(&A, &numN, &numN, NULL);
+        divideWithoutRemainder(&A, &numN, &numN);
         if (numCompWithInt(&numN, 16) == -1) {
             break;
         }
@@ -99,7 +99,7 @@ void dispNumberInB(const Number *a, int n) {
     }
     while (1) {
         setInt(&numN, (int)pow(n, i));
-        divide(&A, &numN, &printNum, NULL);
+        divideWithoutRemainder(&A, &numN, &printNum);
         getInt(&printNum, &printNumInt);
         multiple(&printNum, &numN, &printNum);
         sub(&A, &printNum, &A);
@@ -174,26 +174,112 @@ int isZero(const Number *a) {
 /// @return 0: 正常終了, -1: オーバーフロー
 int mulBy10(const Number *a, Number *b) {
     int rtn;
+    int carry = 0;
     if (isZero(a)) {
         copyNumber(b, a);
         rtn = 0;
     } else {
-        int i;
         Number tmp;
         copyNumber(&tmp, a);
-        b->n[0] = 0;
-        if (tmp.n[KETA - 1] != 0) {
+        clearByZero(b);
+        int i;
+        if (tmp.n[KETA - 1] / (RADIX / 10) !=
+            0) {  // 最上位要素の最上位桁が0でない場合
+            printf("mulBy10: overflow\n");
             rtn = -1;
         } else {
-            for (i = 0; i < KETA - 1; i++) {
-                b->n[i + 1] = tmp.n[i];
+            carry = 0;
+            for (i = 0; i < KETA; i++) {
+                tmp.n[i] *= 10;
+                tmp.n[i] += carry;
+                if (tmp.n[i] >= RADIX) {
+                    carry = tmp.n[i] / RADIX;
+                    tmp.n[i] %= RADIX;
+                } else {
+                    carry = 0;
+                }
             }
-            b->n[0] = 0;
-            setSign(b, getSign(&tmp));
+        }
+        copyNumber(b, &tmp);
+        rtn = 0;
+    }
+    return rtn;
+}
+
+/// @brief aを何回か10倍してbに代入する
+/// @param a 10倍する構造体
+/// @param b 10倍した値を代入する構造体
+/// @param k 10倍する回数
+/// @return 0: 正常終了, -1: オーバーフロー
+int mulBy10SomeTimes(const Number *a, Number *b, int k) {
+    int rtn = -2;
+    long carry = 0;
+    int i, j;
+    Number tmp;
+    copyNumber(&tmp, a);
+    clearByZero(b);
+    if (isZero(&tmp)) {
+        clearByZero(b);
+        rtn = 0;
+    } else if (k == 0) {
+        copyNumber(b, &tmp);
+        rtn = 0;
+    } else {
+        int digit;
+        digit = k / RADIX_LEN;
+        j = 0;
+        i = KETA - 1;
+        while (1) {
+            if (digit <= j) {
+                break;
+            } else if (tmp.n[i] != 0) {
+                printf("mulBy10SomeTimes: overflow\n");
+                rtn = -1;
+                break;
+            }
+            j++;
+            i--;
+        }
+        if (tmp.n[i] / (int)pow(10, (RADIX_LEN - (k - digit * RADIX_LEN))) !=
+            0) {
+            printf("mulBy10SomeTimes: overflow\n");
+            rtn = -1;
+        }
+        if (rtn != -1 || rtn != 0) {
+            carry = 0;
+            for (i = 0; i < KETA - digit; i++) {
+                tmp.n[i] *= pow(10, k - digit * RADIX_LEN);
+                tmp.n[i] += carry;
+                if (tmp.n[i] >= RADIX) {
+                    carry = tmp.n[i] / RADIX;
+                    tmp.n[i] %= RADIX;
+                } else {
+                    carry = 0;
+                }
+                // printf("a: ");
+                // dispNumber(&tmp);
+                // printf("\n");
+            }
+            carry = 0;
+            for (i = 0; i < KETA - digit; i++) {
+                tmp.n[i] *= pow(10, digit * RADIX_LEN);
+                tmp.n[i] += carry;
+                if (tmp.n[i] >= RADIX) {
+                    carry = tmp.n[i] / RADIX;
+                    tmp.n[i] %= RADIX;
+                } else {
+                    carry = 0;
+                }
+                // printf("a: ");
+                // dispNumber(&tmp);
+                // printf("\n");
+            }
+            copyNumber(b, &tmp);
             rtn = 0;
         }
     }
     return rtn;
+    //TODO ビットシフトをしてから掛け算を使ったらいけそう
 }
 
 /// @brief aを10で割ってbに代入する
@@ -203,19 +289,57 @@ int mulBy10(const Number *a, Number *b) {
 int divBy10(const Number *a, Number *b) {
     int i;
     int rtn;
-    for (i = 0; i < KETA - 1; i++) {
-        b->n[i] = a->n[i + 1];
+    Number tmp;
+    copyNumber(&tmp, a);
+    clearByZero(b);
+    rtn = tmp.n[0] % 10;
+    tmp.n[0] -= rtn;
+    tmp.n[0] /= 10;
+    for (i = 1; i < KETA; i++) {
+        tmp.n[i - 1] += (tmp.n[i] % 10) * RADIX / 10;
+        tmp.n[i] -= tmp.n[i] % 10;
+        tmp.n[i] /= 10;
     }
-    b->n[KETA - 1] = 0;
-    setSign(b, getSign(a));
-    rtn = a->n[0];
+    copyNumber(b, &tmp);
     return rtn;
 }
+
+/// @brief aを何回か10で割ってbに代入する
+/// @param a 10で割る構造体
+/// @param b 10で割った値を代入する構造体
+/// @param k 10で割る回数
+/// @return 剰余
+void divBy10SomeTimes(const Number *a, Number *b, int k) {
+    int i;
+    int digit;
+    Number tmp;
+    digit = k / RADIX_LEN;
+    copyNumber(&tmp, a);
+    clearByZero(b);
+    i = 0;
+    while (1) {
+        if (digit <= i) {
+            tmp.n[i] -= tmp.n[i] % (int)pow(10, k % RADIX_LEN);
+            tmp.n[i] /= (int)pow(10, k % RADIX_LEN);
+            i++;
+            break;
+        }
+        tmp.n[i] = 0;
+        i++;
+    }
+    for (i = 0; i < KETA - digit; i++) {
+        tmp.n[i] = tmp.n[i + digit];
+    }
+    copyNumber(b, &tmp);
+    return;
+}
+
 /// @brief int型の値を構造体に代入する
 /// @param a 代入する構造体
 /// @param x 代入する値
 /// @return 成功: 0, エラー(overflow): -1
 int setInt(Number *a, long x) {
+    clearByZero(a);
     int i;
     int r;
     if (x < 0) {
@@ -233,7 +357,7 @@ int setInt(Number *a, long x) {
         x /= RADIX;
         if (x == 0) {
             i++;
-            for(;i < KETA; i++) {
+            for (; i < KETA; i++) {
                 a->n[i] = 0;
             }
             break;
@@ -383,7 +507,7 @@ int add(const Number *a, const Number *b, Number *c) {
     switch (caseNum) {
         case -4:  // aとbが負
         case 4:   // aとbが正
-        clearByZero(c);
+            clearByZero(c);
             if (caseNum == -4) {
                 getAbs(&A, &A);
                 getAbs(&B, &B);
@@ -457,32 +581,36 @@ int sub(const Number *a, const Number *b, Number *c) {
                 copyNumber(&numB, &B);
             }
             e = 0;
-            if (numComp(&A, &B) == 1) {
-                for (i = 0; i < KETA; i++) {
-                    num = numA.n[i] - e;
-                    if (num < numB.n[i]) {
-                        c->n[i] = num + RADIX - numB.n[i];
-                        e = 1;
-                    } else {
-                        c->n[i] = num - numB.n[i];
-                        e = 0;
+            switch (numComp(&A, &B)) {
+                case 1:
+                    for (i = 0; i < KETA; i++) {
+                        num = numA.n[i] - e;
+                        if (num < numB.n[i]) {
+                            c->n[i] = num + RADIX - numB.n[i];
+                            e = 1;
+                        } else {
+                            c->n[i] = num - numB.n[i];
+                            e = 0;
+                        }
+                        setSign(c, PLUS);
                     }
-                    setSign(c, PLUS);
-                }
-            } else if (numComp(&A, &B) == -1) {
-                for (i = 0; i < KETA; i++) {
-                    num = numB.n[i] - e;
-                    if (num < numA.n[i]) {
-                        c->n[i] = num + RADIX - numA.n[i];
-                        e = 1;
-                    } else {
-                        c->n[i] = num - numA.n[i];
-                        e = 0;
+                    break;
+                case -1:
+                    for (i = 0; i < KETA; i++) {
+                        num = numB.n[i] - e;
+                        if (num < numA.n[i]) {
+                            c->n[i] = num + RADIX - numA.n[i];
+                            e = 1;
+                        } else {
+                            c->n[i] = num - numA.n[i];
+                            e = 0;
+                        }
                     }
-                }
-                setSign(c, MINUS);
-            } else {
-                setSign(c, ZERO);
+                    setSign(c, MINUS);
+                    break;
+                case 0:
+                    setSign(c, ZERO);
+                    break;
             }
             if (e > 0) {
                 rtn = -1;
@@ -576,9 +704,11 @@ int multiple(const Number *a, const Number *b, Number *c) {
     if (getSign(a) == ZERO || getSign(b) == ZERO) {
         clearByZero(c);
     } else {
-        int numA, numB, signA, signB;
+        long numA, numB;
+        int signA, signB;
         Number tmp, A, B, D;
-        int h, e, d = 0;
+        int h = 0, d = 0;
+        long e;
         signA = getSign(a);
         signB = getSign(b);
         getAbs(a, &A);
@@ -591,8 +721,10 @@ int multiple(const Number *a, const Number *b, Number *c) {
                 continue;
             } else if (numB == 1) {
                 copyNumber(&tmp, &A);
-                for (int j = 0; j < i; j++) {
-                    mulBy10(&tmp, &tmp);
+                if (mulBy10SomeTimes(&tmp, &tmp, i * RADIX_LEN) == -1) {
+                    printf("ERROR:multiple overflow\n");
+                    clearByZero(c);
+                    rtn = -1;
                 }
                 add(c, &tmp, c);
             } else {
@@ -600,15 +732,16 @@ int multiple(const Number *a, const Number *b, Number *c) {
                     numA = A.n[j];
                     e = numA * numB + h;
                     d = e % RADIX;
+                    e -= d;
                     h = e / RADIX;
                     setInt(&D, d);
-                    for (int k = 0; k < j + i; k++) {
-                        if (mulBy10(&D, &D) == -1) {
-                            clearByZero(c);
-                            rtn = -1;
-                        }
+                    if (mulBy10SomeTimes(&D, &D, (j + i) * RADIX_LEN) == -1) {
+                        printf("ERROR:mulBy10SomeTimes overflow\n");
+                        clearByZero(c);
+                        rtn = -1;
                     }
                     if (add(c, &D, c) == -1) {
+                        printf("ERROR:add overflow\n");
                         clearByZero(c);
                         rtn = -1;
                     }
@@ -698,171 +831,174 @@ int divide(const Number *a, const Number *b, Number *c, Number *d) {
     int rtn = -1000;  // 何もしていない状態
     if (isZero(b)) {
         rtn = -1;
+    } else if (isZero(a)) {
+        clearByZero(c);
+        clearByZero(d);
+        rtn = 0;
     } else {
-        int numB;
-        getInt(b, &numB);
-        Number one;
-        setInt(&one, 1);
-        switch ((c == NULL) + (d == NULL) * 2) {
-            case 0:  // 商も余りも必要な場合
-                if (isZero(a)) {
-                    clearByZero(c);
-                    clearByZero(d);
-                    rtn = 0;
-                } else {
-                    int cSign, dSign;
-                    Number A, B, numB, q;
-                    getAbs(a, &A);
-                    getAbs(b, &B);
-                    clearByZero(c);
-                    clearByZero(d);
-                    switch ((getSign(a) < 0) * 2 + (getSign(b) < 0)) {
-                        case 0:
-                            cSign = 1;
-                            dSign = 1;
-                            break;
-                        case 1:
-                            cSign = -1;
-                            dSign = 1;
-                            break;
-                        case 2:
-                            cSign = -1;
-                            dSign = -1;
-                            break;
-                        case 3:
-                            cSign = 1;
-                            dSign = -1;
-                            break;
+        int cSign, dSign;
+        Number A, B, numB, q;
+        getAbs(a, &A);
+        getAbs(b, &B);
+        clearByZero(c);
+        clearByZero(d);
+        switch ((getSign(a) < 0) * 2 + (getSign(b) < 0)) {
+            case 0:
+                cSign = 1;
+                dSign = 1;
+                break;
+            case 1:
+                cSign = -1;
+                dSign = 1;
+                break;
+            case 2:
+                cSign = -1;
+                dSign = -1;
+                break;
+            case 3:
+                cSign = 1;
+                dSign = -1;
+                break;
+        }
+        while (rtn != 0) {
+            switch (numComp(&A, &B)) {
+                case -1:
+                    if (numCompWithInt(&A, 1) == -1) {  // 余りがゼロの時
+                        clearByZero(d);
+                    } else {
+                        copyNumber(d, &A);
+                        setSign(d, dSign);
                     }
-                    while (rtn != 0) {
-                        switch (numComp(&A, &B)) {
-                            case -1:
-                                if (numComp(&A, &one) ==
-                                    -1) {  // 余りがゼロの時
-                                    clearByZero(d);
-                                } else {
-                                    copyNumber(d, &A);
-                                    d->sign = dSign;
-                                }
-                                c->sign = cSign;
-                                rtn = 0;
-                                break;
-                            default:
-                                setInt(&q, 1);
-                                copyNumber(&numB, &B);
-                                while (1) {
-                                    mulBy10(&numB, &numB);
-                                    mulBy10(&q, &q);
-                                    if (numComp(&numB, &A) == 1) {
-                                        divBy10(&numB, &numB);
-                                        divBy10(&q, &q);
-                                        break;
-                                    }
-                                }
-                                sub(&A, &numB, &A);
-                                add(c, &q, c);
-                                break;
+                    setSign(c, cSign);
+                    rtn = 0;
+                    break;
+                default:
+                    setInt(&q, 1);
+                    copyNumber(&numB, &B);
+                    while (1) {
+                        mulBy10(&numB, &numB);
+                        mulBy10(&q, &q);
+                        if (numComp(&numB, &A) == 1) {
+                            divBy10(&numB, &numB);
+                            divBy10(&q, &q);
+                            break;
                         }
                     }
-                }
+                    sub(&A, &numB, &A);
+                    add(c, &q, c);
+                    break;
+            }
+        }
+    }
+    return rtn;
+}
+
+/// @brief 多倍長整数を割り算 (商のみ)
+/// @param a 被除数
+/// @param b 除数
+/// @param c 商を代入する構造体
+/// @return ゼロ除算: -1, 正常終了: 0
+int divideWithoutRemainder(const Number *a, const Number *b, Number *c) {
+    int rtn = -2;  // 何もしていない状態
+    if (isZero(b)) {
+        rtn = -1;
+    } else if (isZero(a)) {
+        clearByZero(c);
+        rtn = 0;
+    } else {
+        int cSign;
+        Number A, B, numB, q;
+        getAbs(a, &A);
+        getAbs(b, &B);
+        clearByZero(c);
+        switch ((getSign(a) < 0) * 2 + (getSign(b) < 0)) {
+            case 0:
+            case 3:
+                cSign = 1;
                 break;
-            case 1:  // 商が不要で余りが必要な場合
-                if (isZero(a)) {
-                    clearByZero(d);
+            case 1:
+            case 2:
+                cSign = -1;
+                break;
+        }
+        while (rtn != 0) {
+            switch (numComp(&A, &B)) {
+                case -1:
+                    setSign(c, cSign);
                     rtn = 0;
-                } else {
-                    int dSign;
-                    Number A, B, numB, q;
-                    getAbs(a, &A);
-                    getAbs(b, &B);
-                    clearByZero(d);
-                    switch ((getSign(a) < 0) * 2 + (getSign(b) < 0)) {
-                        case 0:
-                        case 1:
-                            dSign = 1;
+                    break;
+                default:
+                    setInt(&q, 1);
+                    copyNumber(&numB, &B);
+                    while (1) {
+                        mulBy10(&numB, &numB);
+                        mulBy10(&q, &q);
+                        if (numComp(&numB, &A) == 1) {
+                            divBy10(&numB, &numB);
+                            divBy10(&q, &q);
                             break;
-                        case 2:
-                        case 3:
-                            dSign = -1;
-                            break;
-                    }
-                    while (rtn != 0) {
-                        switch (numComp(&A, &B)) {
-                            case -1:
-                                if (numComp(&A, &one) ==
-                                    -1) {  // 余りがゼロの時
-                                    clearByZero(d);
-                                } else {
-                                    copyNumber(d, &A);
-                                    d->sign = dSign;
-                                }
-                                rtn = 0;
-                                break;
-                            default:
-                                setInt(&q, 1);
-                                copyNumber(&numB, &B);
-                                while (1) {
-                                    mulBy10(&numB, &numB);
-                                    if (numComp(&numB, &A) == 1) {
-                                        divBy10(&numB, &numB);
-                                        break;
-                                    }
-                                }
-                                sub(&A, &numB, &A);
-                                break;
                         }
                     }
-                }
+                    sub(&A, &numB, &A);
+                    add(c, &q, c);
+                    break;
+            }
+        }
+    }
+    return rtn;
+}
+
+/// @brief 多倍長整数を割り算 (余りのみ)
+/// @param a 被除数
+/// @param b 除数
+/// @param c 余りを代入する構造体
+/// @return ゼロ除算: -1, 正常終了: 0
+int divideWithoutQuotient(const Number *a, const Number *b, Number *c) {
+    int rtn = -2;  // 何もしていない状態
+    if (isZero(b)) {
+        rtn = -1;
+    } else if (isZero(a)) {
+        clearByZero(c);
+        rtn = 0;
+    } else {
+        int cSign;
+        Number A, B, numB, q;
+        getAbs(a, &A);
+        getAbs(b, &B);
+        clearByZero(c);
+        switch ((getSign(a) < 0) * 2 + (getSign(b) < 0)) {
+            case 0:
+            case 1:
+                cSign = 1;
                 break;
-            case 2:  // 商が必要で余りが不要な場合
-                if (isZero(a)) {
-                    clearByZero(c);
-                    rtn = 0;
-                } else {
-                    int cSign;
-                    Number A, B, numB, q;
-                    getAbs(a, &A);
-                    getAbs(b, &B);
-                    clearByZero(c);
-                    switch ((getSign(a) < 0) * 2 + (getSign(b) < 0)) {
-                        case 0:
-                            cSign = 1;
-                            break;
-                        case 1:
-                            cSign = -1;
-                            break;
-                        case 2:
-                            cSign = -1;
-                            break;
-                        case 3:
-                            cSign = 1;
-                            break;
+            case 2:
+            case 3:
+                cSign = -1;
+                break;
+        }
+        while (rtn != 0) {
+            switch (numComp(&A, &B)) {
+                case -1:
+                    if (numCompWithInt(&A, 1) == -1) {  // 余りがゼロの時
+                        clearByZero(c);
+                    } else {
+                        copyNumber(c, &A);
+                        setSign(c, cSign);
                     }
-                    while (rtn != 0) {
-                        switch (numComp(&A, &B)) {
-                            case -1:
-                                c->sign = cSign;
-                                rtn = 0;
-                                break;
-                            default:
-                                setInt(&q, 1);
-                                copyNumber(&numB, &B);
-                                while (1) {
-                                    mulBy10(&numB, &numB);
-                                    mulBy10(&q, &q);
-                                    if (numComp(&numB, &A) == 1) {
-                                        divBy10(&numB, &numB);
-                                        divBy10(&q, &q);
-                                        break;
-                                    }
-                                }
-                                sub(&A, &numB, &A);
-                                add(c, &q, c);
-                                break;
+                    rtn = 0;
+                    break;
+                default:
+                    setInt(&q, 1);
+                    copyNumber(&numB, &B);
+                    while (1) {
+                        mulBy10(&numB, &numB);
+                        if (numComp(&numB, &A) == 1) {
+                            divBy10(&numB, &numB);
+                            break;
                         }
                     }
-                }
-                break;
+                    sub(&A, &numB, &A);
+            }
         }
     }
     return rtn;
@@ -888,18 +1024,18 @@ int sqrt_mp(const Number *a, Number *b) {
         return 0;
     }  //  N=0 or 1なら \sqrt{N}=N
 
-    setInt(&tmp, 2);            //  初期値
-    divide(a, &tmp, &x, NULL);  //  x_{0}=N/2
+    setInt(&tmp, 2);                      //  初期値
+    divideWithoutRemainder(a, &tmp, &x);  //  x_{0}=N/2
     copyNumber(&c, &x);
 
     while (1) {
         printf("\rルート計算%d回試行", i++);
         fflush(stdout);
-        copyNumber(&d, &c);          //  2つ前のx
-        copyNumber(&c, &x);          //  1つ前のx
-        divide(a, &c, &x, NULL);     //  x_{i+1}=N/x_{i}
-        add(&c, &x, &x);             //  x_{i+1}=x_{i}+N/x_{i}
-        divide(&x, &tmp, &x, NULL);  //  x_{i+1}=(x_{i}+N/x_{i})/2
+        copyNumber(&d, &c);                    //  2つ前のx
+        copyNumber(&c, &x);                    //  1つ前のx
+        divideWithoutRemainder(a, &c, &x);     //  x_{i+1}=N/x_{i}
+        add(&c, &x, &x);                       //  x_{i+1}=x_{i}+N/x_{i}
+        divideWithoutRemainder(&x, &tmp, &x);  //  x_{i+1}=(x_{i}+N/x_{i})/2
 
         if (numComp(&x, &c) == 0) break;  //  収束
         if (numComp(&x, &d) == 0)         //  振動
@@ -948,7 +1084,7 @@ int power(const Number *a, int n, Number *b) {
         if (i == n) {
             break;
         }
-        if(multiple(a, b, b) == -1) {
+        if (multiple(a, b, b) == -1) {
             printf("ERROR:overflow\n");
             clearByZero(b);
             return -1;
@@ -999,31 +1135,49 @@ int fastpower(const Number *a, int n, Number *b) {
         return 0;
     }
     Number one;
+    Number tmp;
+    copyNumber(&tmp, a);
     setInt(&one, 1);
-    if (isZero(a)) {
+    if (isZero(&tmp)) {
         clearByZero(b);
         return 0;
     }
-    if (numComp(a, &one) == 0) {
+    if (numComp(&tmp, &one) == 0) {
         setInt(b, 1);
         return 0;
     }
+    clearByZero(b);
     while (1) {
-        Number tmp;
         if (n % 2 == 0) {
-            if (multiple(a, a, &tmp) == -1) {
-                printf("ERROR:overflow\n");
+            if (multiple(&tmp, &tmp, &one) == -1) {
+                printf("ERROR:fastpower overflow\n");
                 clearByZero(b);
                 return -1;
             }
-            fastpower(&tmp, n / 2, b);
+            if (fastpower(&one, n / 2, b) == -1) {
+                printf("ERROR:fastpower overflow\n");
+                clearByZero(b);
+                return -1;
+            }
         } else {
-            fastpower(a, n - 1, b);
-            if (multiple(a, b, b) == -1) {
-                printf("ERROR:overflow\n");
+            if (fastpower(&tmp, n - 1, b) == -1) {
+                printf("ERROR:fastpower overflow\n");
                 clearByZero(b);
                 return -1;
             }
+            printf("tmp: ");
+            dispNumber(&tmp);
+            printf(" * ");
+            printf("b: ");
+            dispNumber(b);
+            printf("\n");
+            if (multiple(&tmp, b, b) == -1) {
+                printf("ERROR:fastpower overflow\n");
+                clearByZero(b);
+                return -1;
+            }
+            dispNumber(b);
+            printf("\n");
         }
         break;
     }
@@ -1089,7 +1243,7 @@ void gcd(const Number *a, const Number *b, Number *c) {
             return;
     }
     while (1) {
-        divide(&A, &B, NULL, &tmp);
+        divideWithoutQuotient(&A, &B, &tmp);
         if (isZero(&tmp)) {
             copyNumber(c, &B);
             return;
@@ -1113,12 +1267,12 @@ int lcm(const Number *a, const Number *b, Number *c) {
     switch (numComp(a, b)) {
         case 1:
             gcd(a, b, &tmp);
-            divide(b, &tmp, c, NULL);
+            divideWithoutRemainder(b, &tmp, c);
             multiple(a, c, c);
             break;
         case -1:
             gcd(a, b, &tmp);
-            divide(a, &tmp, c, NULL);
+            divideWithoutRemainder(a, &tmp, c);
             multiple(b, c, c);
             break;
         case 0:

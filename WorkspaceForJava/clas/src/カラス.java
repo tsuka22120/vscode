@@ -5,6 +5,7 @@ public class カラス extends 鳥類 {
 		this.賢さ = 賢さ;
 		System.out.println("賢さ" + 賢さ + "のカラスが生まれました");
 	}
+
 	private int 賢さ;
 
 	public int ゴミあさり(int 生命力) {

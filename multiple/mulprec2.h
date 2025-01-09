@@ -1,7 +1,11 @@
-#define KETA 25
+#define KETA 5
 
-#define RADIX 1000000000
-#define RADIX_LEN 9
+#define RADIX 10000
+#define RADIX_LEN 4
+
+#define DIGIT  KETA * RADIX_LEN / 2 - RADIX_LEN //求める円周率の桁数
+
+#define ROOTTHREE 1.7320508075688772935274463415058723669428052538103806280558069794519330169088 * RADIX
 
 #define PLUS 1
 #define ZERO 0
@@ -24,7 +28,9 @@ void copyNumber(Number *, const Number *);
 void getAbs(const Number *, Number *);
 int isZero(const Number *);
 int mulBy10(const Number *, Number *);
+int mulBy10SomeTimes(const Number *, Number *, int);
 int divBy10(const Number *, Number *);
+void divBy10SomeTimes(const Number *, Number *, int);
 int setInt(Number *, long);
 int getInt(const Number *, int *);
 int setSign(Number *, int);
@@ -40,6 +46,8 @@ int simpleMultiple(int, int, int *);
 int multiple(const Number *, const Number *, Number *);
 int simpleDivide(int, int, int *, int *);
 int divide(const Number *, const Number *, Number *, Number *);
+int divideWithoutRemainder(const Number *, const Number *, Number *);
+int divideWithoutQuotient(const Number *, const Number *, Number *);
 int sqrt_mp(const Number *, Number *);
 int power(const Number *, int, Number *);
 int p_recursive(int x, int n);
