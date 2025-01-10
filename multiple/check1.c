@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
     setInt(&a, 1234567890);
     dispNumber(&a);
     printf("\n");
-    mulBy10SomeTimes(&a, &a, 7);
+    mulBy10SomeTimes(&a, &a, 5);
     dispNumber(&a);
     printf("\n");
     // multiple(&a, &b, &c);

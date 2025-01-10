@@ -246,23 +246,17 @@ int mulBy10SomeTimes(const Number *a, Number *b, int k) {
             rtn = -1;
         }
         if (rtn != -1 || rtn != 0) {
-            carry = 0;
-            for (i = 0; i < KETA - digit; i++) {
-                tmp.n[i] *= pow(10, k - digit * RADIX_LEN);
-                tmp.n[i] += carry;
-                if (tmp.n[i] >= RADIX) {
-                    carry = tmp.n[i] / RADIX;
-                    tmp.n[i] %= RADIX;
-                } else {
-                    carry = 0;
+            if (digit != 0) {
+                for (i = KETA - 1 - digit; i >= 0; i--) {
+                    tmp.n[i + digit] = tmp.n[i];
                 }
-                // printf("a: ");
-                // dispNumber(&tmp);
-                // printf("\n");
+                for (i = 0; i < digit; i++) {
+                    tmp.n[i] = 0;
+                }
             }
             carry = 0;
-            for (i = 0; i < KETA - digit; i++) {
-                tmp.n[i] *= pow(10, digit * RADIX_LEN);
+            for (i = 0; i < KETA; i++) {
+                tmp.n[i] *= (int)pow(10, (k - digit * RADIX_LEN));
                 tmp.n[i] += carry;
                 if (tmp.n[i] >= RADIX) {
                     carry = tmp.n[i] / RADIX;
@@ -270,16 +264,14 @@ int mulBy10SomeTimes(const Number *a, Number *b, int k) {
                 } else {
                     carry = 0;
                 }
-                // printf("a: ");
-                // dispNumber(&tmp);
-                // printf("\n");
             }
             copyNumber(b, &tmp);
             rtn = 0;
         }
     }
     return rtn;
-    //TODO ビットシフトをしてから掛け算を使ったらいけそう
+    // TODO ビットシフトをしてから掛け算を使ったらいけそう
+    // いけた
 }
 
 /// @brief aを10で割ってbに代入する
@@ -835,6 +827,10 @@ int divide(const Number *a, const Number *b, Number *c, Number *d) {
         clearByZero(c);
         clearByZero(d);
         rtn = 0;
+    } else if (numComp(a, b) == -1) {
+        clearByZero(c);
+        copyNumber(d, a);
+        rtn = 0;
     } else {
         int cSign, dSign;
         Number A, B, numB, q;
@@ -905,6 +901,9 @@ int divideWithoutRemainder(const Number *a, const Number *b, Number *c) {
     } else if (isZero(a)) {
         clearByZero(c);
         rtn = 0;
+    } else if (numComp(a, b) == -1) {
+        clearByZero(c);
+        rtn = 0;
     } else {
         int cSign;
         Number A, B, numB, q;
@@ -959,6 +958,10 @@ int divideWithoutQuotient(const Number *a, const Number *b, Number *c) {
         rtn = -1;
     } else if (isZero(a)) {
         clearByZero(c);
+        rtn = 0;
+    } else if (numComp(a, b) == -1) {
+        clearByZero(c);
+        copyNumber(c, a);
         rtn = 0;
     } else {
         int cSign;
@@ -1165,19 +1168,11 @@ int fastpower(const Number *a, int n, Number *b) {
                 clearByZero(b);
                 return -1;
             }
-            printf("tmp: ");
-            dispNumber(&tmp);
-            printf(" * ");
-            printf("b: ");
-            dispNumber(b);
-            printf("\n");
             if (multiple(&tmp, b, b) == -1) {
                 printf("ERROR:fastpower overflow\n");
                 clearByZero(b);
                 return -1;
             }
-            dispNumber(b);
-            printf("\n");
         }
         break;
     }

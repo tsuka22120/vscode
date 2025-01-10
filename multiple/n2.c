@@ -1,7 +1,5 @@
 // sharpの公式により円周率を求める
 
-#include <limits.h>
-#include <math.h>
 #include <stdio.h>
 #include <sys/time.h>
 #include <time.h>
@@ -10,6 +8,7 @@
 #include "mulprec2.h"
 
 int main(int argc, char **argv) {
+    printf("円周率を%d桁求めます。使用する多倍長整数の桁数:%d\n", DIGIT, KETA);
     struct timeval tv;
     double tstart, tend;
     gettimeofday(&tv, NULL);
@@ -32,13 +31,7 @@ int main(int argc, char **argv) {
     // ルート3を求める
     fastpower(&tmp, 2, &tmp);
     setInt(&digitNum, 3);
-    dispNumberZeroSuppress(&digitNum);
-    printf(" * ");
-    dispNumberZeroSuppress(&tmp);
-    printf(" = ");
     multiple(&tmp, &digitNum, &digitNum);
-    dispNumberZeroSuppress(&digitNum);
-    printf("\n");
     sqrt_mp(&digitNum, &digitNum);
     printf("root3 = ");
     dispNumberZeroSuppress(&digitNum);
@@ -48,8 +41,7 @@ int main(int argc, char **argv) {
     // 初期値
     clearByZero(&x);
     n = 0;
-    printf("完了\n");
-    printf("円周率求め中...\n");
+    printf("ルート計算完了");
     fflush(stdout);
     while (1) {
         setInt(&numN, n);
@@ -70,6 +62,9 @@ int main(int argc, char **argv) {
             printf("overflow\n");
             break;
         }
+        if(isZero(&tmp)) {
+            break;
+        }
         if (n % 2 == 0) {
             if(add(&x, &tmp, &x) == -1) {
                 printf("overflow\n");
@@ -81,14 +76,13 @@ int main(int argc, char **argv) {
                 break;
             }
         }
-        if (numComp(&x, &x0) == 0) {
-            break;
-        }
         fflush(stdout);
-        printf("\r%d", n);
+        printf("円周率計算\r%d回試行", n);
         copyNumber(&x0, &x);
         n++;
     }
+    // 収束の関係で最終桁は正確には求まらないので表示しない
+    divBy10(&x, &x);
     printf("\npi = ");
     dispNumberZeroSuppress(&x);
     printf("\n");
