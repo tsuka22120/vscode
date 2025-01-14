@@ -1,9 +1,24 @@
-#define DIGIT  10 //KETA * RADIX_LEN / 2 - RADIX_LEN //求める円周率の桁数
+#define DIGIT  100 //KETA * RADIX_LEN / 2 - RADIX_LEN //求める円周率の桁数
 
 #define RADIX 1000000000
 #define RADIX_LEN 9
 
+#define MULTIPLE
+
+#ifdef ROOT
+#ifndef KETA
 #define KETA ((DIGIT + RADIX_LEN) * 2 ) / RADIX_LEN
+#define MARGIN 3
+#endif
+#endif
+
+#ifdef MULTIPLE
+#ifndef KETA
+#define MARGIN 3 // 余裕を持たせる
+#define KETA DIGIT / RADIX_LEN + MARGIN
+#endif
+#endif
+
 
 #define PLUS 1
 #define ZERO 0
@@ -53,3 +68,4 @@ int fastpower(const Number *, int, Number *);
 int factorial(int, Number *);
 void gcd(const Number *, const Number *, Number *);
 int lcm(const Number *, const Number *, Number *);
+int arctan(const Number *, Number *);

@@ -1017,15 +1017,14 @@ int sqrt_mp(const Number *a, Number *b) {
     Number d;    //  2つ前のx
     Number tmp;  // 作業用変数
     int i;
-    setInt(&tmp, 1);
-    if (getSign(a) == -1) {
+    if (getSign(a) == -1) { //  N<0 ならエラーで-1を返す
         clearByZero(b);
         return -1;
-    }  //  N<0 ならエラーで-1を返す
-    if ((isZero(a)) || (numComp(a, &tmp) == 0)) {
+    }
+    if (numCompWithInt(a, 1) != 1) {   //  N=0 or 1なら \sqrt{N}=N
         copyNumber(b, a);
         return 0;
-    }  //  N=0 or 1なら \sqrt{N}=N
+    }
 
     setInt(&tmp, 2);                      //  初期値
     divideWithoutRemainder(a, &tmp, &x);  //  x_{0}=N/2
@@ -1034,11 +1033,24 @@ int sqrt_mp(const Number *a, Number *b) {
     while (1) {
         printf("\rルート計算%d回試行", i++);
         fflush(stdout);
-        copyNumber(&d, &c);                    //  2つ前のx
-        copyNumber(&c, &x);                    //  1つ前のx
-        divideWithoutRemainder(a, &c, &x);     //  x_{i+1}=N/x_{i}
-        add(&c, &x, &x);                       //  x_{i+1}=x_{i}+N/x_{i}
-        divideWithoutRemainder(&x, &tmp, &x);  //  x_{i+1}=(x_{i}+N/x_{i})/2
+        copyNumber(&d, &c);                             //  2つ前のx
+        copyNumber(&c, &x);                             //  1つ前のx
+        if (divideWithoutRemainder(a, &c, &x) == -1) {  //  x_{i+1}=N/x_{i}
+            printf("ERROR:sqrtError\n");
+            clearByZero(b);
+            return -1;
+        }
+        if (add(&c, &x, &x) == -1) {  //  x_{i+1}=x_{i}+N/x_{i}
+            printf("ERROR:sqrtError\n");
+            clearByZero(b);
+            return -1;
+        }
+        if (divideWithoutRemainder(&x, &tmp, &x) ==
+            -1) {  //  x_{i+1}=(x_{i}+N/x_{i})/2
+            printf("ERROR:sqrtError\n");
+            clearByZero(b);
+            return -1;
+        }
 
         if (numComp(&x, &c) == 0) break;  //  収束
         if (numComp(&x, &d) == 0)         //  振動
@@ -1274,5 +1286,49 @@ int lcm(const Number *a, const Number *b, Number *c) {
             copyNumber(c, a);
             return 0;
     }
+    return 0;
+}
+
+/// @brief 多倍長整数の逆数のarctanを求める
+/// @param a 逆数のarctanを求める構造体
+/// @param b 逆数のarctanを代入する構造体
+/// @return エラー: -1, 正常終了: 0
+int arctan(const Number *a, Number *b) {
+    Number A;
+    Number digit;
+    Number tmp;
+    Number constant;
+    Number A_S;  // A^2
+    Number two;
+    int n;
+    setInt(&two, 2);
+    copyNumber(&A, a);
+    clearByZero(b);
+    // aの逆数を求める
+    setInt(&digit, 1);
+    fastpower(&A, 2, &A_S);                                // A^2
+    mulBy10SomeTimes(&digit, &digit, DIGIT + MARGIN - 1);  // 10^(2 * DIGIT - 1)
+    divideWithoutRemainder(&digit, &A, &A);                // A = 10^DIGIT / A
+    // 一項目を求める
+    add(b, &A, b);
+    n = 1;
+    setInt(&constant, 1);
+    while (1) {
+        setInt(&constant, 2 * n + 1);
+        divideWithoutRemainder(&A, &A_S, &A);
+        divideWithoutRemainder(&A, &constant, &tmp);
+        if (isZero(&tmp)) {
+            break;
+        }
+        if (n % 2 == 0) {
+            add(b, &tmp, b);
+        } else {
+            sub(b, &tmp, b);
+        }
+        printf("\rarctan計算%d回試行", n);
+        fflush(stdout);
+        n++;
+    }
+    printf("\n");
     return 0;
 }

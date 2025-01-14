@@ -33,7 +33,12 @@ int main(int argc, char **argv) {
     n = 0;
     while(1){
         copyNumber(&b, &numN);
-        fastpower(&b, 2, &b);
+        // 分母を設定
+        if(fastpower(&b, 2, &b) == -1){// b = n^2
+            printf("overflow\n");
+            break;
+        }
+        // a / b
         divideWithoutRemainder(&a, &b, &b);
         if(isZero(&b)){
             break;
@@ -45,7 +50,11 @@ int main(int argc, char **argv) {
         fflush(stdout);
     }
     printf("\n");
+    printf("pi ^ 2 = ");
+    dispNumberZeroSuppress(&x);
+    printf("\n");
     sqrt_mp(&x, &x);
+    printf("pi = ");
     dispNumberZeroSuppress(&x);
     printf("\n");
 
