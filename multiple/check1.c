@@ -17,11 +17,12 @@ int main(int argc, char **argv) {
     tstart = (double)tv.tv_sec + (double)tv.tv_usec * 1.e-6;
     init_genrand((unsigned long)time(NULL));
 
-    Number a,b;
-    setInt(&a, 2);
-    arctan(&a, &b);
-    printf("arctan(1 / 2) = ");
-    dispNumberZeroSuppress(&b);
+    Number a;
+    setRnd(&a, 5);
+    dispNumber(&a);
+    printf("\n");
+    divBy10SomeTimes(&a, &a, 10);
+    dispNumber(&a);
     printf("\n");
 
     gettimeofday(&tv, NULL);

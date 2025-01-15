@@ -305,22 +305,25 @@ void divBy10SomeTimes(const Number *a, Number *b, int k) {
     int i;
     int digit;
     Number tmp;
+    int carry;
     digit = k / RADIX_LEN;
     copyNumber(&tmp, a);
     clearByZero(b);
-    i = 0;
-    while (1) {
-        if (digit <= i) {
-            tmp.n[i] -= tmp.n[i] % (int)pow(10, k % RADIX_LEN);
-            tmp.n[i] /= (int)pow(10, k % RADIX_LEN);
-            i++;
-            break;
-        }
-        tmp.n[i] = 0;
-        i++;
+    tmp.n[0] -= tmp.n[0] % (int)pow(10, k % RADIX_LEN);
+    tmp.n[0] /= (int)pow(10, k % RADIX_LEN);
+    for (i = 1; i < KETA; i++) {
+        carry = tmp.n[i] % (int)pow(10, k - digit * RADIX_LEN);
+        tmp.n[i - 1] += carry * (int)pow(10, RADIX_LEN - (k - digit * RADIX_LEN));
+        tmp.n[i] -= carry;
+        tmp.n[i] /= (int)pow(10, k - digit * RADIX_LEN);
     }
-    for (i = 0; i < KETA - digit; i++) {
-        tmp.n[i] = tmp.n[i + digit];
+    if (digit > 0) {
+        for (i = 0; i < KETA - digit; i++) {
+            tmp.n[i] = tmp.n[i + digit];
+        }
+        for (i = KETA - digit; i < KETA; i++) {
+            tmp.n[i] = 0;
+        }
     }
     copyNumber(b, &tmp);
     return;
@@ -1017,11 +1020,11 @@ int sqrt_mp(const Number *a, Number *b) {
     Number d;    //  2つ前のx
     Number tmp;  // 作業用変数
     int i;
-    if (getSign(a) == -1) { //  N<0 ならエラーで-1を返す
+    if (getSign(a) == -1) {  //  N<0 ならエラーで-1を返す
         clearByZero(b);
         return -1;
     }
-    if (numCompWithInt(a, 1) != 1) {   //  N=0 or 1なら \sqrt{N}=N
+    if (numCompWithInt(a, 1) != 1) {  //  N=0 or 1なら \sqrt{N}=N
         copyNumber(b, a);
         return 0;
     }
@@ -1207,6 +1210,32 @@ int factorial(int a, Number *b) {
     Number tmp;
     setInt(b, 1);
     for (int i = 1; i <= a; i++) {
+        setInt(&tmp, i);
+        if (multiple(b, &tmp, b) == -1) {
+            printf("ERROR:overflow\n");
+            clearByZero(b);
+            return -1;
+        }
+    }
+    return 0;
+}
+
+/// @brief 多倍長整数の二重階乗を求める
+/// @param a 二重階乗を求める値
+/// @param b 二重階乗を代入する構造体
+/// @return エラー: -1, 正常終了: 0
+int doubleFactorial(int a, Number *b) {
+    if (a < 0) {
+        clearByZero(b);
+        return -1;
+    }
+    if (a == 0) {
+        setInt(b, 1);
+        return 0;
+    }
+    Number tmp;
+    setInt(b, 1);
+    for (int i = a; i > 0; i -= 2) {
         setInt(&tmp, i);
         if (multiple(b, &tmp, b) == -1) {
             printf("ERROR:overflow\n");
