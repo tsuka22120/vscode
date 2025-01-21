@@ -1,4 +1,4 @@
-// オイラーの公式を用いて円周率を求めるプログラム
+// 名無しの公式を使って円周率を求めるプログラム
 
 #include <stdio.h>
 #include <sys/time.h>
@@ -17,44 +17,55 @@ int main(int argc, char **argv) {
 
     Number a, b;      // 項a,b
     Number x;         // 答え
-    Number tmp;       // 作業用多倍長整数
     Number constant;  // 定数
-    int i;
-    setInt(&tmp, 2);
-    setInt(&constant, 1);
-    mulBy10SomeTimes(&tmp, &tmp, DIGIT + MARGIN);
-    multiple(&tmp, &constant, &constant);
+    Number tmp;
+    int numA;
+    int numB;
+    int n;
+    setInt(&constant, 2);
+    mulBy10SomeTimes(&constant, &constant, DIGIT + MARGIN);
     clearByZero(&x);
-    i = 0;
+    clearByZero(&a);
+    clearByZero(&b);
+    clearByZero(&tmp);
+    n = 0;
     while (1) {
-        printf("\r円周率計算%d回試行中", i);
+        printf("\r円周率計算%d回試行中", n);
         fflush(stdout);
-        if(factorial(i, &a) == -1) {  // a = i!
+        // 2nを求める
+        numA = 2 * n - 1;                       // 分子
+        numB = 2 * n;                           // 分母
+        if (doubleFactorial(numA, &a) == -1) {  // a = (2n - 1)!!
             printf("overflow\n");
             break;
         }
-        if (multiple(&a, &constant, &a) == -1) {  // a = 2 * i!
+        if (multiple(&a, &constant, &a) == -1) {  // a = 2(2n - 1)!!
             printf("overflow\n");
             break;
         }
-        if(doubleFactorial(i * 2 + 1, &b) == -1) {  // b = (2i + 1)!!
+        if (doubleFactorial(numB, &b) == -1) {  // b = (2n)!!
+            printf("overflow\n");
+            break;
+        }
+        numB = 2 * n + 1;  // 2n + 1
+        getInt(&tmp, &numB);
+        if (multiple(&b, &tmp, &b) == -1) {  // b = (2n)!! * (2n + 1)
             printf("overflow\n");
             break;
         }
         dispNumber(&a);
         printf("\n");
-        if(divideWithoutRemainder(&a, &b, &a) == -1) {  // a /= (2i + 1)!!
+        dispNumber(&b);
+        printf("\n");
+        if (divideWithoutRemainder(&a, &b, &a) == -1) {
             printf("overflow\n");
             break;
         }
         if (isZero(&a)) {
             break;
         }
-        if(add(&x, &a, &x) == -1) {  // x += a
-            printf("overflow\n");
-            break;
-        }
-        i++;
+        add(&x, &a, &x);
+        n++;
     }
     printf("\n");
     divBy10SomeTimes(&x, &x, MARGIN);

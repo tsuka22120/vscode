@@ -4,4 +4,6 @@ abstract public class Movement {
     abstract public void back();
 
     abstract public void turn(Boolean side);
+
+    abstract public void call();
 }

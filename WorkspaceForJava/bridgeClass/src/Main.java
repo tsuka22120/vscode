@@ -10,5 +10,10 @@ public class Main {
                 isuzuBus.forward();
                 isuzuBus.turn(true);
                 isuzuBus.back();
+                System.out.println("-----水素軽自動車を作ります-----");
+                Car mirai = new automobile(new HydrogenMovement());
+                mirai.forward();
+                mirai.back();
+                mirai.turn(true);
         }
 }

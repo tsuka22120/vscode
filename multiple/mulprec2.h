@@ -1,31 +1,37 @@
-#define DIGIT  200 //KETA * RADIX_LEN / 2 - RADIX_LEN //求める円周率の桁数
+#define DIGIT 10 // KETA * RADIX_LEN / 2 - RADIX_LEN //求める円周率の桁数
 
 #define RADIX 1000000000
 #define RADIX_LEN 9
 
-#define FACTORIAL
+#define DOUBLEFACTORIAL
 
 #ifdef ROOT
 #ifndef KETA
-#define KETA ((DIGIT + RADIX_LEN) * 2 ) / RADIX_LEN
+#define KETA ((DIGIT + RADIX_LEN) * 2) / RADIX_LEN
 #define MARGIN 3
 #endif
 #endif
 
 #ifdef FACTORIAL
 #ifndef KETA
-#define MARGIN 3 // 余裕を持たせる
+#define MARGIN 3  // 余裕を持たせる
+#define KETA DIGIT / RADIX_LEN + MARGIN
+#endif
+#endif
+
+#ifdef DOUBLEFACTORIAL
+#ifndef KETA
+#define MARGIN 3  // 余裕を持たせる
 #define KETA DIGIT + MARGIN
 #endif
 #endif
 
 #ifdef MULTIPLE
 #ifndef KETA
-#define MARGIN 3 // 余裕を持たせる
+#define MARGIN 3  // 余裕を持たせる
 #define KETA DIGIT / RADIX_LEN + MARGIN
 #endif
 #endif
-
 
 #define PLUS 1
 #define ZERO 0
@@ -68,7 +74,9 @@ int simpleDivide(int, int, int *, int *);
 int divide(const Number *, const Number *, Number *, Number *);
 int divideWithoutRemainder(const Number *, const Number *, Number *);
 int divideWithoutQuotient(const Number *, const Number *, Number *);
+int inverse2(const Number *, Number *);
 int sqrt_mp(const Number *, Number *);
+int sqrt_newton(const Number *, Number *);
 int power(const Number *, int, Number *);
 int p_recursive(int x, int n);
 int fastpower(const Number *, int, Number *);

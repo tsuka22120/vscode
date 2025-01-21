@@ -14,4 +14,7 @@ public class HydrogenMovement extends Movement {
             System.out.println("シュッ「左に曲がります」");
         }
     }
+
+    public void call() {
+    }
 }
