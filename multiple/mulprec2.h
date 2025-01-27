@@ -8,7 +8,7 @@
 
 #ifdef ROOT
 #ifndef KETA
-#define KETA 400
+#define KETA (1788 + MARGIN) / 18 + 1
 #endif
 #endif
 

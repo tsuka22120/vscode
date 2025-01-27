@@ -1090,7 +1090,6 @@ int inverse2(const Number *a, Number *b) {
         Number tmp;  // 作業用変数
         Number g;    // 逆数の誤差
         Number two;
-        int eps = 1;
         int n;
         getAbs(a, &A);
         setInt(b, 2);
@@ -1317,9 +1316,6 @@ int sqrtThree(Number *a) {
     printf("\n");
     mulBy10SomeTimes(&numA, &numA, DIGIT + MARGIN);
     divideByInverse(&numA, &numB, a);
-    printf("a: ");
-    dispNumberZeroSuppress(a);
-    printf("\n");
     divBy10SomeTimes(a, a, DIGIT * 1);
     return rtn;
 }
