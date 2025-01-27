@@ -1,14 +1,14 @@
-#define DIGIT 10 // KETA * RADIX_LEN / 2 - RADIX_LEN //求める円周率の桁数
+#define DIGIT 30 // KETA * RADIX_LEN / 2 - RADIX_LEN //求める円周率の桁数
 
 #define RADIX 1000000000
 #define RADIX_LEN 9
 
-#define DOUBLEFACTORIAL
+#define ROOT
 
 #ifdef ROOT
 #ifndef KETA
-#define KETA ((DIGIT + RADIX_LEN) * 2) / RADIX_LEN
 #define MARGIN 3
+#define KETA 70
 #endif
 #endif
 
@@ -40,8 +40,10 @@
 #define TRUE 1
 #define FALSE 0
 
+#define RADIX_T long
+
 typedef struct NUMBER {
-    long n[KETA];  // 各桁の変数
+    RADIX_T n[KETA];  // 各桁の変数
     int sign;      // 符号変数 -1: 負, 0: 0, 1: 正
 } Number;
 
@@ -74,9 +76,11 @@ int simpleDivide(int, int, int *, int *);
 int divide(const Number *, const Number *, Number *, Number *);
 int divideWithoutRemainder(const Number *, const Number *, Number *);
 int divideWithoutQuotient(const Number *, const Number *, Number *);
+int divideByInverse(const Number *, const Number *, Number *);
 int inverse2(const Number *, Number *);
 int sqrt_mp(const Number *, Number *);
 int sqrt_newton(const Number *, Number *);
+int sqrtThree(Number *);
 int power(const Number *, int, Number *);
 int p_recursive(int x, int n);
 int fastpower(const Number *, int, Number *);
@@ -85,3 +89,4 @@ int doubleFactorial(int, Number *);
 void gcd(const Number *, const Number *, Number *);
 int lcm(const Number *, const Number *, Number *);
 int arctan(const Number *, Number *);
+int getLen(const Number *);

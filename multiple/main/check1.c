@@ -17,17 +17,24 @@ int main(int argc, char **argv) {
     tstart = (double)tv.tv_sec + (double)tv.tv_usec * 1.e-6;
     init_genrand((unsigned long)time(NULL));
 
-    Number a, b;
-    int numA;
-    double numB;
-    setInt(&a, 1234);
-    getInt(&a, &numA);
-    printf("numA: %d\n", numA);
+    Number a, b, c, d;
+    setInt(&a,1234);
     inverse2(&a, &b);
-    dispNumber(&a);
+    printf("b = ");
+    dispNumberZeroSuppress(&b);
     printf("\n");
-    numB = 1.0 / (double)numA;
-    printf("numA: %f\n", numB);
+    // setRnd(&a, 5);
+    // setRnd(&b, 3);
+    // setSign(&a, PLUS);
+    // setSign(&b, PLUS);
+    // divideWithoutRemainder(&a, &b, &c);
+    // printf("c = ");
+    // dispNumberZeroSuppress(&c);
+    // printf("\n");
+    // divideByInverse(&a, &b, &d);
+    // printf("d = ");
+    // dispNumberZeroSuppress(&d);
+    // printf("\n");
 
     gettimeofday(&tv, NULL);
     tend = (double)tv.tv_sec + (double)tv.tv_usec * 1.e-6;

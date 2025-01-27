@@ -703,7 +703,7 @@ int multiple(const Number *a, const Number *b, Number *c) {
         int signA, signB;
         Number tmp, A, B, D;
         int h = 0, d = 0;
-        long e;
+        RADIX_T e;
         signA = getSign(a);
         signB = getSign(b);
         getAbs(a, &A);
@@ -935,7 +935,7 @@ int divideWithoutRemainder(const Number *a, const Number *b, Number *c) {
                     } else {
                         setSign(c, cSign);
                     }
-                        rtn = 0;
+                    rtn = 0;
                     break;
                 default:
                     setInt(&q, 1);
@@ -1028,6 +1028,45 @@ int divideWithoutQuotient(const Number *a, const Number *b, Number *c) {
     return rtn;
 }
 
+/// @brief 多倍長整数を割り算する(逆数使用)
+/// @param a 被除数
+/// @param b 除数
+/// @param c 商を代入する構造体
+/// @return ゼロ除算: -1, 正常終了: 0
+int divideByInverse(const Number *a, const Number *b, Number *c) {
+    if(numComp(a, b) == -1) {
+        clearByZero(c);
+        return 0;
+    }
+    Number A, B;
+    int rtn;
+    int cSign;
+    Number inv;
+    copyNumber(&A, a);
+    copyNumber(&B, b);
+    clearByZero(c);
+    switch ((getSign(&A) < 0) * 2 + (getSign(&B) < 0)) {
+        case 0:
+        case 3:
+            cSign = 1;
+            break;
+        case 1:
+        case 2:
+            cSign = -1;
+            break;
+    }
+    if (inverse2(&B, &inv) == -1) {
+        rtn = -1;
+    } else {
+        printf("OK\n");
+        fflush(stdout);
+        rtn = multiple(&A, &inv, c);
+        divBy10SomeTimes(c, c, DIGIT);
+    }
+    setSign(c, cSign);
+    return rtn;
+}
+
 /// @brief 多倍長整数の逆数を求める(2次収束)
 /// @param a 逆数を求める構造体
 /// @param b 逆数を代入する構造体
@@ -1041,41 +1080,45 @@ int inverse2(const Number *a, Number *b) {
         copyNumber(b, a);
         rtn = 0;
     } else {
-        Number x0;        //  ひとつ前のx
-        Number A;         //  逆数を求める数
-        Number tmp;       // 作業用変数
-        Number constant;  // 2 * 10^DIGIT
-        Number g;         // 逆数の誤差
-        int i;
-        int sign;
-        sign = getSign(a);
-        setInt(&constant, 2);
-        mulBy10SomeTimes(&constant, &constant, DIGIT);
+        Number x0;   //  ひとつ前のx
+        Number A;    //  逆数を求める数
+        Number tmp;  // 作業用変数
+        Number g;    // 逆数の誤差
+        Number two;
+        int eps = 1;
+        int n;
         getAbs(a, &A);
         setInt(b, 2);
-        for (i = KETA - 1; i >= 0; i--) {
-            if (A.n[i] != 0) {
-                break;
-            }
-        }
-        mulBy10SomeTimes(b, b, DIGIT - i * RADIX_LEN);  // 初期値
+        setInt(&two, 2);
+        mulBy10SomeTimes(b, b, DIGIT - getLen(&A));
+        mulBy10SomeTimes(&two, &two, DIGIT);
+        n = 0;
         while (1) {
+            // printf("\r逆数計算%d回試行", n++);
+            fflush(stdout);
             copyNumber(&x0, b);  //  ひとつ前のx
-            multiple(&A, &x0, &tmp);
-            sub(&constant, &tmp, &tmp);
-            divBy10SomeTimes(&tmp, &tmp, DIGIT);
-            multiple(&x0, &tmp, b);
-            sub(b, &x0, &g);
-            getAbs(&g, &g);
-            dispNumber(b);
-            printf("\n");
-            if (numCompWithInt(&g, RADIX) != 1) {
+            if (multiple(&A, &x0, &tmp) == -1) {
+                printf("ERROR:inverse2 overflow\n");
+                clearByZero(b);
+                rtn = -1;
                 break;
             }
+            sub(&two, &tmp, &tmp);
+            if (multiple(&x0, &tmp, b) == -1) {
+                printf("ERROR:inverse2 overflow\n");
+                clearByZero(b);
+                rtn = -1;
+                break;
+            }
+            divBy10SomeTimes(b, b, DIGIT);
+            sub(b, &x0, &g);
+            if (isZero(&g)) {
+                break;
+            }
+            rtn = 0;
         }
-        setSign(b, sign);
-        rtn = 0;
     }
+    setSign(b, getSign(a));
     return rtn;
 }
 
@@ -1193,6 +1236,81 @@ int sqrt_newton(const Number *a, Number *b) {
     printf("\n");
     copyNumber(b, &x);
     return 0;
+}
+
+/// @brief 3の平方根を求める
+/// @param a 3の平方根を代入する構造体
+/// @return エラー: -1, 正常終了: 0
+int sqrtThree(Number *a) {
+    int rtn;
+    Number numA, numB;
+    Number constant;
+    Number numA0, numB0;
+    Number two;
+    int n = DIGIT;
+    int i;
+    int j = 0;
+    i = 1;
+    while (1) {
+        if ((n / i * 2) < 18) {
+            break;
+        }
+        i *= 2;
+        j++;
+    }
+    n = j + 5;
+
+    setInt(&constant, 3);
+    setInt(&two, 2);
+    setInt(&numA, 1);
+    setInt(&numB, 1);
+    for (i = 0; i < n; i++) {
+        printf("\r3の平方根計算%d回試行", i);
+        fflush(stdout);
+        copyNumber(&numA0, &numA);
+        copyNumber(&numB0, &numB);
+        if (multiple(&numA0, &numA0, &numA) == -1) {
+            printf("ERROR:sqrtThree overflow\n");
+            clearByZero(a);
+            rtn = -1;
+            break;
+        }
+        if (multiple(&numB0, &numB0, &numB) == -1) {
+            printf("ERROR:sqrtThree overflow\n");
+            clearByZero(a);
+            rtn = -1;
+            break;
+        }
+        if (multiple(&numB, &constant, &numB) == -1) {
+            printf("ERROR:sqrtThree overflow\n");
+            clearByZero(a);
+            rtn = -1;
+            break;
+        }
+        if (add(&numA, &numB, &numA) == -1) {
+            printf("ERROR:sqrtThree overflow\n");
+            clearByZero(a);
+            rtn = -1;
+            break;
+        }
+        if (multiple(&numA0, &numB0, &numB) == -1) {
+            printf("ERROR:sqrtThree overflow\n");
+            clearByZero(a);
+            rtn = -1;
+            break;
+        }
+        if (multiple(&numB, &two, &numB) == -1) {
+            printf("ERROR:sqrtThree overflow\n");
+            clearByZero(a);
+            rtn = -1;
+            break;
+        }
+        rtn = 0;
+    }
+    printf("\n");
+    mulBy10SomeTimes(&numA, &numA, DIGIT);
+    divideByInverse(&numA, &numB, a);
+    return rtn;
 }
 
 /// @brief 多倍長整数の累乗を求める
@@ -1489,4 +1607,20 @@ int arctan(const Number *a, Number *b) {
     }
     printf("\n");
     return 0;
+}
+
+/// @brief 多倍長整数の桁数を求める
+/// @param a 桁数を求める構造体
+/// @return 桁数
+int getLen(const Number *a) {
+    int i;
+    if (isZero(a)) {
+        return 1;
+    }
+    for (i = KETA - 1; i >= 0; i--) {
+        if (a->n[i] != 0) {
+            break;
+        }
+    }
+    return i * RADIX_LEN + (int)log10(a->n[i]) + 1;
 }

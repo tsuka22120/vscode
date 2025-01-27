@@ -4,8 +4,8 @@
 #include <sys/time.h>
 #include <time.h>
 
-#include "mt19937ar.h"
-#include "mulprec2.h"
+#include "../mt19937ar.h"
+#include "../mulprec2.h"
 
 int main(int argc, char **argv) {
     printf("円周率を%d桁求めます。使用する多倍長整数の桁数:%d\n", DIGIT, KETA);
@@ -26,13 +26,8 @@ int main(int argc, char **argv) {
     n = 0;
     clearByZero(&x0);
     setInt(&constant, 6);
-    setInt(&digitNum, 10);
-    fastpower(&digitNum, DIGIT, &tmp);
     // ルート3を求める
-    fastpower(&tmp, 2, &tmp);
-    setInt(&digitNum, 3);
-    multiple(&tmp, &digitNum, &digitNum);
-    sqrt_mp(&digitNum, &digitNum);
+    sqrtThree(&digitNum);
     printf("root3 = ");
     dispNumberZeroSuppress(&digitNum);
     printf("\n");
@@ -41,9 +36,9 @@ int main(int argc, char **argv) {
     // 初期値
     clearByZero(&x);
     n = 0;
-    printf("ルート計算完了");
-    fflush(stdout);
     while (1) {
+        printf("円周率計算\r%d回試行", n);
+        fflush(stdout);
         setInt(&numN, n);
         // aを求める
         setInt(&a, 2);
@@ -58,39 +53,37 @@ int main(int argc, char **argv) {
             break;
         }
         // xを求める
-        if(divideWithoutRemainder(&constant, &tmp, &tmp) == -1) {
+        if (divideByInverse(&constant, &tmp, &tmp) == -1) {
             printf("overflow\n");
             break;
         }
-        if(isZero(&tmp)) {
+        if (isZero(&tmp)) {
             break;
         }
         if (n % 2 == 0) {
-            if(add(&x, &tmp, &x) == -1) {
+            if (add(&x, &tmp, &x) == -1) {
                 printf("overflow\n");
                 break;
             }
         } else {
-            if(sub(&x, &tmp, &x) == -1) {
+            if (sub(&x, &tmp, &x) == -1) {
                 printf("overflow\n");
                 break;
             }
         }
-        fflush(stdout);
-        printf("円周率計算\r%d回試行", n);
         copyNumber(&x0, &x);
         n++;
     }
-    // 収束の関係で最終桁は正確には求まらないので表示しない
-    divBy10(&x, &x);
-    printf("\npi = ");
+    printf("\n");
+    divBy10SomeTimes(&x, &x, MARGIN);
+    printf("pi = ");
     dispNumberZeroSuppress(&x);
     printf("\n");
-    printf("n = %d\n", n);
 
     gettimeofday(&tv, NULL);
     tend = (double)tv.tv_sec + (double)tv.tv_usec * 1.e-6;
-    printf("所要時間: %d 時間 %d 分 %d 秒\n", (int)(tend - tstart) / 3600, (int)(tend - tstart) % 3600 / 60, (int)(tend - tstart) % 60);
+    printf("所要時間: %d 時間 %d 分 %d 秒\n", (int)(tend - tstart) / 3600,
+           (int)(tend - tstart) % 3600 / 60, (int)(tend - tstart) % 60);
     printf("%f秒\n", tend - tstart);
     return 0;
 }
