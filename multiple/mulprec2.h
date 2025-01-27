@@ -1,14 +1,14 @@
-#define DIGIT 30 // KETA * RADIX_LEN / 2 - RADIX_LEN //求める円周率の桁数
+#define DIGIT 1000 // KETA * RADIX_LEN / 2 - RADIX_LEN //求める円周率の桁数
 
 #define RADIX 1000000000
 #define RADIX_LEN 9
+#define MARGIN 18
 
 #define ROOT
 
 #ifdef ROOT
 #ifndef KETA
-#define MARGIN 3
-#define KETA 70
+#define KETA 400
 #endif
 #endif
 

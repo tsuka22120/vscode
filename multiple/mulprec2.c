@@ -1034,7 +1034,7 @@ int divideWithoutQuotient(const Number *a, const Number *b, Number *c) {
 /// @param c 商を代入する構造体
 /// @return ゼロ除算: -1, 正常終了: 0
 int divideByInverse(const Number *a, const Number *b, Number *c) {
-    if(numComp(a, b) == -1) {
+    if (numComp(a, b) == -1) {
         clearByZero(c);
         return 0;
     }
@@ -1058,10 +1058,8 @@ int divideByInverse(const Number *a, const Number *b, Number *c) {
     if (inverse2(&B, &inv) == -1) {
         rtn = -1;
     } else {
-        printf("OK\n");
-        fflush(stdout);
         rtn = multiple(&A, &inv, c);
-        divBy10SomeTimes(c, c, DIGIT);
+        divBy10SomeTimes(c, c, DIGIT + MARGIN);
     }
     setSign(c, cSign);
     return rtn;
@@ -1073,6 +1071,13 @@ int divideByInverse(const Number *a, const Number *b, Number *c) {
 /// @return ゼロ除算: -1, 正常終了: 0
 int inverse2(const Number *a, Number *b) {
     int rtn;
+    int margin = 1;
+    while(1){
+        if(DIGIT * margin + MARGIN > getLen(a)){
+            break;
+        }
+        margin++;
+    }
     if (isZero(a)) {
         clearByZero(b);
         rtn = 0;
@@ -1090,12 +1095,12 @@ int inverse2(const Number *a, Number *b) {
         getAbs(a, &A);
         setInt(b, 2);
         setInt(&two, 2);
-        mulBy10SomeTimes(b, b, DIGIT - getLen(&A));
-        mulBy10SomeTimes(&two, &two, DIGIT);
+        mulBy10SomeTimes(b, b, DIGIT * margin + MARGIN - getLen(&A));
+        mulBy10SomeTimes(&two, &two, DIGIT * margin + MARGIN);
         n = 0;
         while (1) {
             // printf("\r逆数計算%d回試行", n++);
-            fflush(stdout);
+            // fflush(stdout);
             copyNumber(&x0, b);  //  ひとつ前のx
             if (multiple(&A, &x0, &tmp) == -1) {
                 printf("ERROR:inverse2 overflow\n");
@@ -1110,7 +1115,7 @@ int inverse2(const Number *a, Number *b) {
                 rtn = -1;
                 break;
             }
-            divBy10SomeTimes(b, b, DIGIT);
+            divBy10SomeTimes(b, b, DIGIT * margin + MARGIN);
             sub(b, &x0, &g);
             if (isZero(&g)) {
                 break;
@@ -1118,6 +1123,7 @@ int inverse2(const Number *a, Number *b) {
             rtn = 0;
         }
     }
+    // divBy10SomeTimes(b, b, MARGIN);
     setSign(b, getSign(a));
     return rtn;
 }
@@ -1242,12 +1248,13 @@ int sqrt_newton(const Number *a, Number *b) {
 /// @param a 3の平方根を代入する構造体
 /// @return エラー: -1, 正常終了: 0
 int sqrtThree(Number *a) {
+    clearByZero(a);
     int rtn;
     Number numA, numB;
     Number constant;
     Number numA0, numB0;
     Number two;
-    int n = DIGIT;
+    int n = DIGIT + MARGIN;
     int i;
     int j = 0;
     i = 1;
@@ -1308,8 +1315,12 @@ int sqrtThree(Number *a) {
         rtn = 0;
     }
     printf("\n");
-    mulBy10SomeTimes(&numA, &numA, DIGIT);
+    mulBy10SomeTimes(&numA, &numA, DIGIT + MARGIN);
     divideByInverse(&numA, &numB, a);
+    printf("a: ");
+    dispNumberZeroSuppress(a);
+    printf("\n");
+    divBy10SomeTimes(a, a, DIGIT * 1);
     return rtn;
 }
 

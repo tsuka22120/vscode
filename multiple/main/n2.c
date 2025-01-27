@@ -31,6 +31,7 @@ int main(int argc, char **argv) {
     printf("root3 = ");
     dispNumberZeroSuppress(&digitNum);
     printf("\n");
+    printf("root3Len = %d\n", getLen(&digitNum));
     // 6ルート3を求める
     multiple(&digitNum, &constant, &constant);
     // 初期値
