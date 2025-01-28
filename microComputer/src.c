@@ -31,6 +31,8 @@
 
 enum STS { STOP, RUN, PAUSE1, PAUSE2, PAUSE3 };
 
+int score;
+
 struct position {
     int x;
     int y;
@@ -124,12 +126,13 @@ void LCD_init(void) {
 // -- ゲーム用の関数群 --
 
 // -- 自分を移動 --
-void move_me(struct position *me) {
+void move_me(struct position *me, struct position rock[]) {
     int i;
     struct position old_position;
 
     old_position.x = me->x;
     old_position.y = me->y;
+    me->active = 1;
 
     if (AD0.ADDR0 < 0x4000) {
         // -- ジョイスティック上 --
@@ -149,8 +152,28 @@ void move_me(struct position *me) {
         LCD_cursor(old_position.x, old_position.y);
         LCD_putch(' ');
     }
-    LCD_cursor(me->x, me->y);
-    LCD_putch('>');
+    for (i = 0; i < NMROF_ROCKS; i++) {
+        if (rock[i].active) {
+            if ((old_position.x == rock[i].x && old_position.y == rock[i].y) ||
+                (me->x == rock[i].x &&
+                 me->y == rock[i].y)) {  // プレイヤーに触れたら岩を消す
+                score -= 5;
+                if (score < 0) score = 0;
+                rock[i].active = 0;
+                LCD_cursor(rock[i].x, rock[i].y);
+                LCD_putch(' ');
+                me->active = 0;
+                break;
+            }
+        }
+    }
+    if (me->active) {
+        LCD_cursor(me->x, me->y);
+        LCD_putch('>');
+    } else {
+        LCD_cursor(me->x, me->y);
+        LCD_putch(' ');
+    }
 }
 
 // -- 岩を移動 --
@@ -164,6 +187,7 @@ void move_rock(struct position rock[]) {
             LCD_putch(' ');
             if (rock[i].x == 0) {
                 // 消去
+                score++;
                 rock[i].active = 0;
             } else {
                 rock[i].x--;
@@ -191,6 +215,37 @@ void new_rock(struct position rock[]) {
     }
 }
 
+void do_7seg() {
+    static int keta;
+    int num1 = score % 10;
+    int num2 = (score / 10) % 10;
+    int num3 = score / 100;
+    PA.DR.BYTE.HL &= 0xf0;
+    DIG1 = DIG2 = DIG3 = 0;
+
+    if (keta == 0) {
+        PA.DR.BYTE.HL |= num1;
+        DIG1 = 1;
+        keta++;
+    } else if (keta == 1) {
+        PA.DR.BYTE.HL |= num2;
+        if (num2 == 0 && num3 == 0) {
+            DIG2 = 0;
+        } else {
+            DIG2 = 1;
+        }
+        keta++;
+    } else if (keta == 2) {
+        PA.DR.BYTE.HL |= num3;
+        if (num3 == 0) {
+            DIG2 = 0;
+        } else {
+            DIG3 = 1;
+        }
+        keta = 0;
+    }
+}
+
 // --------------------------------------------
 // -- メイン関数 --
 void main() {
@@ -201,6 +256,8 @@ void main() {
     int ad, i;
     int stop_sw, run_sw, pause_sw;
     int status;
+
+    score = 0;
 
     STB.CR4.BIT._AD0 = 0;
     STB.CR4.BIT._CMT = 0;
@@ -215,8 +272,8 @@ void main() {
     MTU20.TIER.BIT.TTGE = 1;  // A/D変換開始要求を許可
 
     // AD0
-    AD0.ADCSR.BIT.ADM = 0;    // シングルモード
-    AD0.ADCSR.BIT.CH = 0;     // AN0
+    AD0.ADCSR.BIT.ADM = 3;    // シングルモード
+    AD0.ADCSR.BIT.CH = 1;     // AN0
     AD0.ADCSR.BIT.TRGE = 1;   // MTU2からのトリガ有効
     AD0.ADTSR.BIT.TRG0S = 1;  // TGRAコンペアマッチでトリガ
 
@@ -225,10 +282,26 @@ void main() {
     MTU21.TCR.BIT.CCLR = 1;  // TGRAのコンペアマッチでクリア
     MTU21.TGRA = 31250 - 1;  // 100ms
 
+    // MTU2 ch2 7seg
+    MTU22.TCR.BIT.TPSC = 3;
+    MTU22.TCR.BIT.CCLR = 1;
+    MTU22.TGRA = 1000 - 1;
+
+    // MTU2 ch3 sound
+    MTU23.TCR.BIT.TPSC = 0;
+    MTU23.TCR.BIT.CCLR = 1;
+    MTU23.TGRA = 10000 - 1;
+
     LCD_init();
 
     MTU2.TSTR.BIT.CST0 = 1;  // MTU2 CH0スタート
     MTU2.TSTR.BIT.CST1 = 1;  // MTU2 CH1スタート
+    MTU2.TSTR.BIT.CST2 = 1;  // MTU2 CH2スタート
+
+    PFC.PAIORH.BYTE.L |= 0x0F;
+    PFC.PEIORL.BIT.B1 = 1;
+    PFC.PEIORL.BIT.B2 = 1;
+    PFC.PEIORL.BIT.B3 = 1;
 
     me.x = me.y = 0;
     for (i = 0; i < NMROF_ROCKS; i++) rock[i].active = 0;
@@ -236,9 +309,8 @@ void main() {
     status = STOP;
     move_timing = new_timing = 0;
     while (1) {
-        if (MTU21.TSR.BIT.TGFA) {  // ゲーム用のタイマのフラグ
-            // MTU2 ch1 コンペアマッチ発生(100ms毎)
-            MTU21.TSR.BIT.TGFA = 0;  // フラグクリア
+        if (MTU21.TSR.BIT.TGFA) {
+            MTU21.TSR.BIT.TGFA = 0;
 
             // 100msに1回、スイッチを読む
             stop_sw = SW4;
@@ -247,44 +319,53 @@ void main() {
 
             if (status == RUN) {
                 // ゲーム中
-                move_me(&me);  // 自分移動
+                move_me(&me, rock);  // 自分移動
                 if (move_timing++ >= 2) {
                     move_timing = 0;
                     move_rock(rock);  // 岩を移動
                     if (new_timing-- <= 0) {
-                        new_timing = rand() * 5 / (RAND_MAX + 1) +
-                                     1 new_rock(rock);  // 新しい岩が出現
+                        new_timing = rand() * 2 / (RAND_MAX + 1) + 1;
+                        new_rock(rock);  // 新しい岩が出現
                     }
                 }
                 if (pause_sw) {
                     status = PAUSE1;
-                    for (i = 0; i < 16; i++) {
-                        LCD_cursor(i, 0);
-                        LCD_putch(' ');
-                        LCD_cursor(i, 1);
-                        LCD_putch(' ');
-                    }
-                    strPrint[16] = "MEMES GAME";
+                    LCD_cls();
                     LCD_cursor(0, 0);
-                    LCD_putstr(strPrint);
-                    strPrint[16] = "PUSH switch6";
+                    LCD_putstr("PAUSE");
                     LCD_cursor(0, 1);
-                    LCD_putstr(strPrint);  // 文字列の扱いがよくわからない
+                    LCD_putstr("PUSH switch5");
+                }
+                if (stop_sw) {
+                    status = STOP;
                 }
             } else if (status == PAUSE1) {
                 if (!pause_sw)        // pause_sw が OFF なら
-                    statue = PAUSE2;  // status を PAUSE2 へ
+                    status = PAUSE2;  // status を PAUSE2 へ
             } else if (status == PAUSE2) {
                 if (pause_sw)         // pause_sw が ON なら
                     status = PAUSE3;  // status を PAUSE3 へ
             } else if (status == PAUSE3) {
-                if (!pause_sw)    // pause_sw が OFF なら
-                    status = RUN  // sutatus を RUN へ
+                if (!pause_sw)  // pause_sw が OFF なら
+                    LCD_cls();
+                status = RUN;  // sutatus を RUN へ
             } else {
+                LCD_cls();
+                LCD_cursor(0, 0);
+                LCD_putstr("MEMES GAMES");
+                LCD_cursor(0, 1);
+                LCD_putstr("PUSH switch6");
                 // 停止中
-                if (run_sw) status = RUN;
+                if (run_sw) {
+                    status = RUN;
+                    LCD_cls();
+                }
             }
         }
         // if (@@@@@) として 7セグ用のタイマフラグ を見るようにするとよい
+        if (MTU22.TSR.BIT.TGFA) {
+            MTU22.TSR.BIT.TGFA = 0;
+            do_7seg();
+        }
     }
 }

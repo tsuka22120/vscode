@@ -1,4 +1,4 @@
-#define DIGIT 1000 // KETA * RADIX_LEN / 2 - RADIX_LEN //求める円周率の桁数
+#define DIGIT 100 // KETA * RADIX_LEN / 2 - RADIX_LEN //求める円周率の桁数
 
 #define RADIX 1000000000
 #define RADIX_LEN 9
@@ -8,7 +8,7 @@
 
 #ifdef ROOT
 #ifndef KETA
-#define KETA (1788 + MARGIN) / 18 + 1
+#define KETA 200
 #endif
 #endif
 
@@ -40,7 +40,7 @@
 #define TRUE 1
 #define FALSE 0
 
-#define RADIX_T long
+#define RADIX_T long long
 
 typedef struct NUMBER {
     RADIX_T n[KETA];  // 各桁の変数

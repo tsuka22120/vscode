@@ -7,6 +7,10 @@
 #include "../mt19937ar.h"
 #include "../mulprec2.h"
 
+
+
+
+
 int main(int argc, char **argv) {
     printf("円周率を%d桁求めます。使用する多倍長整数の桁数:%d\n", DIGIT, KETA);
     struct timeval tv;
@@ -19,13 +23,16 @@ int main(int argc, char **argv) {
     Number constant;  // 定数
     Number x;         // 答え
     Number x0;        // 前の答え
-    Number numN;      // 回数用多倍長整数
     Number tmp;       // 作業用多倍長整数
     Number a, b;      // 項a,b
+    Number three;
     int n;
+    int numA = 0;
     n = 0;
     clearByZero(&x0);
     setInt(&constant, 6);
+    setInt(&three, 3);
+    setInt(&b, 1);
     // ルート3を求める
     sqrtThree(&digitNum);
     printf("root3 = ");
@@ -40,14 +47,11 @@ int main(int argc, char **argv) {
     while (1) {
         printf("円周率計算\r%d回試行", n);
         fflush(stdout);
-        setInt(&numN, n);
         // aを求める
-        setInt(&a, 2);
-        multiple(&a, &numN, &a);
-        increment(&a, &a);
+        numA = 2 * n + 1;
+        setInt(&a, numA);
         // bを求める
-        setInt(&tmp, 3);
-        fastpower(&tmp, n + 1, &b);
+        multiple(&b, &three, &b);
         // a * bを求める
         if (multiple(&a, &b, &tmp) == -1) {
             printf("overflow\n");
