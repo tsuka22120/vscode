@@ -331,8 +331,6 @@ void divBy10SomeTimes(const Number *a, Number *b, int k) {
 /// @return 成功: 0, エラー(overflow): -1
 int setInt(Number *a, long x) {
     clearByZero(a);
-    int i;
-    int r;
     if (x < 0) {
         setSign(a, MINUS);
         x *= -1;
@@ -1627,10 +1625,10 @@ int getLen(const Number *a) {
     if (isZero(a)) {
         return 1;
     }
-    for (i = KETA - 1; i >= 0; i--) {
-        if (a->n[i] != 0) {
-            break;
+        for (i = KETA - 1; i >= 0; i--) {
+            if (a->n[i] != 0) {
+                break;
+            }
         }
-    }
     return i * RADIX_LEN + (int)log10(a->n[i]) + 1;
 }
