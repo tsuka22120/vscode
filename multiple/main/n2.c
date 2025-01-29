@@ -85,6 +85,7 @@ int main(int argc, char **argv) {
     dispNumberZeroSuppress(&x);
     printf("\n");
     printf("piLen = %d\n", getLen(&x));
+    comparePi(&x);
 
     gettimeofday(&tv, NULL);
     tend = (double)tv.tv_sec + (double)tv.tv_usec * 1.e-6;
