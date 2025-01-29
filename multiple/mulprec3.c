@@ -213,7 +213,6 @@ int mulBy10(const Number *a, Number *b) {
 /// @return 0: 正常終了, -1: オーバーフロー
 int mulBy10SomeTimes(const Number *a, Number *b, int k) {
     int rtn = -2;
-    long carry = 0;
     int i, j;
     // Number tmp;
     copyNumber(b, a);
@@ -225,7 +224,9 @@ int mulBy10SomeTimes(const Number *a, Number *b, int k) {
         rtn = 0;
     } else {
         int digit;
+        RADIX_T carry;
         digit = k / RADIX_LEN;
+        int length = getLen(b);
         j = 0;
         i = KETA - 1;
         while (1) {
@@ -239,22 +240,25 @@ int mulBy10SomeTimes(const Number *a, Number *b, int k) {
             j++;
             i--;
         }
-        if (b->n[i] / (int)pow(10, (RADIX_LEN - (k - digit * RADIX_LEN))) !=
-            0) {
+        if (rtn == -1) {
+            printf("mulBy10SomeTimes: overflow: -1B\n");
+        } else if (b->n[i] /
+                       (int)pow(10, (RADIX_LEN - (k - digit * RADIX_LEN))) !=
+                   0) {
             printf("mulBy10SomeTimes: overflow\n");
             rtn = -1;
-        }
-        if (rtn != -1 || rtn != 0) {
+        } else {
             if (digit != 0) {
-                for (i = KETA - 1 - digit; i >= 0; i--) {
+                for (i = length / RADIX_LEN + 1; i >= 0; i--) {
                     b->n[i + digit] = b->n[i];
                 }
                 for (i = 0; i < digit; i++) {
                     b->n[i] = 0;
                 }
             }
+            length += digit * RADIX_LEN;
             carry = 0;
-            for (i = 0; i < KETA; i++) {
+            for (i = 0; i < length / RADIX_LEN + 2; i++) {
                 b->n[i] *= (int)pow(10, (k - digit * RADIX_LEN));
                 b->n[i] += carry;
                 if (b->n[i] >= RADIX) {
@@ -408,7 +412,11 @@ int setSign(Number *a, int s) {
 /// @brief 符号を取得する
 /// @param a 符号を取得する構造体
 /// @return 1: 正, 0: 0, -1: 負
-int getSign(const Number *a) { return a->sign; }
+int getSign(const Number *a) {
+    int sign;
+    sign = a->sign;
+    return sign;
+}
 
 /// @brief 2つの多倍長整数を比較する
 /// @param a 比較する構造体
@@ -493,6 +501,7 @@ int add(const Number *a, const Number *b, Number *c) {
     RADIX_T d;
     int i, rtn;
     int e = 0;
+    rtn = -2;
     int caseNum = getSign(a) * 3 + getSign(b);
     switch (caseNum) {
         case -4:  // aとbが負
@@ -562,6 +571,7 @@ int sub(const Number *a, const Number *b, Number *c) {
     int i, e, num, rtn;
     int caseNum = getSign(&A) * 3 + getSign(&B);
     Number numA, numB;
+    rtn = -2;
     switch (caseNum) {
         case -4:  // aとbが負
         case 4:   // aとbが正
@@ -1514,7 +1524,9 @@ void gcd(const Number *a, const Number *b, Number *c) {
         copyNumber(c, a);
         return;
     }
-    Number A, B, tmp;
+    Number A;
+    Number B;
+    Number tmp;
     switch (numComp(a, b)) {
         case 1:
             getAbs(a, &A);
@@ -1625,10 +1637,10 @@ int getLen(const Number *a) {
     if (isZero(a)) {
         return 1;
     }
-        for (i = KETA - 1; i >= 0; i--) {
-            if (a->n[i] != 0) {
-                break;
-            }
+    for (i = KETA - 1; i >= 0; i--) {
+        if (a->n[i] != 0) {
+            break;
         }
+    }
     return i * RADIX_LEN + (int)log10(a->n[i]) + 1;
 }
