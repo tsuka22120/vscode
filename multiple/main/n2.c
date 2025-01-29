@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
     printf("\n");
     printf("root3Len = %d\n", getLen(&digitNum));
     // 6ルート3を求める
-    multiple(&digitNum, &constant, &constant);
+    fastMultiple(&digitNum, &constant, &constant);
     // 初期値
     clearByZero(&x);
     n = 0;
@@ -51,9 +51,9 @@ int main(int argc, char **argv) {
         numA = 2 * n + 1;
         setInt(&a, numA);
         // bを求める
-        multiple(&b, &three, &b);
+        fastMultiple(&b, &three, &b);
         // a * bを求める
-        if (multiple(&a, &b, &tmp) == -1) {
+        if (fastMultiple(&a, &b, &tmp) == -1) {
             printf("overflow\n");
             break;
         }

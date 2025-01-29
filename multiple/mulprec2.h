@@ -1,4 +1,4 @@
-#define DIGIT 500 // KETA * RADIX_LEN / 2 - RADIX_LEN //求める円周率の桁数
+#define DIGIT 1000 // KETA * RADIX_LEN / 2 - RADIX_LEN //求める円周率の桁数
 
 #define RADIX 1000000000
 #define RADIX_LEN 9
@@ -8,7 +8,7 @@
 
 #ifdef ROOT
 #ifndef KETA
-#define KETA 200
+#define KETA 350
 #endif
 #endif
 
@@ -72,6 +72,7 @@ int increment(Number *, Number *);
 int decrement(Number *, Number *);
 int simpleMultiple(int, int, int *);
 int multiple(const Number *, const Number *, Number *);
+int fastMultiple(const Number *, const Number *, Number *);
 int simpleDivide(int, int, int *, int *);
 int divide(const Number *, const Number *, Number *, Number *);
 int divideWithoutRemainder(const Number *, const Number *, Number *);
