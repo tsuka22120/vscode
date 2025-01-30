@@ -1,11 +1,13 @@
+
+
 #include <limits.h>
 #include <math.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "mulprec2.h"
 #include "mt19937ar.c"
+#include "mulprec2.h"
 
 /// @brief 構造体の中身を0で初期化する
 /// @param a 初期化する構造体
@@ -103,7 +105,7 @@ void dispNumberInB(const Number *a, int n) {
         setInt(&numN, (int)pow(n, i));
         divideWithoutRemainder(&A, &numN, &printNum);
         getInt(&printNum, &printNumInt);
-        multiple(&printNum, &numN, &printNum);
+        fastMultiple(&printNum, &numN, &printNum);
         sub(&A, &printNum, &A);
         printf(" %c", printNumInt + (printNumInt < 10 ? '0' : 'A' - 10));
         if (i == 0) {
@@ -181,28 +183,24 @@ int mulBy10(const Number *a, Number *b) {
         copyNumber(b, a);
         rtn = 0;
     } else {
-        Number tmp;
-        copyNumber(&tmp, a);
-        // clearByZero(b);
         int i;
-        if (tmp.n[KETA - 1] / (RADIX / 10) !=
+        if (b->n[KETA - 1] / (RADIX / 10) !=
             0) {  // 最上位要素の最上位桁が0でない場合
             printf("mulBy10: overflow\n");
             rtn = -1;
         } else {
             carry = 0;
             for (i = 0; i < KETA; i++) {
-                tmp.n[i] *= 10;
-                tmp.n[i] += carry;
-                if (tmp.n[i] >= RADIX) {
-                    carry = tmp.n[i] / RADIX;
-                    tmp.n[i] %= RADIX;
+                b->n[i] *= 10;
+                b->n[i] += carry;
+                if (b->n[i] >= RADIX) {
+                    carry = b->n[i] / RADIX;
+                    b->n[i] %= RADIX;
                 } else {
                     carry = 0;
                 }
             }
         }
-        copyNumber(b, &tmp);
         rtn = 0;
     }
     return rtn;
@@ -215,49 +213,52 @@ int mulBy10(const Number *a, Number *b) {
 /// @return 0: 正常終了, -1: オーバーフロー
 int mulBy10SomeTimes(const Number *a, Number *b, int k) {
     int rtn = -2;
-    long carry = 0;
     int i, j;
     // Number tmp;
     copyNumber(b, a);
-    // clearByZero(b);
     if (isZero(a)) {
-        clearByZero(b);
+        // clearByZero(b);
         rtn = 0;
     } else if (k == 0) {
         // copyNumber(b, &tmp);
         rtn = 0;
     } else {
         int digit;
+        RADIX_T carry;
         digit = k / RADIX_LEN;
+        int length = getLen(b);
         j = 0;
         i = KETA - 1;
         while (1) {
             if (digit <= j) {
                 break;
             } else if (b->n[i] != 0) {
-                printf("mulBy10SomeTimes: overflow: -1\n");
+                printf("mulBy10SomeTimes: overflow: -1A\n");
                 rtn = -1;
                 break;
             }
             j++;
             i--;
         }
-        if (b->n[i] / (int)pow(10, (RADIX_LEN - (k - digit * RADIX_LEN))) !=
-            0) {
+        if (rtn == -1) {
+            printf("mulBy10SomeTimes: overflow: -1B\n");
+        } else if (b->n[i] /
+                       (int)pow(10, (RADIX_LEN - (k - digit * RADIX_LEN))) !=
+                   0) {
             printf("mulBy10SomeTimes: overflow\n");
             rtn = -1;
-        }
-        if (rtn != -1 || rtn != 0) {
+        } else {
             if (digit != 0) {
-                for (i = KETA - 1 - digit; i >= 0; i--) {
+                for (i = length / RADIX_LEN + 1; i >= 0; i--) {
                     b->n[i + digit] = b->n[i];
                 }
                 for (i = 0; i < digit; i++) {
                     b->n[i] = 0;
                 }
             }
+            length += digit * RADIX_LEN;
             carry = 0;
-            for (i = 0; i < KETA; i++) {
+            for (i = 0; i < length / RADIX_LEN + 2; i++) {
                 b->n[i] *= (int)pow(10, (k - digit * RADIX_LEN));
                 b->n[i] += carry;
                 if (b->n[i] >= RADIX) {
@@ -281,18 +282,17 @@ int mulBy10SomeTimes(const Number *a, Number *b, int k) {
 int divBy10(const Number *a, Number *b) {
     int i;
     int rtn;
-    Number tmp;
-    copyNumber(&tmp, a);
-    clearByZero(b);
-    rtn = tmp.n[0] % 10;
-    tmp.n[0] -= rtn;
-    tmp.n[0] /= 10;
+    // copyNumber(&tmp, a);
+    // clearByZero(b);
+    rtn = b->n[0] % 10;
+    b->n[0] -= rtn;
+    b->n[0] /= 10;
     for (i = 1; i < KETA; i++) {
-        tmp.n[i - 1] += (tmp.n[i] % 10) * RADIX / 10;
-        tmp.n[i] -= tmp.n[i] % 10;
-        tmp.n[i] /= 10;
+        b->n[i - 1] += (b->n[i] % 10) * RADIX / 10;
+        b->n[i] -= b->n[i] % 10;
+        b->n[i] /= 10;
     }
-    copyNumber(b, &tmp);
+    // copyNumber(b, &tmp);
     return rtn;
 }
 
@@ -304,29 +304,28 @@ int divBy10(const Number *a, Number *b) {
 void divBy10SomeTimes(const Number *a, Number *b, int k) {
     int i;
     int digit;
-    Number tmp;
     int carry;
     digit = k / RADIX_LEN;
-    copyNumber(&tmp, a);
-    clearByZero(b);
-    tmp.n[0] -= tmp.n[0] % (int)pow(10, k % RADIX_LEN);
-    tmp.n[0] /= (int)pow(10, k % RADIX_LEN);
+    copyNumber(b, a);
+    // clearByZero(b);
+    b->n[0] -= b->n[0] % (int)pow(10, k % RADIX_LEN);
+    b->n[0] /= (int)pow(10, k % RADIX_LEN);
     for (i = 1; i < KETA; i++) {
-        carry = tmp.n[i] % (int)pow(10, k - digit * RADIX_LEN);
-        tmp.n[i - 1] +=
+        carry = b->n[i] % (int)pow(10, k - digit * RADIX_LEN);
+        b->n[i - 1] +=
             carry * (int)pow(10, RADIX_LEN - (k - digit * RADIX_LEN));
-        tmp.n[i] -= carry;
-        tmp.n[i] /= (int)pow(10, k - digit * RADIX_LEN);
+        b->n[i] -= carry;
+        b->n[i] /= (int)pow(10, k - digit * RADIX_LEN);
     }
     if (digit > 0) {
         for (i = 0; i < KETA - digit; i++) {
-            tmp.n[i] = tmp.n[i + digit];
+            b->n[i] = b->n[i + digit];
         }
         for (i = KETA - digit; i < KETA; i++) {
-            tmp.n[i] = 0;
+            b->n[i] = 0;
         }
     }
-    copyNumber(b, &tmp);
+    // copyNumber(b, &tmp);
     return;
 }
 
@@ -336,8 +335,6 @@ void divBy10SomeTimes(const Number *a, Number *b, int k) {
 /// @return 成功: 0, エラー(overflow): -1
 int setInt(Number *a, long x) {
     clearByZero(a);
-    int i;
-    int r;
     if (x < 0) {
         setSign(a, MINUS);
         x *= -1;
@@ -346,22 +343,21 @@ int setInt(Number *a, long x) {
     } else {
         setSign(a, PLUS);
     }
-    for (i = 0; i < KETA; i++) {
-        r = x % RADIX;
-        a->n[i] = r;
-        x -= r;
-        x /= RADIX;
-        if (x == 0) {
-            i++;
-            for (; i < KETA; i++) {
-                a->n[i] = 0;
-            }
-            break;
-        }
-    }
-    if (x != 0) {
-        return -1;
-    }
+    // for (i = 0; i < KETA; i++) {
+    //     r = x % RADIX;
+    //     a->n[i] = r;
+    //     x -= r;
+    //     x /= RADIX;
+    //     if (x == 0) {
+    //         i++;
+    //         for (; i < KETA; i++) {
+    //             a->n[i] = 0;
+    //         }
+    //         break;
+    //     }
+    // }
+    // int型なので1つ目までの要素だけ見ればよい
+    a->n[0] = x % RADIX;
     return 0;
 }
 
@@ -370,19 +366,22 @@ int setInt(Number *a, long x) {
 /// @param x int型に変換した値を代入する変数
 /// @return 成功: 0, エラー(overflow): -1
 int getInt(const Number *a, int *x) {
-    int i;
-    if (getSign(a) == ZERO) {
+    if (isZero(a)) {
         *x = 0;
         return 0;
     }
-    *x = 0;
-    for (i = KETA - 1; i >= 0; i--) {
-        // overflow check
-        if (a->n[i] > (INT_MAX - *x) / (int)pow(RADIX, i)) {
-            return -1;
-        }
-        *x += a->n[i] * (int)pow(RADIX, i);  // 基数を考慮してint型に変換
-    }
+    // *x = 0;
+    // for (i = KETA - 1; i >= 0; i--) {
+    //     // overflow check
+    //     if (a->n[i] > (INT_MAX - *x) / (int)pow(RADIX, i)) {
+    //         return -1;
+    //     }
+    //     *x += a->n[i] * (int)pow(RADIX, i);  // 基数を考慮してint型に変換
+    // }
+
+    // int型なので2つ目までの要素だけ見ればよい
+    *x = a->n[0];
+    *x += a->n[1] * RADIX;
     if (getSign(a) == MINUS) {
         *x *= -1;
     }
@@ -413,7 +412,11 @@ int setSign(Number *a, int s) {
 /// @brief 符号を取得する
 /// @param a 符号を取得する構造体
 /// @return 1: 正, 0: 0, -1: 負
-int getSign(const Number *a) { return a->sign; }
+int getSign(const Number *a) {
+    int sign;
+    sign = a->sign;
+    return sign;
+}
 
 /// @brief 2つの多倍長整数を比較する
 /// @param a 比較する構造体
@@ -495,24 +498,27 @@ void swap(Number *a, Number *b) {
 /// @return オーバーフロー: -1, 正常終了: 0
 int add(const Number *a, const Number *b, Number *c) {
     Number A, B;
-    copyNumber(&A, a);
-    copyNumber(&B, b);
+    RADIX_T d;
     int i, rtn;
-    int d, e = 0;
-    int caseNum = getSign(&A) * 3 + getSign(&B);
+    int e = 0;
+    rtn = -2;
+    int caseNum = getSign(a) * 3 + getSign(b);
     switch (caseNum) {
         case -4:  // aとbが負
         case 4:   // aとbが正
-            clearByZero(c);
+            // clearByZero(c);
             if (caseNum == -4) {
-                getAbs(&A, &A);
-                getAbs(&B, &B);
+                getAbs(a, &A);
+                getAbs(b, &B);
                 setSign(c, MINUS);
             } else {
+                copyNumber(&A, a);
+                copyNumber(&B, b);
                 setSign(c, PLUS);
             }
             for (i = 0; i < KETA; i++) {
                 d = A.n[i] + B.n[i] + e;
+                e = 0;
                 if (d >= RADIX) {
                     d -= RADIX;
                     e = 1;
@@ -521,7 +527,7 @@ int add(const Number *a, const Number *b, Number *c) {
                 }
                 c->n[i] = d;
             }
-            if (e > 0) {
+            if (e == 1) {
                 rtn = -1;
             } else {
                 rtn = 0;
@@ -529,16 +535,16 @@ int add(const Number *a, const Number *b, Number *c) {
             break;
         case -3:  // aが負でbが0
         case 3:   // aが正でbが0
-            copyNumber(c, &A);
+            copyNumber(c, a);
             rtn = 0;
             break;
         case -2:  // aが負でbが正
-            getAbs(&A, &A);
-            rtn = sub(&B, &A, c);
+            getAbs(a, &A);
+            rtn = sub(b, &A, c);
             break;
         case -1:  // aが0でbが負
         case 1:   // aが0でbが正
-            copyNumber(c, &B);
+            copyNumber(c, b);
             rtn = 0;
             break;
         case 0:  // aとbが0
@@ -546,8 +552,8 @@ int add(const Number *a, const Number *b, Number *c) {
             rtn = 0;
             break;
         case 2:  // aが正でbが負
-            getAbs(&B, &B);
-            rtn = sub(&A, &B, c);
+            getAbs(b, &B);
+            rtn = sub(a, &B, c);
             break;
     }
     return rtn;
@@ -565,10 +571,11 @@ int sub(const Number *a, const Number *b, Number *c) {
     int i, e, num, rtn;
     int caseNum = getSign(&A) * 3 + getSign(&B);
     Number numA, numB;
+    rtn = -2;
     switch (caseNum) {
         case -4:  // aとbが負
         case 4:   // aとbが正
-            clearByZero(c);
+            // clearByZero(c);
             if (caseNum == -4) {
                 getAbs(&A, &numB);
                 getAbs(&B, &numA);
@@ -605,6 +612,7 @@ int sub(const Number *a, const Number *b, Number *c) {
                     setSign(c, MINUS);
                     break;
                 case 0:
+                    clearByZero(c);
                     setSign(c, ZERO);
                     break;
             }
@@ -710,7 +718,7 @@ int multiple(const Number *a, const Number *b, Number *c) {
         getAbs(a, &A);
         getAbs(b, &B);
         clearByZero(c);
-        for (int i = 0; i < KETA - 1; i++) {
+        for (int i = 0; i < getLen(&B) / 9 + 2; i++) {
             numB = B.n[i];
             h = 0;
             if (numB == 0) {
@@ -718,13 +726,13 @@ int multiple(const Number *a, const Number *b, Number *c) {
             } else if (numB == 1) {
                 copyNumber(&tmp, &A);
                 if (mulBy10SomeTimes(&tmp, &tmp, i * RADIX_LEN) == -1) {
-                    printf("ERROR:multiple overflow\n");
+                    printf("ERROR:multiple overflow A\n");
                     clearByZero(c);
                     rtn = -1;
                 }
                 add(c, &tmp, c);
             } else {
-                for (int j = 0; j < KETA - 1; j++) {
+                for (int j = 0; j < getLen(&A) / 9 + 2; j++) {
                     numA = A.n[j];
                     e = numA * numB + h;
                     d = e % RADIX;
@@ -732,12 +740,12 @@ int multiple(const Number *a, const Number *b, Number *c) {
                     h = e / RADIX;
                     setInt(&D, d);
                     if (mulBy10SomeTimes(&D, &D, (j + i) * RADIX_LEN) == -1) {
-                        printf("ERROR:multiple overflow\n");
+                        printf("ERROR:multiple overflow B\n");
                         clearByZero(c);
                         rtn = -1;
                     }
                     if (add(c, &D, c) == -1) {
-                        printf("ERROR:multiple overflow\n");
+                        printf("ERROR:multiple overflow C\n");
                         clearByZero(c);
                         rtn = -1;
                     }
@@ -763,6 +771,55 @@ int multiple(const Number *a, const Number *b, Number *c) {
                     // case 3:,case 1:,case 0:,case -1:,case
                     // -3:は最初で判定しているのでここには来ない
             }
+        }
+    }
+    return rtn;
+}
+
+/// @brief 2つの多倍長整数を掛け算する
+/// @param a 掛け算する構造体
+/// @param b 掛け算する構造体
+/// @param c 掛け算した値を代入する構造体
+/// @return オーバーフロー: -1, 正常終了: 0
+int fastMultiple(const Number *a, const Number *b, Number *c) {
+    int rtn = -2;
+    int signA, signB;
+    signA = getSign(a);
+    signB = getSign(b);
+    if (signA == ZERO || signB == ZERO) {
+        clearByZero(c);
+        rtn = 0;
+    } else {
+        RADIX_T tmp;
+        Number A, B;
+        getAbs(a, &A);
+        getAbs(b, &B);
+        clearByZero(c);
+        for (int i = 0; i < getLen(&A) / 9 + 2; i++) {
+            for (int j = 0; j < getLen(&B) / 9 + 2; j++) {
+                tmp = A.n[i] * B.n[j];
+                if (tmp == 0) {
+                    continue;
+                }
+                c->n[i + j] += tmp % RADIX;
+                c->n[i + j + 1] += tmp / RADIX;
+                if (c->n[i + j] >= RADIX) {
+                    c->n[i + j + 1] += c->n[i + j] / RADIX;
+                    c->n[i + j] %= RADIX;
+                }
+            }
+        }
+        switch (signA * 3 + signB) {
+            case -4:  // aとbが負
+            case 4:   // aとbが正
+                setSign(c, PLUS);
+                break;
+            case -2:  // aが負でbが正
+            case 2:   // aが正でbが負
+                setSign(c, MINUS);
+                break;
+                // case 3:,case 1:,case 0:,case -1:,case
+                // -3:は最初で判定しているのでここには来ない
         }
     }
     return rtn;
@@ -841,7 +898,7 @@ int divide(const Number *a, const Number *b, Number *c, Number *d) {
         getAbs(a, &A);
         getAbs(b, &B);
         clearByZero(c);
-        clearByZero(d);
+        // clearByZero(d);
         switch ((getSign(a) < 0) * 2 + (getSign(b) < 0)) {
             case 0:
                 cSign = 1;
@@ -890,6 +947,7 @@ int divide(const Number *a, const Number *b, Number *c, Number *d) {
                             break;
                         }
                     }
+                    // TODO ループ処理の修正
                     sub(&A, &numB, &A);
                     add(c, &q, c);
                     break;
@@ -917,7 +975,6 @@ int divideWithoutRemainder(const Number *a, const Number *b, Number *c) {
         getAbs(a, &A);
         getAbs(b, &B);
         clearByZero(c);
-        clearByZero(&q);
         switch ((getSign(a) < 0) * 2 + (getSign(b) < 0)) {
             case 0:
             case 3:
@@ -1045,7 +1102,6 @@ int divideByInverse(const Number *a, const Number *b, Number *c) {
     Number inv;
     copyNumber(&A, a);
     copyNumber(&B, b);
-    clearByZero(c);
     switch ((getSign(&A) < 0) * 2 + (getSign(&B) < 0)) {
         case 0:
         case 3:
@@ -1059,7 +1115,7 @@ int divideByInverse(const Number *a, const Number *b, Number *c) {
     if (inverse2(&B, &inv) == -1) {
         rtn = -1;
     } else {
-        rtn = multiple(&A, &inv, c);
+        rtn = fastMultiple(&A, &inv, c);
         divBy10SomeTimes(c, c, DIGIT + MARGIN);
     }
     setSign(c, cSign);
@@ -1073,8 +1129,8 @@ int divideByInverse(const Number *a, const Number *b, Number *c) {
 int inverse2(const Number *a, Number *b) {
     int rtn;
     int margin = 1;
-    while(1){
-        if(DIGIT * margin + MARGIN > getLen(a)){
+    while (1) {
+        if (DIGIT * margin + MARGIN > getLen(a)) {
             break;
         }
         margin++;
@@ -1091,25 +1147,23 @@ int inverse2(const Number *a, Number *b) {
         Number tmp;  // 作業用変数
         Number g;    // 逆数の誤差
         Number two;
-        int n;
         getAbs(a, &A);
-        setInt(b, 2);
         setInt(&two, 2);
+        copyNumber(b, &two);
         mulBy10SomeTimes(b, b, DIGIT * margin + MARGIN - getLen(&A));
         mulBy10SomeTimes(&two, &two, DIGIT * margin + MARGIN);
-        n = 0;
         while (1) {
             // printf("\r逆数計算%d回試行", n++);
             // fflush(stdout);
             copyNumber(&x0, b);  //  ひとつ前のx
-            if (multiple(&A, &x0, &tmp) == -1) {
+            if (fastMultiple(&A, &x0, &tmp) == -1) {
                 printf("ERROR:inverse2 overflow\n");
                 clearByZero(b);
                 rtn = -1;
                 break;
             }
             sub(&two, &tmp, &tmp);
-            if (multiple(&x0, &tmp, b) == -1) {
+            if (fastMultiple(&x0, &tmp, b) == -1) {
                 printf("ERROR:inverse2 overflow\n");
                 clearByZero(b);
                 rtn = -1;
@@ -1195,6 +1249,7 @@ int sqrt_newton(const Number *a, Number *b) {
     Number d;    //  2つ前のx
     Number tmp;  // 作業用変数
     Number three;
+
     setInt(&three, 3);
     int i;
     if (getSign(a) == -1) {  //  N<0 ならエラーで-1を返す
@@ -1270,25 +1325,25 @@ int sqrtThree(Number *a) {
     setInt(&constant, 3);
     setInt(&two, 2);
     setInt(&numA, 1);
-    setInt(&numB, 1);
+    copyNumber(&numB, &numA);
     for (i = 0; i < n; i++) {
         printf("\r3の平方根計算%d回試行", i);
         fflush(stdout);
         copyNumber(&numA0, &numA);
         copyNumber(&numB0, &numB);
-        if (multiple(&numA0, &numA0, &numA) == -1) {
+        if (fastMultiple(&numA0, &numA0, &numA) == -1) {
             printf("ERROR:sqrtThree overflow\n");
             clearByZero(a);
             rtn = -1;
             break;
         }
-        if (multiple(&numB0, &numB0, &numB) == -1) {
+        if (fastMultiple(&numB0, &numB0, &numB) == -1) {
             printf("ERROR:sqrtThree overflow\n");
             clearByZero(a);
             rtn = -1;
             break;
         }
-        if (multiple(&numB, &constant, &numB) == -1) {
+        if (fastMultiple(&numB, &constant, &numB) == -1) {
             printf("ERROR:sqrtThree overflow\n");
             clearByZero(a);
             rtn = -1;
@@ -1300,13 +1355,13 @@ int sqrtThree(Number *a) {
             rtn = -1;
             break;
         }
-        if (multiple(&numA0, &numB0, &numB) == -1) {
+        if (fastMultiple(&numA0, &numB0, &numB) == -1) {
             printf("ERROR:sqrtThree overflow\n");
             clearByZero(a);
             rtn = -1;
             break;
         }
-        if (multiple(&numB, &two, &numB) == -1) {
+        if (fastMultiple(&numB, &two, &numB) == -1) {
             printf("ERROR:sqrtThree overflow\n");
             clearByZero(a);
             rtn = -1;
@@ -1315,9 +1370,17 @@ int sqrtThree(Number *a) {
         rtn = 0;
     }
     printf("\n");
-    mulBy10SomeTimes(&numA, &numA, DIGIT + MARGIN);
-    divideByInverse(&numA, &numB, a);
-    divBy10SomeTimes(a, a, DIGIT * 1);
+    if (mulBy10SomeTimes(&numA, &numA, DIGIT + MARGIN) == -1) {
+        printf("ERROR:sqrtThree overflow\n");
+        clearByZero(a);
+        rtn = -1;
+    }
+    if (divideByInverse(&numA, &numB, a) == -1) {
+        printf("ERROR:sqrtThree overflow\n");
+        clearByZero(a);
+        rtn = -1;
+    }
+    divBy10SomeTimes(a, a, DIGIT < 500 ? DIGIT * 2 : DIGIT);
     return rtn;
 }
 
@@ -1340,13 +1403,11 @@ int power(const Number *a, int n, Number *b) {
         copyNumber(b, a);
         return 0;
     }
-    Number one;
-    setInt(&one, 1);
     if (isZero(a)) {
         clearByZero(b);
         return 0;
     }
-    if (numComp(a, &one) == 0) {
+    if (numCompWithInt(a, 1) == 0) {
         setInt(b, 1);
         return 0;
     }
@@ -1356,7 +1417,7 @@ int power(const Number *a, int n, Number *b) {
         if (i == n) {
             break;
         }
-        if (multiple(a, b, b) == -1) {
+        if (fastMultiple(a, b, b) == -1) {
             printf("ERROR:overflow\n");
             clearByZero(b);
             return -1;
@@ -1406,27 +1467,25 @@ int fastpower(const Number *a, int n, Number *b) {
         copyNumber(b, a);
         return 0;
     }
-    Number one;
     Number tmp;
     copyNumber(&tmp, a);
-    setInt(&one, 1);
     if (isZero(&tmp)) {
         clearByZero(b);
         return 0;
     }
-    if (numComp(&tmp, &one) == 0) {
+    if (numCompWithInt(&tmp, 1) == 0) {
         setInt(b, 1);
         return 0;
     }
     clearByZero(b);
     while (1) {
         if (n % 2 == 0) {
-            if (multiple(&tmp, &tmp, &one) == -1) {
+            if (fastMultiple(&tmp, &tmp, &tmp) == -1) {
                 printf("ERROR:fastpower overflow\n");
                 clearByZero(b);
                 return -1;
             }
-            if (fastpower(&one, n / 2, b) == -1) {
+            if (fastpower(&tmp, n / 2, b) == -1) {
                 printf("ERROR:fastpower overflow\n");
                 clearByZero(b);
                 return -1;
@@ -1437,7 +1496,7 @@ int fastpower(const Number *a, int n, Number *b) {
                 clearByZero(b);
                 return -1;
             }
-            if (multiple(&tmp, b, b) == -1) {
+            if (fastMultiple(&tmp, b, b) == -1) {
                 printf("ERROR:fastpower overflow\n");
                 clearByZero(b);
                 return -1;
@@ -1465,7 +1524,7 @@ int factorial(int a, Number *b) {
     setInt(b, 1);
     for (int i = 1; i <= a; i++) {
         setInt(&tmp, i);
-        if (multiple(b, &tmp, b) == -1) {
+        if (fastMultiple(b, &tmp, b) == -1) {
             printf("ERROR:factorial overflow\n");
             clearByZero(b);
             return -1;
@@ -1491,7 +1550,7 @@ int doubleFactorial(int a, Number *b) {
     setInt(b, 1);
     for (int i = a; i > 0; i -= 2) {
         setInt(&tmp, i);
-        if (multiple(b, &tmp, b) == -1) {
+        if (fastMultiple(b, &tmp, b) == -1) {
             printf("ERROR:doubleFactorial overflow\n");
             clearByZero(b);
             return -1;
@@ -1514,7 +1573,9 @@ void gcd(const Number *a, const Number *b, Number *c) {
         copyNumber(c, a);
         return;
     }
-    Number A, B, tmp;
+    Number A;
+    Number B;
+    Number tmp;
     switch (numComp(a, b)) {
         case 1:
             getAbs(a, &A);
@@ -1559,12 +1620,12 @@ int lcm(const Number *a, const Number *b, Number *c) {
         case 1:
             gcd(a, b, &tmp);
             divideWithoutRemainder(b, &tmp, c);
-            multiple(a, c, c);
+            fastMultiple(a, c, c);
             break;
         case -1:
             gcd(a, b, &tmp);
             divideWithoutRemainder(a, &tmp, c);
-            multiple(b, c, c);
+            fastMultiple(b, c, c);
             break;
         case 0:
             copyNumber(c, a);
@@ -1590,9 +1651,10 @@ int arctan(const Number *a, Number *b) {
     clearByZero(b);
     // aの逆数を求める
     setInt(&digit, 1);
-    fastpower(&A, 2, &A_S);                                // A^2
-    mulBy10SomeTimes(&digit, &digit, DIGIT + MARGIN - 1);  // 10^(2 * DIGIT - 1)
-    divideWithoutRemainder(&digit, &A, &A);                // A = 10^DIGIT / A
+    fastpower(&A, 2, &A_S);  // A^2
+    mulBy10SomeTimes(&digit, &digit,
+                     DIGIT + MARGIN - 1);    // 10^(2 * DIGIT - 1)
+    divideWithoutRemainder(&digit, &A, &A);  // A = 10^DIGIT / A
     // 一項目を求める
     add(b, &A, b);
     n = 1;
@@ -1633,16 +1695,16 @@ int getLen(const Number *a) {
     return i * RADIX_LEN + (int)log10(a->n[i]) + 1;
 }
 
-/// @brief 多倍長整数がroot3と等しいか判定する
+/// @brief 多倍長整数がpiと等しいか判定する
 /// @param a 判定する構造体
 /// @return 等しい: 0, 等しくない: -1
-int compareRootThree(const Number *a) {
+int comparePi(const Number *a) {
     FILE *fp;
     int num;
     int length;
     char format[10];
     length = getLen(a);
-    fp = fopen("multiple/root3.txt", "r");
+    fp = fopen("multiple/pi.txt", "r");
     for(int i = 0; i < length % 9;i++){
         format[i] = fgetc(fp);
     }
@@ -1657,9 +1719,9 @@ int compareRootThree(const Number *a) {
     for (int i = length / 9 - 1; i >= 0; i--) {
         fgets(format, 10, fp);
         num = atoi(format);
+        printf("a->n[%d]: %lld, num: %d\n", i, a->n[i], num);
         if (a->n[i] != num) {
             printf("一致しません\n");
-            printf("a->n[%d]: %lld, num: %d\n", i, a->n[i], num);
             fclose(fp);
             return -1;
         }

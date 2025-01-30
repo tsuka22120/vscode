@@ -1,14 +1,14 @@
-#define DIGIT 500 // KETA * RADIX_LEN / 2 - RADIX_LEN //求める円周率の桁数
+#define DIGIT 10 // KETA * RADIX_LEN / 2 - RADIX_LEN //求める円周率の桁数
 
 #define RADIX 1000000000
 #define RADIX_LEN 9
-#define MARGIN 18
+#define MARGIN 20
 
 #define ROOT
 
 #ifdef ROOT
 #ifndef KETA
-#define KETA 200
+#define KETA 400
 #endif
 #endif
 
@@ -92,3 +92,4 @@ int lcm(const Number *, const Number *, Number *);
 int arctan(const Number *, Number *);
 int getLen(const Number *);
 int comparePi(const Number *);
+int compareRootThree(const Number *);

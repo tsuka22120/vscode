@@ -366,26 +366,30 @@ int setInt(Number *a, long x) {
 /// @param x int型に変換した値を代入する変数
 /// @return 成功: 0, エラー(overflow): -1
 int getInt(const Number *a, int *x) {
+    int rtn;
     if (isZero(a)) {
         *x = 0;
-        return 0;
-    }
-    // *x = 0;
-    // for (i = KETA - 1; i >= 0; i--) {
-    //     // overflow check
-    //     if (a->n[i] > (INT_MAX - *x) / (int)pow(RADIX, i)) {
-    //         return -1;
-    //     }
-    //     *x += a->n[i] * (int)pow(RADIX, i);  // 基数を考慮してint型に変換
-    // }
+        rtn = 0;
+    } else if (a->n[1] != 0) {
+        rtn = -1;
+    } else {
+        // *x = 0;
+        // for (i = KETA - 1; i >= 0; i--) {
+        //     // overflow check
+        //     if (a->n[i] > (INT_MAX - *x) / (int)pow(RADIX, i)) {
+        //         return -1;
+        //     }
+        //     *x += a->n[i] * (int)pow(RADIX, i);  // 基数を考慮してint型に変換
+        // }
 
-    // int型なので2つ目までの要素だけ見ればよい
-    *x = a->n[0];
-    *x += a->n[1] * RADIX;
-    if (getSign(a) == MINUS) {
-        *x *= -1;
+        // int型なので2つ目までの要素だけ見ればよい
+        *x = a->n[0];
+        if (getSign(a) == MINUS) {
+            *x *= -1;
+        }
+        rtn = 0;
     }
-    return 0;
+    return rtn;
 }
 
 /// @brief 符号を設定する
@@ -1092,31 +1096,40 @@ int divideWithoutQuotient(const Number *a, const Number *b, Number *c) {
 /// @param c 商を代入する構造体
 /// @return ゼロ除算: -1, 正常終了: 0
 int divideByInverse(const Number *a, const Number *b, Number *c) {
-    if (numComp(a, b) == -1) {
+    Number A, B;
+    getAbs(a, &A);
+    getAbs(b, &B);
+    if (numComp(&A, &B) == -1) {
         clearByZero(c);
         return 0;
     }
-    Number A, B;
     int rtn;
     int cSign;
     Number inv;
-    copyNumber(&A, a);
-    copyNumber(&B, b);
-    switch ((getSign(&A) < 0) * 2 + (getSign(&B) < 0)) {
-        case 0:
-        case 3:
+    int margin = 0;
+    switch ((getSign(a) < 0) * 2 + (getSign(b) < 0)) {
+        case 0:  // Aが正でBが正
+        case 3:  // Aが負でBが負
             cSign = 1;
             break;
-        case 1:
-        case 2:
+        case 1:  // Aが正でBが負
+        case 2:  // Aが負でBが正
             cSign = -1;
             break;
     }
-    if (inverse2(&B, &inv) == -1) {
+    margin = inverse2(&B, &inv);
+    if (margin == -1) {
+        printf("ERROR:divideByInverse errorA\n");
         rtn = -1;
     } else {
-        rtn = fastMultiple(&A, &inv, c);
-        divBy10SomeTimes(c, c, DIGIT + MARGIN);
+        // printf("inv = ");
+        // dispNumberZeroSuppress(&inv);
+        // printf("\n");
+        if (fastMultiple(&A, &inv, c) == -1) {
+            printf("ERROR:divideByInverse errorB\n");
+            rtn = -1;
+        }
+        divBy10SomeTimes(c, c, DIGIT + MARGIN + margin);
     }
     setSign(c, cSign);
     return rtn;
@@ -1125,16 +1138,9 @@ int divideByInverse(const Number *a, const Number *b, Number *c) {
 /// @brief 多倍長整数の逆数を求める(2次収束)
 /// @param a 逆数を求める構造体
 /// @param b 逆数を代入する構造体
-/// @return ゼロ除算: -1, 正常終了: 0
+/// @return ゼロ除算: -1, 正常終了: 余裕を持っている桁数
 int inverse2(const Number *a, Number *b) {
     int rtn;
-    int margin = 1;
-    while (1) {
-        if (DIGIT * margin + MARGIN > getLen(a)) {
-            break;
-        }
-        margin++;
-    }
     if (isZero(a)) {
         clearByZero(b);
         rtn = 0;
@@ -1146,15 +1152,28 @@ int inverse2(const Number *a, Number *b) {
         Number A;    //  逆数を求める数
         Number tmp;  // 作業用変数
         Number g;    // 逆数の誤差
-        Number two;
+        Number bigTwo;
+        int sigDigs = DIGIT + MARGIN;
+        int margin = 0;
+        int length = getLen(a);
+        int n = 0;
+        while (1) {
+            if (length >= sigDigs + margin) {
+                margin++;
+            } else {
+                margin += DIGIT + MARGIN;
+                break;
+            }
+        }
+        // printf("margin = %d\n", margin);
         getAbs(a, &A);
-        setInt(&two, 2);
-        copyNumber(b, &two);
-        mulBy10SomeTimes(b, b, DIGIT * margin + MARGIN - getLen(&A));
-        mulBy10SomeTimes(&two, &two, DIGIT * margin + MARGIN);
+        setInt(&bigTwo, 2);
+        copyNumber(b, &bigTwo);
+        mulBy10SomeTimes(b, b, sigDigs + margin - length);
+        mulBy10SomeTimes(&bigTwo, &bigTwo, sigDigs + margin);
         while (1) {
             // printf("\r逆数計算%d回試行", n++);
-            // fflush(stdout);
+            fflush(stdout);
             copyNumber(&x0, b);  //  ひとつ前のx
             if (fastMultiple(&A, &x0, &tmp) == -1) {
                 printf("ERROR:inverse2 overflow\n");
@@ -1162,23 +1181,24 @@ int inverse2(const Number *a, Number *b) {
                 rtn = -1;
                 break;
             }
-            sub(&two, &tmp, &tmp);
+            sub(&bigTwo, &tmp, &tmp);
             if (fastMultiple(&x0, &tmp, b) == -1) {
                 printf("ERROR:inverse2 overflow\n");
                 clearByZero(b);
                 rtn = -1;
                 break;
             }
-            divBy10SomeTimes(b, b, DIGIT * margin + MARGIN);
+            divBy10SomeTimes(b, b, sigDigs + margin);
             sub(b, &x0, &g);
-            if (isZero(&g)) {
+            if (numCompWithInt(&g, 0) < 1) {
                 break;
             }
             rtn = 0;
         }
+        // divBy10SomeTimes(b, b, margin);
+        rtn = margin;
+        setSign(b, getSign(a));
     }
-    // divBy10SomeTimes(b, b, MARGIN);
-    setSign(b, getSign(a));
     return rtn;
 }
 
@@ -1309,24 +1329,24 @@ int sqrtThree(Number *a) {
     Number constant;
     Number numA0, numB0;
     Number two;
-    int n = DIGIT + MARGIN;
+    int digSig = DIGIT + MARGIN;
     int i;
     int j = 0;
     i = 1;
+    // digSigが2の何乗かを求める
     while (1) {
-        if ((n / i * 2) < 18) {
+        if (digSig < i) {
             break;
         }
         i *= 2;
         j++;
     }
-    n = j + 5;
 
     setInt(&constant, 3);
     setInt(&two, 2);
     setInt(&numA, 1);
     copyNumber(&numB, &numA);
-    for (i = 0; i < n; i++) {
+    for (i = 0; i < j + 1; i++) {
         printf("\r3の平方根計算%d回試行", i);
         fflush(stdout);
         copyNumber(&numA0, &numA);
@@ -1380,7 +1400,7 @@ int sqrtThree(Number *a) {
         clearByZero(a);
         rtn = -1;
     }
-    divBy10SomeTimes(a, a, DIGIT < 500 ? DIGIT * 2 : DIGIT);
+    // divBy10SomeTimes(a, a, DIGIT < 500 ? DIGIT * 2 : DIGIT);
     return rtn;
 }
 
@@ -1705,11 +1725,11 @@ int comparePi(const Number *a) {
     char format[10];
     length = getLen(a);
     fp = fopen("multiple/pi.txt", "r");
-    for(int i = 0; i < length % 9;i++){
+    for (int i = 0; i < length % 9; i++) {
         format[i] = fgetc(fp);
     }
     num = atoi(format);
-    if(a->n[length / 9] != num) {
+    if (a->n[length / 9] != num) {
         printf("一致しません\n");
         printf("a->n[%d]: %lld, num: %d\n", length / 9, a->n[length / 9], num);
         fclose(fp);
@@ -1719,9 +1739,45 @@ int comparePi(const Number *a) {
     for (int i = length / 9 - 1; i >= 0; i--) {
         fgets(format, 10, fp);
         num = atoi(format);
-        printf("a->n[%d]: %lld, num: %d\n", i, a->n[i], num);
         if (a->n[i] != num) {
             printf("一致しません\n");
+            printf("a->n[%d]: %lld, num: %d\n", i, a->n[i], num);
+            fclose(fp);
+            return -1;
+        }
+    }
+    fclose(fp);
+    printf("一致しました\n");
+    return 0;
+}
+
+/// @brief 多倍長整数がroot3と等しいか判定する
+/// @param a 判定する構造体
+/// @return 等しい: 0, 等しくない: -1
+int compareRootThree(const Number *a) {
+    FILE *fp;
+    int num;
+    int length;
+    char format[10];
+    length = getLen(a);
+    fp = fopen("multiple/root3.txt", "r");
+    for (int i = 0; i < length % 9; i++) {
+        format[i] = fgetc(fp);
+    }
+    num = atoi(format);
+    if (a->n[length / 9] != num) {
+        printf("一致しません\n");
+        printf("a->n[%d]: %lld, num: %d\n", length / 9, a->n[length / 9], num);
+        fclose(fp);
+        return -1;
+    }
+    // 9桁ずつ比較する
+    for (int i = length / 9 - 1; i >= 0; i--) {
+        fgets(format, 10, fp);
+        num = atoi(format);
+        if (a->n[i] != num) {
+            printf("一致しません\n");
+            printf("a->n[%d]: %lld, num: %d\n", i, a->n[i], num);
             fclose(fp);
             return -1;
         }
