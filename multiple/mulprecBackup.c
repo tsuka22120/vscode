@@ -1694,39 +1694,3 @@ int getLen(const Number *a) {
     }
     return i * RADIX_LEN + (int)log10(a->n[i]) + 1;
 }
-
-/// @brief 多倍長整数がpiと等しいか判定する
-/// @param a 判定する構造体
-/// @return 等しい: 0, 等しくない: -1
-int comparePi(const Number *a) {
-    FILE *fp;
-    int num;
-    int length;
-    char format[10];
-    length = getLen(a);
-    fp = fopen("multiple/pi.txt", "r");
-    for(int i = 0; i < length % 9;i++){
-        format[i] = fgetc(fp);
-    }
-    num = atoi(format);
-    if(a->n[length / 9] != num) {
-        printf("一致しません\n");
-        printf("a->n[%d]: %lld, num: %d\n", length / 9, a->n[length / 9], num);
-        fclose(fp);
-        return -1;
-    }
-    // 9桁ずつ比較する
-    for (int i = length / 9 - 1; i >= 0; i--) {
-        fgets(format, 10, fp);
-        num = atoi(format);
-        printf("a->n[%d]: %lld, num: %d\n", i, a->n[i], num);
-        if (a->n[i] != num) {
-            printf("一致しません\n");
-            fclose(fp);
-            return -1;
-        }
-    }
-    fclose(fp);
-    printf("一致しました\n");
-    return 0;
-}

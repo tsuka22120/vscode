@@ -1,14 +1,14 @@
-#define DIGIT 10 // KETA * RADIX_LEN / 2 - RADIX_LEN //求める円周率の桁数
+#define DIGIT 1000 // KETA * RADIX_LEN / 2 - RADIX_LEN //求める円周率の桁数
 
 #define RADIX 1000000000
 #define RADIX_LEN 9
-#define MARGIN 20
+#define MARGIN 10
 
 #define ROOT
 
 #ifdef ROOT
 #ifndef KETA
-#define KETA 400
+#define KETA (DIGIT + MARGIN) * 4 / RADIX_LEN + 1
 #endif
 #endif
 
@@ -79,6 +79,7 @@ int divideWithoutRemainder(const Number *, const Number *, Number *);
 int divideWithoutQuotient(const Number *, const Number *, Number *);
 int divideByInverse(const Number *, const Number *, Number *);
 int inverse2(const Number *, Number *);
+int inverse3(const Number *, Number *);
 int sqrt_mp(const Number *, Number *);
 int sqrt_newton(const Number *, Number *);
 int sqrtThree(Number *);

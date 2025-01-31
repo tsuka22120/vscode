@@ -1,10 +1,11 @@
+#include "mulprec2.h"
+
 #include <limits.h>
 #include <math.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "mulprec2.h"
 #include "mt19937ar.c"
 
 /// @brief 構造体の中身を0で初期化する
@@ -1073,8 +1074,8 @@ int divideByInverse(const Number *a, const Number *b, Number *c) {
 int inverse2(const Number *a, Number *b) {
     int rtn;
     int margin = 1;
-    while(1){
-        if(DIGIT * margin + MARGIN > getLen(a)){
+    while (1) {
+        if (DIGIT * margin + MARGIN > getLen(a)) {
             break;
         }
         margin++;
@@ -1643,11 +1644,11 @@ int compareRootThree(const Number *a) {
     char format[10];
     length = getLen(a);
     fp = fopen("multiple/root3.txt", "r");
-    for(int i = 0; i < length % 9;i++){
+    for (int i = 0; i < length % 9; i++) {
         format[i] = fgetc(fp);
     }
     num = atoi(format);
-    if(a->n[length / 9] != num) {
+    if (a->n[length / 9] != num) {
         printf("一致しません\n");
         printf("a->n[%d]: %lld, num: %d\n", length / 9, a->n[length / 9], num);
         fclose(fp);

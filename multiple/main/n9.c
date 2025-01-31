@@ -17,40 +17,37 @@ int main(int argc, char **argv) {
 
     Number a, b;      // 項a,b
     Number x;         // 答え
-    Number tmp;       // 作業用多倍長整数
+    Number tmp1,tmp2;       // 作業用多倍長整数
     Number constant;  // 定数
     int i;
-    setInt(&tmp, 2);
-    setInt(&constant, 1);
-    mulBy10SomeTimes(&tmp, &tmp, DIGIT + MARGIN);
-    multiple(&tmp, &constant, &constant);
+    setInt(&constant, 2);
+    mulBy10SomeTimes(&constant, &constant, DIGIT + MARGIN);
     clearByZero(&x);
     i = 0;
     while (1) {
         printf("\r円周率計算%d回試行中", i);
         fflush(stdout);
-        if(factorial(i, &a) == -1) {  // a = i!
+        if (i == 0) {
+            setInt(&a, 1);
+        } else {
+            setInt(&tmp1, i);
+            fastMultiple(&a, &tmp1, &a);
+        }
+        fastMultiple(&a, &constant, &tmp1);
+        if(i == 0){
+            setInt(&b, 1);
+        } else {
+            setInt(&tmp2, 2 * i + 1);
+            fastMultiple(&b, &tmp2, &b);
+        }
+        if(divideByInverse(&tmp1, &b, &tmp1) == -1) {  // a /= (2i + 1)!!
             printf("overflow\n");
             break;
         }
-        if (multiple(&a, &constant, &a) == -1) {  // a = 2 * i!
-            printf("overflow\n");
+        if (isZero(&tmp1)) {
             break;
         }
-        if(doubleFactorial(i * 2 + 1, &b) == -1) {  // b = (2i + 1)!!
-            printf("overflow\n");
-            break;
-        }
-        dispNumber(&a);
-        printf("\n");
-        if(divideWithoutRemainder(&a, &b, &a) == -1) {  // a /= (2i + 1)!!
-            printf("overflow\n");
-            break;
-        }
-        if (isZero(&a)) {
-            break;
-        }
-        if(add(&x, &a, &x) == -1) {  // x += a
+        if(add(&x, &tmp1, &x) == -1) {  // x += a
             printf("overflow\n");
             break;
         }
@@ -61,6 +58,8 @@ int main(int argc, char **argv) {
     printf("pi = ");
     dispNumberZeroSuppress(&x);
     printf("\n");
+    printf("piLen = %d\n", getLen(&x));
+    comparePi(&x);
 
     gettimeofday(&tv, NULL);
     tend = (double)tv.tv_sec + (double)tv.tv_usec * 1.e-6;

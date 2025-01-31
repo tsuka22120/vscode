@@ -7,6 +7,10 @@
 #include "../mt19937ar.h"
 #include "../mulprec2.h"
 
+
+
+
+
 int main(int argc, char **argv) {
     printf("円周率を%d桁求めます。使用する多倍長整数の桁数:%d\n", DIGIT, KETA);
     struct timeval tv;
@@ -35,7 +39,6 @@ int main(int argc, char **argv) {
     dispNumberZeroSuppress(&digitNum);
     printf("\n");
     printf("root3Len = %d\n", getLen(&digitNum));
-    compareRootThree(&digitNum);
     // 6ルート3を求める
     fastMultiple(&digitNum, &constant, &constant);
     // 初期値
@@ -82,7 +85,6 @@ int main(int argc, char **argv) {
     dispNumberZeroSuppress(&x);
     printf("\n");
     printf("piLen = %d\n", getLen(&x));
-    comparePi(&x);
 
     gettimeofday(&tv, NULL);
     tend = (double)tv.tv_sec + (double)tv.tv_usec * 1.e-6;
