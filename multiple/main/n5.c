@@ -18,7 +18,7 @@ int main(int argc, char **argv) {
     Number a, b;      // 項a,b
     Number x;         // 答え
     Number constant;  // 定数
-    Number tmp;
+    Number tmp1,tmp2;
     int numA;
     int numB;
     int n;
@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
     clearByZero(&x);
     clearByZero(&a);
     clearByZero(&b);
-    clearByZero(&tmp);
+    clearByZero(&tmp1);
     n = 0;
     while (1) {
         printf("\r円周率計算%d回試行中", n);
@@ -35,37 +35,18 @@ int main(int argc, char **argv) {
         // 2nを求める
         numA = 2 * n - 1;                       // 分子
         numB = 2 * n;                           // 分母
-        if (doubleFactorial(numA, &a) == -1) {  // a = (2n - 1)!!
-            printf("overflow\n");
-            break;
+        if(numA == -1){
+            setInt(&a, 1);
+        }else{
+            setInt(&tmp1,&numA);
+            fastMultiple(&a,&tmp1,&tmp1);
         }
-        if (multiple(&a, &constant, &a) == -1) {  // a = 2(2n - 1)!!
-            printf("overflow\n");
-            break;
+        if(numB == 0){
+            setInt(&b,1);
+        }else{
+            setInt(&tmp2,)
         }
-        if (doubleFactorial(numB, &b) == -1) {  // b = (2n)!!
-            printf("overflow\n");
-            break;
-        }
-        numB = 2 * n + 1;  // 2n + 1
-        getInt(&tmp, &numB);
-        if (multiple(&b, &tmp, &b) == -1) {  // b = (2n)!! * (2n + 1)
-            printf("overflow\n");
-            break;
-        }
-        dispNumber(&a);
-        printf("\n");
-        dispNumber(&b);
-        printf("\n");
-        if (divideWithoutRemainder(&a, &b, &a) == -1) {
-            printf("overflow\n");
-            break;
-        }
-        if (isZero(&a)) {
-            break;
-        }
-        add(&x, &a, &x);
-        n++;
+
     }
     printf("\n");
     divBy10SomeTimes(&x, &x, MARGIN);

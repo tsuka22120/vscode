@@ -15,16 +15,10 @@ int main(int argc, char **argv) {
     double tstart, tend;
     gettimeofday(&tv, NULL);
     tstart = (double)tv.tv_sec + (double)tv.tv_usec * 1.e-6;
-    init_genrand((unsigned long)time(NULL));
+    // init_genrand((unsigned long)time(NULL));
 
 
-    Number a,b;
-    setInt(&a,1);
-    mulBy10SomeTimes(&a,&a,20);
-    setInt(&b,2);
-    fastMultiple(&a,&b,&a);
-    dispNumberZeroSuppress(&a);
-    printf("\n");
+    printf("long long int Max = %llu\n",ULLONG_MAX);
 
     gettimeofday(&tv, NULL);
     tend = (double)tv.tv_sec + (double)tv.tv_usec * 1.e-6;

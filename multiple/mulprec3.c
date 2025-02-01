@@ -1167,7 +1167,7 @@ int inverse2(const Number *a, Number *b) {
         Number tmp;  // 作業用変数
         Number g;    // 逆数の誤差
         Number bigTwo;
-        int sigDigs = DIGIT + MARGIN;
+        int sigDigs = DIGIT + MARGIN; //有効数字の桁数
         int margin = 0;
         int length = getLen(a);
         while (1) {
