@@ -1,4 +1,4 @@
-#define DIGIT 1000 
+#define DIGIT 1000
 
 #define RADIX 1000000000
 #define RADIX_LEN 9
@@ -33,7 +33,7 @@
 #endif
 #endif
 
-#define PLUS 1
+#define PLUS1
 #define ZERO 0
 #define MINUS -1
 

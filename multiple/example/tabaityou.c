@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+
 #include "MT.h"
 
 #define KETA 100
@@ -158,10 +159,10 @@ int main(void) {
     struct NUMBER b, c;
     clearByZero(&b);
     for (i = 0; i < 10; i++) {
-    setRnd(&b, 10);
-    printf("b = ");
-    dispNumberZeroSuppress(&b);
-    printf("\n");
+        setRnd(&b, 10);
+        printf("b = ");
+        dispNumberZeroSuppress(&b);
+        printf("\n");
     }
     return 0;
 }

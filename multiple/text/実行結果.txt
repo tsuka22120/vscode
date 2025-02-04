@@ -1,0 +1,13 @@
+    tsukada@tsukadaPC:/mnt/c/vscode$ gcc -Wall -O2 -o multiple/.exe/n2.exe multiple/main/n2.c multiple/pi.c -lm
+    tsukada@tsukadaPC:/mnt/c/vscode$ ./multiple/.exe/n2.exe
+    8000Lengthpi
+    root3 calculate 13
+    root3 = + 000000001 732050807 568877293 5274 ...//
+    root3Len = 8101
+    same
+    16969 times
+    pi = + 314159265 358979323 846264338 3279 ...//
+    piLen = 8001
+    same
+    time: 0 h 41 m 4 s
+    2464.599008s
