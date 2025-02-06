@@ -1,4 +1,281 @@
-/***********************************************************************/
+\documentclass[a4paper,11pt,dvipdfmx]{jsarticle}
+
+
+% 数式
+\usepackage{amsmath,amsfonts}
+\usepackage{bm}
+\usepackage{physics}
+\usepackage{mathtools}
+% 画像
+\usepackage[dvipdfmx]{graphicx}
+\usepackage{circuitikz}
+\usepackage{amsmath,amssymb}
+\usepackage{siunitx}
+\usepackage{float}
+\usepackage{tikz}
+\usepackage{askmaps}
+\usepackage{multirow}
+\usepackage{bigstrut}
+\usepackage{rotating}
+\usepackage{listings}
+\usepackage{subcaption}
+% 表
+\usepackage{makecell}
+% その他
+\usepackage{url}
+\usepackage{ascmac}
+\usepackage{cases}
+\usepackage{here}
+\usepackage{upgreek}
+\usepackage{tocloft}  % tocloftパッケージを使う
+\usepackage{titlesec} % titlesecパッケージを使う（セクションタイトルのカスタマイズ）
+
+% 画像挿入コマンド
+\newcommand{\Figure}[4]{
+\begin{figure}[H]
+\centering
+\includegraphics[width=#1\linewidth]{./images/#2}
+\caption{#3}
+\label{fig:#4}
+\end{figure}
+}
+
+\lstset{
+basicstyle={\ttfamily},
+identifierstyle={\small},
+commentstyle={\smallitshape},
+keywordstyle={\small\bfseries},
+ndkeywordstyle={\small},
+stringstyle={\small\ttfamily},
+frame={tb},
+breaklines=true,
+columns=[l]{fullflexible},
+numbers=left,
+xrightmargin=0zw,
+xleftmargin=3zw,
+numberstyle={\scriptsize},
+stepnumber=1,
+numbersep=1zw,
+lineskip=-0.5ex
+}
+\renewcommand{\lstlistingname}{リスト}
+
+\begin{document}
+
+\title{マイコンプログラミング}
+\author{学籍番号:22120 \\ 組番号:222 \\名前:塚田 勇人}
+\date{\today}
+\maketitle
+
+\newpage
+
+\section{目的}
+MEMESボードを用いて，簡単なゲームを作ることで，マイコンプログラミングの基礎を学ぶこと
+を本課題の目的とする．
+
+\section{実験環境}
+\begin{table}
+\centering
+\caption{実験環境}
+\label{table:environment}
+\begin{tabular}{|c|c|}
+\hline
+OS    & Windows 11 Pro   \\
+\hline
+CPU   & AMD Ryzen 7 5800H \\
+\hline
+メモリ & 16GB              \\
+\hline
+コンパイラ & SH C/C++ Compiler \\
+\hline
+エディタ & HEW2  \\
+\hline
+\end{tabular}
+\end{table}
+
+\section{プログラムの設計と説明}
+ここでは，本課題で追加したプログラムの仕様とその説明を行う．
+追加した仕様は以下の通りである．
+\begin{itemize}
+  \item ゲームのスコアを7セグメントLEDに表示する
+  \item ゲーム開始時にスタート音を鳴らす
+  \item 岩に触れたときにミス音を鳴らす
+  \item 自機をジョイスティックで左右に移動できるようにする
+  \item ゲームを一時停止，再開，リセットできるようにする
+\end{itemize}
+
+\subsection{スコア表示}
+スコア表示は7セグメントLEDを用いて行う．
+グローバル変数scoreにスコアを格納し，\texttt{do\_7seg()}関数で7セグメントLEDに表示する．
+\texttt{do\_7seg()}関数のソースコードをリスト\ref{lst:do_7seg}に示す．
+この関数をゲームのメインループ内で呼び出すことで，スコアを表示する．
+スコアは岩が左端に到達するごとに1点加算される．
+自機が岩に触れるとスコアが5点減少する．
+
+\begin{lstlisting}[caption=do\_7seg(), label=lst:do_7seg]
+  void do_7seg() {
+    static int keta;
+    int num1 = score % 10;
+    int num2 = (score / 10) % 10;
+    int num3 = score / 100;
+    PA.DR.BYTE.HL &= 0xf0;
+    DIG1 = DIG2 = DIG3 = 0;
+
+    if (keta == 0) {
+        PA.DR.BYTE.HL |= num1;
+        DIG1 = 1;
+        keta++;
+    } else if (keta == 1) {
+        PA.DR.BYTE.HL |= num2;
+        if (num2 == 0 && num3 == 0) {
+            DIG2 = 0;
+        } else {
+            DIG2 = 1;
+        }
+        keta++;
+    } else if (keta == 2) {
+        PA.DR.BYTE.HL |= num3;
+        if (num3 == 0) {
+            DIG2 = 0;
+        } else {
+            DIG3 = 1;
+        }
+        keta = 0;
+    }
+}
+\end{lstlisting}
+
+\subsection{スタート音}
+スタート音は\texttt{startBeep()}関数で鳴らす．
+\texttt{startBeep()}関数のソースコードをリスト\ref{lst:startBeep}に示す．
+この関数では，MTU2 ch3を用いて音を鳴らす．
+% 周期について説明
+周期$20MHz / 5000 = 4000$で用い，4kHzの音を0.1秒間で2回ならしている．
+
+
+\begin{lstlisting}[caption=startBeep(), label=lst:startBeep]
+  void startBeep() {
+    int i = 0;
+
+    // MTU2 ch3 sound
+    MTU23.TCR.BIT.TPSC = 0;
+    MTU23.TCR.BIT.CCLR = 1;
+    MTU23.TGRA = 5000 - 1;
+    MTU2.TSTR.BIT.CST3 = 1;
+
+    while (i < 100) {
+        if (MTU23.TSR.BIT.TGFA = 0) {
+            SPK ^= 1;
+            i++;
+        }
+    }
+    wait_us(100000);
+    i = 0;
+    while (i < 100) {
+        if (MTU23.TSR.BIT.TGFA = 0) {
+            SPK ^= 1;
+            i++;
+        }
+    }
+    MTU2.TSTR.BIT.CST3 = 0;
+}
+\end{lstlisting}
+
+\subsection{ミス音}
+
+ミス音は\texttt{missBeep()}関数で鳴らす．
+\texttt{missBeep()}関数のソースコードをリスト\ref{lst:missBeep}に示す．
+この関数では，MTU2 ch3を用いて音を鳴らす．
+% 周期について説明
+周期$20MHz / 10000 = 2000$で用い，2kHzの音を0.1秒間で100回ならしている．
+
+\begin{lstlisting}[caption=missBeep(), label=lst:missBeep]
+  void missBeep() {
+    int i = 0;
+
+    // MTU2 ch3 sound
+    MTU23.TCR.BIT.TPSC = 0;
+    MTU23.TCR.BIT.CCLR = 1;
+    MTU23.TGRA = 10000 - 1;
+    MTU2.TSTR.BIT.CST3 = 1;
+
+    while (i < 100) {
+        if (MTU23.TSR.BIT.TGFA = 0) {
+            SPK ^= 1;
+            i++;
+        }
+    }
+    MTU2.TSTR.BIT.CST3 = 0;
+}
+
+\end{lstlisting}
+
+\subsection{自機の移動}
+自機の移動は\texttt{move\_me()}関数で行う．
+\texttt{move\_me()}関数のソースコードをリスト\ref{lst:move_me}に示す．
+この関数では，ジョイスティックを横に動かすと自機も左右に移動するようにする．
+また，岩に触れたときにミス音を鳴らし，スコアを減らすようにしている．
+
+\begin{lstlisting}[caption=move\_me(), label=lst:move_me]
+  void move_me(struct position *me, struct position rock[]) {
+    int i;
+    struct position old_position;
+
+    old_position.x = me->x;
+    old_position.y = me->y;
+    me->active = 1;
+
+    if (AD0.ADDR0 < 0x4000) {
+        // -- ジョイスティック上 --
+        me->y = 0;
+    } else if (AD0.ADDR0 > 0xc000) {
+        // -- ジョイスティック下 --
+        me->y = 1;
+    }
+    if (AD0.ADDR1 > 0xc000 && me->x > 0) {
+        me->x--;
+    } else if (AD0.ADDR1 < 0x4000 && me->x < 15) {
+        me->x++;
+    }
+
+    if (old_position.y != me->y || old_position.x != me->x) {
+        // -- 移動したとき .. 古い表示を消す --
+        LCD_cursor(old_position.x, old_position.y);
+        LCD_putch(' ');
+    }
+    for (i = 0; i < NMROF_ROCKS; i++) {
+        if (rock[i].active) {
+            if ((old_position.x == rock[i].x && old_position.y == rock[i].y) ||
+                (me->x == rock[i].x &&
+                 me->y == rock[i].y)) {  // プレイヤーに触れたら岩を消す
+                score -= 5;
+                if (score < 0) score = 0;
+                rock[i].active = 0;
+                LCD_cursor(rock[i].x, rock[i].y);
+                LCD_putch(' ');
+                me->active = 0;
+                missBeep();
+                break;
+            }
+        }
+    }
+    if (me->active) {
+        LCD_cursor(me->x, me->y);
+        LCD_putch('>');
+    } else {
+        LCD_cursor(me->x, me->y);
+        LCD_putch(' ');
+    }
+}
+\end{lstlisting}
+
+
+
+\section{プログラム}
+プログラムをリスト\ref{lst:main}に示す．
+
+\begin{lstlisting}[caption=main.c, label=lst:main]
+  /***********************************************************************/
 /*  FILE        :memes_final.c                                         */
 /***********************************************************************/
 #include <stdlib.h>
@@ -414,3 +691,14 @@ void main() {
         }
     }
 }
+\end{lstlisting}
+
+\subsection{一時停止，再開，リセット}
+一時停止，再開，リセットはSW4，SW5，SW6を用いて行う．
+プログラムを始めるとMEME6S GAMES Push switch6と表示される．
+
+\section{実行結果}
+
+\section{考察}
+
+\end{document}
