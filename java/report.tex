@@ -1,35 +1,34 @@
-\documentclass[a4j]{jarticle}
+\documentclass[a4paper,11pt,dvipdfmx]{jsarticle}
+
 
 % 数式
 \usepackage{amsmath,amsfonts}
 \usepackage{bm}
+\usepackage{physics}
+\usepackage{mathtools}
 % 画像
 \usepackage[dvipdfmx]{graphicx}
-\usepackage{listings,jvlisting}
-\usepackage{jlisting}
-
-
-\lstset{
-basicstyle={\ttfamily},
-identifierstyle={\small},
-commentstyle={\smallitshape},
-keywordstyle={\small\bfseries},
-ndkeywordstyle={\small},
-stringstyle={\small\ttfamily},
-frame={tb},
-breaklines=true,
-columns=[l]{fullflexible},
-numbers=left,
-xrightmargin=0zw,
-xleftmargin=3zw,
-numberstyle={\scriptsize},
-stepnumber=1,
-numbersep=1zw,
-lineskip=-0.5ex
-}
-
-% プログラミングリストコマンド
-\renewcommand{\lstlistingname}{リスト}
+\usepackage{circuitikz}
+\usepackage{amsmath,amssymb}
+\usepackage{siunitx}
+\usepackage{float}
+\usepackage{tikz}
+\usepackage{askmaps}
+\usepackage{multirow}
+\usepackage{bigstrut}
+\usepackage{rotating}
+\usepackage{listings}
+\usepackage{subcaption}
+% 表
+\usepackage{makecell}
+% その他
+\usepackage{url}
+\usepackage{ascmac}
+\usepackage{cases}
+\usepackage{here}
+\usepackage{upgreek}
+\usepackage{tocloft}  % tocloftパッケージを使う
+\usepackage{titlesec} % titlesecパッケージを使う（セクションタイトルのカスタマイズ）
 
 % 画像挿入コマンド
 \newcommand{\Figure}[4]{
@@ -42,141 +41,14 @@ lineskip=-0.5ex
 }
 \begin{document}
 
-\title{キュー}
+\title{starategy}
 \author{学籍番号:22120 \\ 組番号:222 \\名前:塚田 勇人}
 \date{\today}
 \maketitle
+
 \newpage
 
-\section{ソースコード}
-\begin{lstlisting}[caption=main class,label=Queue.java]
-  public class newClass {
+\section{プログラミングリスト}
 
-	public static void main(String[] args) {
-		Queue queue = new Queue();
-		System.out.println(queue.QueueVolume() + "個目のスタックです");
-		queue.enqueue(10);queue.printQueue();
-		queue.enqueue(20);queue.printQueue();
-		queue.enqueue(30);queue.printQueue();
-		queue.enqueue(40);queue.printQueue();
-		queue.enqueue(50);queue.printQueue();
-		queue.enqueue(60);queue.printQueue();
-		System.out.println(queue.dequeue());queue.printQueue(3,4);queue.printQueue();
-		System.out.println(queue.dequeue());queue.printQueue();
-		System.out.println(queue.dequeue());queue.printQueue();
-		System.out.println(queue.dequeue());queue.printQueue();
-		System.out.println(queue.dequeue());queue.printQueue();
-		System.out.println(queue.dequeue());queue.printQueue();
-	}
-}
-\end{lstlisting}
 
-\begin{lstlisting}[caption=queue class class,label=Queue]
-
-  public class Queue {
-    private int volume;
-    private int data[];
-    private static int defaultSize = 5;
-    private static int queueCount = 0;
-  
-    Queue() {
-      this(defaultSize);
-    }
-  
-    Queue(int n) {
-      data = new int[n];
-      System.out.println(data.length + "個分のキュー生成");
-      queueCount++;
-    }
-  
-    int enqueue(int number) {
-      int value;
-      // 残容量確認
-      if (data.length > volume) {
-        // 入力値確認
-        if (number > 0) {
-          data[volume] = number;
-          volume++;
-          value = 1;
-        } else {
-          value = 0;
-          System.out.println("wrong input");
-        }
-      } else {
-        System.out.println("queue overflow");
-        value = 0;
-      }
-  
-      return value;
-    }
-  
-    // データ取得関数
-    int dequeue() {
-      int value;
-      // 格納個数確認
-      if (volume > 0) {
-        value = data[0];
-        volume--;
-  
-        // 空き領域を埋めるためのシフト
-        for (int i = 0; i < data.length - 1; i++) {
-          data[i] = data[i + 1];
-        }
-        data[volume] = 0;
-      } else {
-        value = -1;
-      }
-      return value;
-    }
-  
-    // 状態表示関数
-    void printQueue() {
-      this.printQueue(0, data.length);
-    }
-  
-    private void printQueue(int num){
-      System.out.print(data[num]);
-    }
-  
-    // 状態表示関数
-    void printQueue(int start, int end) {
-      System.out.print("|");
-      for (int i = start; i < end; i++) {
-        printQueue(i);
-        System.out.printf("|");
-      }
-      System.out.println();
-    }
-  
-    int QueueVolume() {
-      return queueCount;
-    }
-  }
-\end{lstlisting}
-
-\section{実行結果}
-\begin{lstlisting}
-  5個分のキュー生成
-1個目のスタックです
-|10|0|0|0|0|
-|10|20|0|0|0|
-|10|20|30|0|0|
-|10|20|30|40|0|
-|10|20|30|40|50|
-queue overflow
-|10|20|30|40|50|
-10
-|50|
-|20|30|40|50|0|
-20
-|30|40|50|0|0|
-30
-|40|50|0|0|0|
-40
-|50|0|0|0|0|
-50
-|0|0|0|0|0|
--1
-|0|0|0|0|0|
-\end{lstlisting}
 \end{document}
