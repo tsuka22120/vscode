@@ -808,8 +808,8 @@ int fastMultiple(const Number *a, const Number *b, Number *c) {
         clearByZero(c);
         int ALength = getLen(&A);
         int BLength = getLen(&B);
-        for (int i = 0; i < ALength / 9 + 1; i++) {
-            for (int j = 0; j < BLength / 9 + 1; j++) {
+        for (int i = 0; i < ALength / RADIX_LEN + 1; i++) {
+            for (int j = 0; j < BLength / RADIX_LEN + 1; j++) {
                 tmp = A.n[i] * B.n[j];
                 if (tmp == 0) {
                     continue;
@@ -1114,7 +1114,6 @@ int divideByInverse(const Number *a, const Number *b, Number *c) {
     getAbs(a, &A);
     getAbs(b, &B);
     if (numComp(&A, &B) == -1) {
-        printf("OK\n");
         clearByZero(c);
         return 0;
     }
@@ -1244,7 +1243,7 @@ int inverse3(const Number *a, Number *b) {
             if (length >= sigDigs + margin) {
                 margin++;
             } else {
-                margin += sigDigs;
+                // margin += sigDigs;
                 break;
             }
         }
@@ -1750,7 +1749,6 @@ int lcm(const Number *a, const Number *b, Number *c) {
 /// @return エラー: -1, 正常終了: 0
 int arctan(const Number *a, Number *b) {
     Number A;
-    Number digit;
     Number tmp;
     Number constant;
     Number A_S;  // A^2
@@ -1760,20 +1758,16 @@ int arctan(const Number *a, Number *b) {
     copyNumber(&A, a);
     clearByZero(b);
     // aの逆数を求める
-    setInt(&digit, 1);
     fastpower(&A, 2, &A_S);  // A^2
-    mulBy10SomeTimes(&digit, &digit,
-                     DIGIT + MARGIN - 1);    // 10^(2 * DIGIT - 1)
-    divideWithoutRemainder(&digit, &A, &A);  // A = 10^DIGIT / A
+    inverse3(&A, &A);        // 1/A
     // 一項目を求める
     add(b, &A, b);
     n = 1;
-    setInt(&constant, 1);
     while (1) {
         setInt(&constant, 2 * n + 1);
-        divideWithoutRemainder(&A, &A_S, &A);
-        divideWithoutRemainder(&A, &constant, &tmp);
-        if (isZero(&tmp)) {
+        divideByInverse(&A, &A_S, &A);
+        divideByInverse(&A, &constant, &tmp);
+        if(isZero(&tmp)) {
             break;
         }
         if (n % 2 == 0) {
@@ -1781,7 +1775,7 @@ int arctan(const Number *a, Number *b) {
         } else {
             sub(b, &tmp, b);
         }
-        printf("\rarctan計算%d回試行", n);
+        printf("\r%dtimesByArctan", n);
         fflush(stdout);
         n++;
     }
@@ -1841,7 +1835,7 @@ int comparePi(const Number *a) {
         }
     }
     fclose(fp);
-    printf("一致しました\n");
+    printf("matched\n");
     return 0;
 }
 

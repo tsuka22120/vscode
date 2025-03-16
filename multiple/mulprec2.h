@@ -1,12 +1,18 @@
-#define DIGIT 1000
+#define DIGIT 3000
 
 #define RADIX 1000000000
 #define RADIX_LEN 9
 #define MARGIN 100
 
-#define ROOT
+#define ARCTAN
 
 #ifdef ROOT
+#ifndef KETA
+#define KETA (DIGIT + MARGIN) * 4 / RADIX_LEN + 1
+#endif
+#endif
+
+#ifdef ARCTAN
 #ifndef KETA
 #define KETA (DIGIT + MARGIN) * 4 / RADIX_LEN + 1
 #endif
@@ -33,14 +39,14 @@
 #endif
 #endif
 
-#define PLUS1
+#define PLUS 1
 #define ZERO 0
 #define MINUS -1
 
 #define TRUE 1
 #define FALSE 0
 
-#define RADIX_T long long
+#define RADIX_T long long int
 
 typedef struct NUMBER {
     RADIX_T n[KETA];  // 各桁の変数
