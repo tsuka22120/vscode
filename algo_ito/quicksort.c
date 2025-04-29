@@ -9,10 +9,10 @@
 // バブルソートを行うようにした。また、ピボットの選択において
 // 3つの要素を比較して中央値を選択するようにした。
 
-#define index_num 50    // 要素数
+#define index_num 50   // 要素数
 #define count_num 1000  // 試行回数
 #define sortType_num 4  // ソートの種類の数
-#define switchMAX_num 10  // クイックソートから切り替える要素数の最大値
+#define switchMAX_num 8  // クイックソートから切り替える要素数の最大値
 #define switchMIN_num 5  // クイックソートから切り替える要素数の最小値
 #define bogoType 0       // ボゴソート
 #define selectionType 1  // 選択ソート
