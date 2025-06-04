@@ -1,0 +1,135 @@
+\documentclass[a4paper,11pt,dvipdfmx]{jsarticle}
+
+
+% 数式
+\usepackage{amsmath,amsfonts}
+\usepackage{bm}
+% % 画像
+% \usepackage[dvipdfmx]{graphicx}
+% \usepackage{circuitikz}
+% \usepackage{amsmath,amssymb}
+% \usepackage{siunitx}
+% \usepackage{float}
+% \usepackage{tikz}
+% \usepackage{askmaps}
+% \usepackage{multirow}
+% \usepackage{bigstrut}
+% \usepackage{rotating}
+% \usepackage{listings}
+% % 数式
+% \usepackage{physics}
+% \usepackage{mathtools}
+% % 画像
+% \usepackage{subcaption}
+% % 表
+% \usepackage{makecell}
+% % その他
+% \usepackage{url}
+% \usepackage{ascmac}
+% \usepackage{cases}
+% \usepackage{here}
+% \usepackage{upgreek}
+% \usepackage{tocloft}  % tocloftパッケージを使う
+% \usepackage{titlesec} % titlesecパッケージを使う（セクションタイトルのカスタマイズ）
+
+% 画像挿入コマンド
+\newcommand{\Figure}[4]{
+\begin{figure}[H]
+\centering
+\includegraphics[width=#1\linewidth]{./images/#2}
+\caption{#3}
+\label{fig:#4}
+\end{figure}
+}
+
+\begin{document}
+
+% \title{減算基板のリバースエンジニアリング}
+% \author{学籍番号:22120 \\ 組番号:222 \\名前:塚田 勇人}
+% \date{\today}
+% \maketitle
+
+% \newpage
+% \tableofcontents
+% \newpage
+
+% \section{目的}
+% 電子天秤の作成のために，減算基板のリバースエンジニアリングを行い，基板の回路図を作成する．
+% リバースエンジニアリングとは，製品の作業工程の反対をたどって，製品の構造や仕組みについて考えることである．
+% そのために，減算基板の動作を確認して，マルチテスタを用いて，実際の回路を探査する．
+% そして，探査して得られた情報をもとに，回路図を作成する．
+% その過程を通して，減算基板についての理解を深めることが目的である．
+
+% \section{原理}
+
+% \section{実験環境}
+% 本実験では，減算基板のリバースエンジニアリングを行う．
+% 減算基板に関する基本的な知識や使われている電子部品について説明する．
+
+% \subsection{減算基板} \label{subsec:genzan}
+% 減算基板は，複数の入力信号から1つの信号を選択して出力する基板である．
+% 真理値表を表\ref{tab:selector}に示す．
+
+% \begin{table}[H]
+%   \caption{減算基板の真理値表}
+%   \centering
+%   \begin{tabular}{|cc|cc|}
+%     \hline
+%     SW0 & SW1 & OUT                     & EN \\
+%     \hline
+%     0   & 0   & \ast \textreferencemark & 0  \\
+%     0   & 1   & B                       & 1  \\
+%     1   & 0   & C                       & 1  \\
+%     1   & 1   & A                       & 1  \\
+%     \hline
+%   \end{tabular}
+%   \label{tab:selector}
+% \end{table}
+
+% \subsection{74LSシリーズIC}
+% 今回の実験で用いるICのそれぞれの機能やピンアサインについて説明する．
+% 本実験では，74LSシリーズのICを用いる．
+% 74LSシリーズは，バイポーラトランジスタを用いて構成されている．
+
+% \subsubsection{74LS04}
+% SN74LS04Nとは，NOTゲートを6つ内蔵したICである．NOTゲートは，入力された信号を反転させる回路である．
+
+% \subsubsection{SN74LS08}
+% SN74LS08Nとは，ANDゲートを4つ内蔵したICである．ANDゲートは，入力された信号がすべてHighのときにHighを出力する回路である．
+
+% \subsubsection{SN74LS32}
+% SN74LS32Nとは，ORゲートを4つ内蔵したICである．ORゲートは，入力された信号のうち1つでもHighがあればHighを出力する回路である．
+
+% \subsubsection{SN74LS86}
+% SN74LS86Nとは，XORゲートを4つ内蔵したICである．XORゲートは，入力された信号が異なるときにHighを出力する回路である．
+
+% \subsection{セラミックコンデンサ} \label{subsec:ceramicCapacitor}
+% セラミックコンデンサは，セラミックを絶縁体として用いたコンデンサである．
+% このコンデンサは無極性であるため，接続時に極性を気にする必要がない．
+% 主にノイズ処理の役割でバイパスコンデンサとして使用される．
+
+
+% \subsubsection{バイパスコンデンサ} \label{subsec:bypassCapacitor}
+% バイパスコンデンサとは，回路を誤動作から守るために使用されるコンデンサのことである\cite{digital}．
+% バイパスコンデンサの接続方法について説明する．
+% 今回の基板に実装されているバイパスコンデンサは，ICの電源端子とGND端子の間に接続されている．
+% この接続方法には，IC内部のスイッチング時に発生したノイズを外に出さない働きがある\cite{digital}．
+
+
+
+% \section{プログラムの設計と説明}
+
+% \section{プログラム}
+
+% \section{実行結果}
+
+% \section{考察}
+
+
+% \addcontentsline{toc}{section}{参考文献}
+% \begin{thebibliography}{99}
+%   \bibitem{digital}湯山 俊夫 著，『ディジタル回路の設計』，CQ出版株式会社，pp.33-35，(1998年 第19版)
+%   \bibitem{HD74LS83AP}ルネサス，HD74LS83AP，データシート(2005/06/24)
+% \end{thebibliography}
+
+\end{document}
