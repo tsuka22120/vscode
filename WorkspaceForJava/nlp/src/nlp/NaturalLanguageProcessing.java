@@ -14,5 +14,12 @@ public class NaturalLanguageProcessing {
         }
         DocumentFrequency df = new DocumentFrequency(tf);
         df.df("./out/df.txt");
+        System.out.println("tf-idf 導出");
+        for(int i = 1;i <= 100; i++) {
+            String outputFileName = "./out/" + String.format("%03d", i) + "tfidf.txt";
+            termFrequency_inverseDocumentFrequency tfIdf = new termFrequency_inverseDocumentFrequency(tf[i - 1], df);
+            tfIdf.tfIdf(outputFileName);
+        }
+        System.out.println("完了しました");
     }
 }

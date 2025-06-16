@@ -92,6 +92,7 @@ public class TermFrequency {
             // ソート
             list.sort(new WordCompare());
             // 出力
+            fw.write("#語\t出現回数\tTF\n");
             for (TfCount tfc : list) {
                 fw.write(tfc.getWord().getHyousoukei() + "\t" +
                         tfc.getCount() + "\t" +

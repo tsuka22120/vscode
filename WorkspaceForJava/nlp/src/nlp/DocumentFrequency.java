@@ -69,6 +69,7 @@ public class DocumentFrequency {
         System.out.println("出力ファイル: " + outputFilename);
         try {
             FileWriter fw = new FileWriter(outputFilename);
+            fw.write("#語\tDF\tIDF\n");
             for (DfCount dfc : list) {
                 fw.write(dfc.getWord().getHyousoukei() + "\t" +
                         dfc.getDf() + "\t" +

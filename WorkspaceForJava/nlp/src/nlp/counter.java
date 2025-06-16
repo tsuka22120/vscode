@@ -73,3 +73,41 @@ class DfCount extends WordCount {
         this.df = df;
     }
 }
+
+class tfIdfCount extends WordCount {
+    private Double tfidf;
+    private Double tf;
+    private Double idf;
+
+    public tfIdfCount(Word word, Integer count, Double tf, Double idf, Double tfidf) {
+        super(word, count);
+        this.tfidf = tfidf;
+        this.tf = tf;
+        this.idf = idf;
+
+    }
+
+    public Double getTfidf() {
+        return tfidf;
+    }
+
+    public void setTfidf(Double tfidf) {
+        this.tfidf = tfidf;
+    }
+
+    public Double getTf() {
+        return tf;
+    }
+
+    public void setTf(Double tf) {
+        this.tf = tf;
+    }
+
+    public Double getIdf() {
+        return idf;
+    }
+
+    public void setIdf(Double idf) {
+        this.idf = idf;
+    }
+}
