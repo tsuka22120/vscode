@@ -71,7 +71,7 @@ public class DocumentFrequency {
             FileWriter fw = new FileWriter(outputFilename);
             fw.write("#語\tDF\tIDF\n");
             for (DfCount dfc : list) {
-                fw.write(dfc.getWord().getHyousoukei() + "\t" +
+                fw.write(dfc.getWord().getGenkei() + "\t" +
                         dfc.getDf() + "\t" +
                         dfc.getIdf() + "\n");
             }

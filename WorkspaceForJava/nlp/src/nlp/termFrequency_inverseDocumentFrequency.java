@@ -49,7 +49,7 @@ class termFrequency_inverseDocumentFrequency {
             System.out.println("出力ファイル: " + outputFilename);
             fw.write("#語\t出現回数\tTF\tIDF\tTF-IDF\t\n");
             for (tfIdfCount tfIdf : list) {
-                fw.write(tfIdf.getWord().getHyousoukei() + "\t" + tfIdf.getCount() + "\t" +
+                fw.write(tfIdf.getWord().getGenkei() + "\t" + tfIdf.getCount() + "\t" +
                         tfIdf.getTf() + "\t" + tfIdf.getIdf() + "\t" + tfIdf.getTfidf() + "\n");
             }
             fw.close();

@@ -38,7 +38,7 @@ public class TermFrequency {
 
             BufferedReader bReader_i = new BufferedReader(new InputStreamReader(ps.getInputStream(), "SJIS"));
             String targetLine;
-             this.list.clear();
+            this.list.clear();
 
             while ((targetLine = bReader_i.readLine()) != null) {
                 if (targetLine.equals("EOS"))
@@ -46,10 +46,17 @@ public class TermFrequency {
 
                 String[] targetArray = targetLine.split("[,\t]");
                 Word wo = new Word();
-                if (targetArray.length >= 1)
+                if (targetArray.length >= 1) {
                     wo.setHyousoukei(targetArray[0]);
-                if (targetArray.length >= 2)
+                }
+                if (targetArray.length >= 2) {
                     wo.setHinshi(targetArray[1]);
+                    if (wo.getHinshi().equals("名詞") == false &&
+                            wo.getHinshi().equals("動詞") == false &&
+                            wo.getHinshi().equals("形容詞") == false) {
+                        continue; // 名詞，動詞、形容詞以外は除外
+                    }
+                }
                 if (targetArray.length >= 3)
                     wo.setHinshi1(targetArray[2]);
                 if (targetArray.length >= 4)
@@ -60,12 +67,21 @@ public class TermFrequency {
                     wo.setKatsuyoKata(targetArray[5]);
                 if (targetArray.length >= 7)
                     wo.setKatsuyoKei(targetArray[6]);
-                if (targetArray.length >= 8)
+                if (targetArray.length >= 8) {
                     wo.setGenkei(targetArray[7]);
+                    if (wo.getGenkei().equals("する") || wo.getGenkei().equals("ある") ||
+                            wo.getGenkei().equals("こと") ||wo.getGenkei().equals("*")) {
+                        continue; // 「する」「ある」「こと」は除外
+                    }
+                }
                 if (targetArray.length >= 9)
                     wo.setYomi(targetArray[8]);
                 if (targetArray.length >= 10)
                     wo.setHatsuon(targetArray[9]);
+
+                if (wo.getHinshi().equals("名詞") == false) {
+                    continue; // 記号や助詞などは除外
+                }
 
                 boolean found = false;
                 for (TfCount tfc : list) {
@@ -94,7 +110,7 @@ public class TermFrequency {
             // 出力
             fw.write("#語\t出現回数\tTF\n");
             for (TfCount tfc : list) {
-                fw.write(tfc.getWord().getHyousoukei() + "\t" +
+                fw.write(tfc.getWord().getGenkei() + "\t" +
                         tfc.getCount() + "\t" +
                         String.format("%.10f", tfc.getTf()) + "\n");
             }

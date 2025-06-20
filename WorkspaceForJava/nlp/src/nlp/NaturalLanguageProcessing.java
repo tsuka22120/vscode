@@ -1,4 +1,7 @@
+//javac -d bin src/nlp/*.java
+//java -cp bin nlp.NaturalLanguageProcessing
 package nlp;
+
 
 public class NaturalLanguageProcessing {
     static public void main(String args[]) {

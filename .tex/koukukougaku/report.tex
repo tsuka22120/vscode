@@ -1,0 +1,89 @@
+\documentclass[a4paper,11pt,dvipdfmx]{jsarticle}
+
+
+% 数式
+\usepackage{amsmath,amsfonts}
+\usepackage{bm}
+\usepackage{physics}
+\usepackage{mathtools}
+% 画像
+\usepackage[dvipdfmx]{graphicx}
+\usepackage{circuitikz}
+\usepackage{amsmath,amssymb}
+\usepackage{siunitx}
+\usepackage{float}
+\usepackage{tikz}
+\usepackage{askmaps}
+\usepackage{multirow}
+\usepackage{bigstrut}
+\usepackage{rotating}
+\usepackage{listings}
+\usepackage{subcaption}
+% 表
+\usepackage{makecell}
+% その他
+\usepackage{url}
+\usepackage{ascmac}
+\usepackage{cases}
+\usepackage{here}
+\usepackage{upgreek}
+\usepackage{tocloft}  % tocloftパッケージを使う
+\usepackage{titlesec} % titlesecパッケージを使う（セクションタイトルのカスタマイズ）
+
+% 画像挿入コマンド
+\newcommand{\Figure}[4]{
+\begin{figure}[H]
+\centering
+\includegraphics[width=#1\linewidth]{./images/#2}
+\caption{#3}
+\label{fig:#4}
+\end{figure}
+}
+\begin{document}
+
+\title{航空工学まとめ}
+\author{学籍番号:22120 \\ 組番号:222 \\名前:塚田 勇人}
+\date{\today}
+\maketitle
+
+\newpage
+
+\section{目的}
+本ドキュメントはライト兄弟が作った「ライトフライヤー号」と現代の航空機の違いをまとめることを目的とする．
+
+\section{本文}
+実際にライト兄弟が作った「ライトフライヤー号」と現代の航空機を相違点を列挙すると，以下のような違いがある．
+
+\begin{itemize}
+    \item 構造と材料
+    \item 揚力発生
+    \item 推進方式
+    \item 設計思想
+\end{itemize}
+
+それぞれについて詳しく説明する．
+\subsection{構造と材料}
+ライト兄弟の「ライトフライヤー号」は木材と布で構成されており，着陸時の衝撃に対してはそりのような構造で衝撃を吸収していた．\\
+一方，現代の航空機はアルミニウムや複合材料を使用し，強度と軽量化を両立させ，着陸時の衝撃吸収には主に車輪と
+サスペンションシステムを使用している．
+
+\subsection{揚力発生}
+ライト兄弟の「ライトフライヤー号」は，授業でも触れていたが曲面の形をした翼をしようし，揚力を発生させていた．\\
+一方，現代の航空機は空気の流れに対する技術が進化し，翼の形状はより洗練され，空力的に効率的なデザインが採用されている．
+
+\subsection{推進方式}
+ライト兄弟の「ライトフライヤー号」は，自作のエンジンでチェーン駆動のプロペラを回していた． \\
+現代の航空機はジェットエンジンやプロペラエンジンなど，より効率的で強力な推進方式を採用している．
+
+\subsection{設計思想}
+ライト兄弟の「ライトフライヤー号」は，飛行の基本原理を理解し，実験的に飛行を試みるというアプローチであった．
+彼らは「飛ぶこと」に重きを置き，実験と改良を繰り返していた．\\
+一方，現代の航空機は科学的な理論と技術の進歩を基に，安全性，効率性，快適性を重視した設計が行われている．
+
+\section{まとめ}
+ライト兄弟の「ライトフライヤー号」は，飛行の基本原理を追求するための実験的な航空機であり，構造・材料・推進方式・設計思想のいずれも，現代の航空機とは大きく異なっていた．\\
+現代の航空機は，長年の技術的進歩と安全性・効率性の追求の結果として，高度に最適化された構造と性能を持つ．\\
+本比較を通じて，航空工学の発展がどれほど飛行技術を進化させたかを理解することができた．
+
+
+\end{document}
