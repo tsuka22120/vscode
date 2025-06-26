@@ -1,17 +1,23 @@
 package nlp;
 
-public class Word {
-    private String hyousoukei = null;
-    private String hinshi = null;
-    private String hinshi1 = null;
-    private String hinshi2 = null;
-    private String hinshi3 = null;
-    private String katsuyoKata = null;
-    private String katsuyoKei = null;
-    private String genkei = null;
-    private String yomi = null;
-    private String hatsuon = null;
+import java.util.Objects;
 
+/**
+ * 形態素解析結果の単語情報を保持するクラス。
+ */
+public class Word {
+    private String hyousoukei; // 表層形 (実際に文中に現れた形)
+    private String hinshi; // 品詞
+    private String hinshi1; // 品詞細分類1
+    private String hinshi2; // 品詞細分類2
+    private String hinshi3; // 品詞細分類3
+    private String katsuyoKata;// 活用方
+    private String katsuyoKei; // 活用形
+    private String genkei; // 原形 (基本形)
+    private String yomi; // 読み
+    private String hatsuon; // 発音
+
+    // 以下、各フィールドのgetterおよびsetter
     public String getHyousoukei() {
         return hyousoukei;
     }
@@ -92,6 +98,11 @@ public class Word {
         this.hatsuon = hatsuon;
     }
 
+    /**
+     * オブジェクトが等価であるかを判定する。
+     * 全てのフィールドが一致する場合にtrueを返す。
+     */
+    @Override
     public boolean equals(Object obj) {
         if (obj == null || !(obj instanceof Word))
             return false;
@@ -100,14 +111,15 @@ public class Word {
                 && safeEquals(hinshi, other.hinshi)
                 && safeEquals(hinshi1, other.hinshi1)
                 && safeEquals(hinshi2, other.hinshi2)
-                && safeEquals(hinshi3, other.hinshi3)
+                && safeEquals(hinuyoKei, other.katsuyoKei)
+                && safeEquals(genkeshi3, other.hinshi3)
                 && safeEquals(katsuyoKata, other.katsuyoKata)
-                && safeEquals(katsuyoKei, other.katsuyoKei)
-                && safeEquals(genkei, other.genkei)
+                && safeEquals(katsi, other.genkei)
                 && safeEquals(yomi, other.yomi)
                 && safeEquals(hatsuon, other.hatsuon));
     }
 
+    // nullを安全に扱うための文字列比較ヘルパーメソッド
     private boolean safeEquals(String s1, String s2) {
         if (s1 == null && s2 == null)
             return true;

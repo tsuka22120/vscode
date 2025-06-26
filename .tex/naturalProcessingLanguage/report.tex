@@ -1,0 +1,271 @@
+\documentclass[a4paper,11pt,dvipdfmx]{jsarticle}
+
+
+% 数式
+\usepackage{amsmath,amsfonts}
+\usepackage{bm}
+\usepackage{physics}
+\usepackage{mathtools}
+% 画像
+\usepackage[dvipdfmx]{graphicx}
+\usepackage{circuitikz}
+\usepackage{amssymb}
+\usepackage{siunitx}
+\usepackage{float}
+\usepackage{tikz}
+\usepackage{askmaps}
+\usepackage{multirow}
+\usepackage{bigstrut}
+\usepackage{rotating}
+\usepackage{listings}
+\usepackage{subcaption}
+% 表
+\usepackage{makecell}
+% その他
+\usepackage{url}
+\usepackage{ascmac}
+\usepackage{cases}
+\usepackage{here}
+\usepackage{upgreek}
+\usepackage{tocloft}  % tocloftパッケージを使う
+\usepackage{titlesec} % titlesecパッケージを使う（セクションタイトルのカスタマイズ）
+
+% 画像挿入コマンド
+\newcommand{\Figure}[4]{
+\begin{figure}[H]
+\centering
+\includegraphics[width=#1\linewidth]{./images/#2}
+\caption{#3}
+\label{fig:#4}
+\end{figure}
+}
+\begin{document}
+
+\title{自然言語処理}
+\author{学籍番号:22120 \\ 組番号:222 \\名前:塚田 勇人}
+\date{\today}
+\maketitle
+
+\newpage
+
+\section{目的}
+自然言語処理の基礎を学び、実際に\textit{tf（Term Frequency），
+df（Document Frequency），idf（Inverse Document Frequency）、
+tf-idf（Term Frequency - Inverse Document Frequency）}
+の計算を行うことで、テキストデータの重要な単語を抽出する方法を理解する。
+
+\section{原理}
+自然言語処理の基本的な概念と、\textit{tf，df，idf，tf-idf}の計算方法について説明する。
+
+\subsection{形態素解析}
+形態素解析は、文章を単語などの要素に分解する処理であり，
+自然言語処理の前処理として重要なステップである．
+今回は形態素解析のライブラリとして
+\textit{MeCab}を使用する．
+
+\subsection{\textit{tf}}
+\textit{tf}は、特定の単語が文書内でどれだけ頻繁に出現するかを示す指標である。
+例えばばい、文書Aにおいて単語「自然」が5回出現し，文書Bにおいては3回出現した場合、
+文書Aのほうが「自然」という単語の\textit{tf}が高いとされる。
+今回は100個の文書を用意し、各文書における単語の出現回数を正規化し，
+\textit{tf}を計算する。このとき各文書の\textit{tf}の総和は1になるように
+正規化する。\textit{tf}の計算式を式\ref{eq:tf}に示す。
+
+\begin{equation}
+w_{tf_t}^d = \frac{tf(t, d)}{\sum_{s \in d} tf(s, d)}
+\label{eq:tf}
+\end{equation}
+
+分子の \( tf(t,d) \) は単語 \( t \) は文書 \( d \) 内に出現する回数，
+分母 \( \sum_{s \in d} tf(s,d) \) は文書 \( d \) 内に出現する
+全ての単語の数である．
+
+\subsection{\textit{df}}
+dfは、特定の単語がどれだけの文書に出現するかを示す指標である。
+例えば、100個の文書のうち、単語「自然」が10個の文書に出現した場合、
+その単語の\textit{df}は10となる。
+
+\subsection{\textit{idf}}
+\textit{idf}は、特定の単語が全体の文書集合においてどれだけ重要かを示す
+指標である。
+\textit{idf}は、特定の単語が出現する文書の割合を考慮し、
+出現頻度が低い単語ほど高い値を持つ。
+\textit{idf}の計算式を式\ref{eq:idf}に示す。
+
+\begin{equation}
+idf(t) = \log_{10} \left( \frac{N}{df(t)} + 1 \right)
+\label{eq:idf}
+\end{equation}
+\( df(t) \) は全文書中で単語 \( t \) を含んでいる文書数であり，
+\( N \) は対象となる全文書数である．
+
+\subsection{\textit{tf-idf}}
+\textit{tf-idf}は、\textit{tf}と\textit{idf}を組み合わせた指標であり、
+文書内で出現回数が少なくても全文書での出現頻度が低い単語に高い重みが与えられる．
+一般に，\textit{tf}による重みづけによって文章の網羅性を評価し，
+\textit{idf}による重みづけによって文書の特定性を評価する．
+\textit{tf-idf}の計算式を式\ref{eq:tfidf}に示す。
+この二側面からの重み付けを行うことにより，より統計的に単語の順位付けが可能と
+なる．
+
+\begin{equation}
+  w_{tf\text{-}idf_t}^d = \frac{tf(t, d)}{\sum_{s \in d} tf(s, d)} \times \left( \log_{10} \frac{N}{df(t)} + 1 \right)
+\label{eq:tfidf}
+\end{equation}
+
+\section{実験環境}
+実験環境は以下の通りである。
+
+\begin{table}[H]
+\centering
+\caption{実験環境}
+\label{table:environment}
+\begin{tabular}{|c|c|}
+\hline
+OS    & Windows 11 Pro   \\
+\hline
+CPU   & AMD Ryzen 7 5800H \\
+\hline
+メモリ & 16GB              \\
+\hline
+コンパイラ & gcc version 11.4.0 \\
+\hline
+エディタ & Visual Studio Code  \\
+\hline
+形態素解析ライブラリ & MeCab of 0.996  \\
+\hline
+\end{tabular}
+\end{table}
+
+\section{プログラムの設計と説明}
+プログラムは、以下の機能を持つように設計する。
+\begin{itemize}
+  \item テキストファイルから文書を読み込み、形態素解析を行う。
+  \item 各文書に対して\textit{tf}を計算する。
+  \item 全文書に対して\textit{df}を計算する。
+  \item 各単語に対して\textit{idf}を計算する。
+  \item 各文書に対して\textit{tf-idf}を計算する。
+  \item 結果を出力する。
+\end{itemize}
+
+\section{プログラム}
+今回のプログラムは表\ref{table:class_overview}に示すクラスを用いて実装する。
+
+
+\begin{table}[H]
+\centering
+\caption{クラスの概要}
+\label{table:class_overview}
+  \begin{tabular}{|c|c|}
+    \hline
+    クラス名 & 概要 \\
+    \hline
+    \textit{Word} & 単語を表すクラス \\
+    \hline
+    \textit{WordCount} & 単語の出現回数を管理するクラス \\
+    \hline
+    \textit{TfCount} & 各文書における単語の\textit{tf}を管理するクラス \\
+    \hline
+    \textit{DfCount} & 全文書における単語の\textit{df}を管理するクラス \\
+    \hline
+    \textit{tfIdfCount} & 各文書における単語の\textit{tf-idf}を管理するクラス \\
+    \hline
+    \textit{NatunalLanguageProcessing} & 自然言語処理のメインクラス \\
+    \hline
+    \textit{TF} & \textit{tf}を計算するクラス \\
+    \hline
+    \textit{DF} & \textit{df}を計算するクラス \\
+    \hline
+    \textit{TFIDF} & \textit{tf-idf}を計算するクラス \\
+    \hline
+  \end{tabular}
+\end{table}
+
+それぞれのクラスについて，説明する．
+
+\subsection{\textit{Word}クラス}
+\textit{Word}クラスは表\ref{table:word_class_members}のようなメンバ変数を持ち，
+表\ref{table:word_class_methods}のようなメソッドを持つ．
+
+\begin{table}[H]
+  \centering
+  \caption{\textit{Word}クラスのメンバ変数}
+  \label{table:word_class_members}
+  \begin{tabular}{|c|c|}
+    \hline
+    メンバ変数 & 概要 \\
+    \hline
+    \texttt{String hyousoukei} & 表層形（単語の表記） \\
+    \texttt{String hinshi} & 品詞 \\
+    \texttt{String hinshi1} & 品詞細分類1 \\
+    \texttt{String hinshi2} & 品詞細分類2 \\
+    \texttt{String hinshi3} & 品詞細分類3 \\
+    \texttt{String katsuyoKata} & 活用方 \\
+    \texttt{String katsuyoKei} & 活用形 \\
+    \texttt{String genkei} & 原形 \\
+    \texttt{String yomi} & 読み \\
+    \texttt{String hatsuon} & 発音 \\
+  \hline
+  \end{tabular}
+\end{table}
+
+
+\begin{table}[H]
+\centering
+\caption{\textit{Word}クラスのメソッド}
+\label{table:word_class_methods}
+\begin{tabular}{|c|c|}
+\hline
+メソッド名 & 概要 \\
+\hline
+\texttt{equals} & オブジェクトの等価性を比較するメソッド \\
+\texttt{safeEquals} & オブジェクトの等価性を比較するメソッド（null安全） \\
+\texttt{setter,getter} & 各メンバ変数のゲッターとセッター \\
+\hline
+\end{tabular}
+\end{table}
+
+
+\textit{Word}クラスは，形態素解析の結果を表すクラスであり，
+各単語の表層形，品詞，品詞細分類，活用形，原形，読み，発音などの
+情報を持つ．
+
+\subsection{\textit{WordCount}クラス}
+\textit{WordCount}クラスは，表\ref{table:word_count_class_members}のようなメンバ変数を持ち，
+各メンバ変数のゲッター，セッターを持つ．
+
+\begin{table}[H]
+\centering
+\caption{\textit{WordCount}クラスのメンバ変数}
+\label{table:word_count_class_members}
+\begin{tabular}{|c|c|}
+\hline
+メンバ変数 & 概要 \\
+\hline
+\texttt{private Word word} & 単語の出現回数を管理するための単語オブジェクト \\
+\texttt{private Integer count} & 単語の出現回数 \\
+\hline
+\end{tabular}
+\end{table}
+
+
+\textit{WordCount}クラスは，単語の出現回数を管理するクラスであり，
+各単語の出現回数を保持するための\textit{Word}オブジェクトと
+その出現回数を表す整数値を持つ．
+
+\subsection{\textit{TfCount}クラス}
+\textit{TfCount}クラスは，\textit{WordCount}クラスを
+継承しており，\textit{WordCount}クラスのメンバ変数に加えて，
+\texttt{private Double tf}という\textit{tf}の格納するための
+メンバ変数を持ち，メンバ変数のゲッター，セッターを持つ．
+
+\subsection{\textit{DfCount}クラス}
+\textit{DfCount}クラスは，\textit{WordCount}クラスを
+継承しており，\textit{WordCount}クラスのメンバ変数に加えて，
+
+
+\section{実行結果}
+
+\section{考察}
+
+\end{document}
