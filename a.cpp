@@ -33,17 +33,20 @@ using vvvvl = vv<vvl>;
 using vs = vc<string>;
 using vvs = vv<string>;
 
-int N, M;
-int M_G;
-int M_H;
-int G[28][28];
-int H[28][28];
-int A[8][8];
-int main() {
+// b > c
+// a > b
+
+int main(){
+    ll N;
     cin >> N;
-    cin >> M_G;
-    for(int i = 0;i < M_G;i++)for(int j = 0;j < M_G;j++)cin >>G[i][j];
-    cin >> M_H;
-    for(int i = 0;i < M_H;i++)for(int j = 0;j < M_H;j++)cin >>H[i][j];
-    for(int i = 0;i < N - 1;i++)for(int j = 1;j < N;j++)cin >>A[i][j];
-    
+    ll count = 0;
+    for(ll c = 1;c <= N / 2;c++){
+        for(ll b = 2;b <= N - 1;b++){
+            for(ll a = 3;a <= N;a++){
+                if(a - b == c)count++;
+            }
+        }
+    }
+    cout << count % 998244353  << endl;
+    return 0;
+}
