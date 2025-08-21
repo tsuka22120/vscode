@@ -4,7 +4,7 @@
 #define RADIX_LEN 9
 #define MARGIN 100
 
-#define ROOT
+#define ARCTAN
 
 #ifdef ROOT
 #ifndef KETA
