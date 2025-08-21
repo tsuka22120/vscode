@@ -1,10 +1,10 @@
-#define DIGIT 3000
+#define DIGIT 1000
 
 #define RADIX 1000000000
 #define RADIX_LEN 9
 #define MARGIN 100
 
-#define ARCTAN
+#define ROOT
 
 #ifdef ROOT
 #ifndef KETA

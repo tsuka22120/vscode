@@ -1,4 +1,4 @@
-#define DIGIT 100000
+#define DIGIT 1000
 
 #define RADIX 1000000000
 #define RADIX_LEN 9

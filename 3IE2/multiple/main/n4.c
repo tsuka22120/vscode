@@ -4,8 +4,7 @@
 #include <sys/time.h>
 #include <time.h>
 
-#include "mt19937ar.h"
-#include "mulprec2.h"
+#include "../pi.h"
 
 int main(int argc, char **argv) {
     printf("円周率を%d桁求めます。使用する多倍長整数の桁数:%d\n", DIGIT, KETA);

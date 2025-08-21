@@ -734,7 +734,7 @@ int comparePi(const Number *a) {
     int length;
     char format[10];
     length = getLen(a);
-    fp = fopen("multiple/text/pi.txt", "r");
+    fp = fopen("./text/pi.txt", "r");
     for (int i = 0; i < length % 9; i++) {
         format[i] = fgetc(fp);
     }
@@ -774,7 +774,7 @@ int compareRootThree(const Number *a) {
     int length;
     char format[10];
     length = getLen(a);
-    fp = fopen("multiple/text/root3.txt", "r");
+    fp = fopen("./text/root3.txt", "r");
     for (int i = 0; i < length % 9; i++) {
         format[i] = fgetc(fp);
     }
